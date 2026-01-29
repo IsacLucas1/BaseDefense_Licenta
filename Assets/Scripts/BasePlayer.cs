@@ -55,6 +55,23 @@ public class BasePlayer : NetworkBehaviour
         if (!IsOwner) return;
         HandleMovement();
         HandleMouseLook();
+
+        if (GetComponent<Health>().currentHealth.Value > 0)
+        {
+             if(Input.GetKeyDown(KeyCode.K))
+             {
+                 RequestSelfDamageServerRpc();
+             }
+        }
+    }
+
+    [ServerRpc]
+    void RequestSelfDamageServerRpc()
+    {
+        if (GetComponent<Health>())
+        {
+            GetComponent<Health>().TakeDamage(10);
+        }
     }
 
     void HandleMovement()

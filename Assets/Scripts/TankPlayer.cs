@@ -13,5 +13,15 @@ public class TankPlayer : BasePlayer
         {
             GetComponent<Renderer>().material.SetColor("_BaseColor", Color.green);
         }
+
+        if (IsServer)
+        {
+            var health = GetComponent<Health>();
+            if (health != null)
+            {
+                health.maxHealth.Value = 200;
+                health.currentHealth.Value = 200;
+            }
+        }
     }
 }

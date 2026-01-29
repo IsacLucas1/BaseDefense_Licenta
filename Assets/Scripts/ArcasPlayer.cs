@@ -1,17 +1,17 @@
 using UnityEngine;
 
-public class SpionPlayer : BasePlayer
+public class ArcasPlayer: BasePlayer
 {
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
 
-        speed = 8f;
-        transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
+        speed = 7f;
+        transform.localScale = new Vector3(0.9f, 0.9f, 0.9f);
         
         if (GetComponent<Renderer>())
         {
-            GetComponent<Renderer>().material.SetColor("_BaseColor", Color.blue);
+            GetComponent<Renderer>().material.SetColor("_BaseColor", Color.cyan);
         }
         
         if (IsServer)
@@ -19,8 +19,8 @@ public class SpionPlayer : BasePlayer
             var health = GetComponent<Health>();
             if (health != null)
             {
-                health.maxHealth.Value = 100;
-                health.currentHealth.Value = 100;
+                health.maxHealth.Value = 80;
+                health.currentHealth.Value = 80;
             }
         }
     }

@@ -10,11 +10,17 @@ public class CharacterSelector : NetworkBehaviour
     public GameObject characterSelectionUI;
     public Button btnTank;
     public Button btnSpion;
+    public Button btnConstructor;
+    public Button btnMedic;
+    public Button btnArcas;
     public Camera lobbyCamera;
     
     [Header("Referinte Prefab Personaje")]
     public GameObject tankPlayerPrefab;
     public GameObject spionPlayerPrefab;
+    public GameObject constructorPlayerPrefab;
+    public GameObject medicPlayerPrefab;
+    public GameObject arcasPlayerPrefab;
 
     private void Start()
     {
@@ -23,6 +29,9 @@ public class CharacterSelector : NetworkBehaviour
         
         btnTank.onClick.AddListener(() => RequestSpawnServerRpc(0));
         btnSpion.onClick.AddListener(() => RequestSpawnServerRpc(1));
+        btnConstructor.onClick.AddListener(() => RequestSpawnServerRpc(2));
+        btnMedic.onClick.AddListener(() => RequestSpawnServerRpc(3));
+        btnArcas.onClick.AddListener(() => RequestSpawnServerRpc(4));
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }
@@ -31,11 +40,22 @@ public class CharacterSelector : NetworkBehaviour
     void RequestSpawnServerRpc(int choice, ServerRpcParams rpcParams = default)
     {
         ulong clientId = rpcParams.Receive.SenderClientId;
-        GameObject prefabToSpawn = (choice == 0) ? tankPlayerPrefab : spionPlayerPrefab;
-
-        GameObject newPlayer = Instantiate(prefabToSpawn);
+        GameObject prefabToSpawn = null;
         
-        newPlayer.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId, true);
+        switch (choice)
+        {
+            case 0: prefabToSpawn = tankPlayerPrefab; break;
+            case 1: prefabToSpawn = spionPlayerPrefab; break;
+            case 2: prefabToSpawn = constructorPlayerPrefab; break;
+            case 3: prefabToSpawn = medicPlayerPrefab; break;
+            case 4: prefabToSpawn = arcasPlayerPrefab; break;
+        }
+
+        if (prefabToSpawn != null)
+        {
+            GameObject newPlayer = Instantiate(prefabToSpawn);
+            newPlayer.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId, true);
+        }
     }
     public void HideMenu()
     { 
