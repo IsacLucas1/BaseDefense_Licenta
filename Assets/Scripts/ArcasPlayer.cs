@@ -1,7 +1,15 @@
 using UnityEngine;
+using Unity.Netcode;
 
 public class ArcasPlayer: BasePlayer
 {
+    
+    [Header("Setari de ATAC")]
+    public GameObject sageataPrefab;
+    public Transform spawnPoint;
+    public float attackCooldown = 0.5f;
+    
+    private float nextAttackTime = 0f;
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -22,6 +30,31 @@ public class ArcasPlayer: BasePlayer
                 health.maxHealth.Value = 80;
                 health.currentHealth.Value = 80;
             }
+        }
+    }
+    
+    protected override void Update()
+    {
+        base.Update();
+        if (!IsOwner) return;
+
+        if (Input.GetMouseButtonDown(0) && Time.time >= nextAttackTime)
+        {
+            nextAttackTime = Time.time + attackCooldown;
+            
+            ShootServerRpc();
+        }
+    }
+
+    [ServerRpc]
+    private void ShootServerRpc()
+    {
+        GameObject newSageata = Instantiate(sageataPrefab, spawnPoint.position, spawnPoint.rotation);
+        newSageata.GetComponent<NetworkObject>().Spawn();
+        Sageata sageataScript = newSageata.GetComponent<Sageata>();
+        if (sageataScript != null)
+        {
+            sageataScript.Initialize(OwnerClientId);
         }
     }
 }

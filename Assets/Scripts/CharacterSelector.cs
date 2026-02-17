@@ -6,75 +6,94 @@ using System.Collections;
 
 public class CharacterSelector : NetworkBehaviour
 {
-    [Header("Referinte UI")]
-    public GameObject characterSelectionUI;
+    [Header("Referinte UI")] public GameObject characterSelectionUI;
+    public GameObject StartPanel;
+    public GameObject ClasePanel;
     public Button btnTank;
     public Button btnSpion;
     public Button btnConstructor;
     public Button btnMedic;
     public Button btnArcas;
     public Camera lobbyCamera;
-    
-    [Header("Referinte Prefab Personaje")]
-    public GameObject tankPlayerPrefab;
-    public GameObject spionPlayerPrefab;
-    public GameObject constructorPlayerPrefab;
-    public GameObject medicPlayerPrefab;
-    public GameObject arcasPlayerPrefab;
+
+    [Header("ButoaneStart")] public Button btnStartHost;
+    public Button btnStartClient;
 
     private void Start()
     {
-        if(lobbyCamera != null) 
-            lobbyCamera.gameObject.SetActive(true);
-        
-        btnTank.onClick.AddListener(() => RequestSpawnServerRpc(0));
-        btnSpion.onClick.AddListener(() => RequestSpawnServerRpc(1));
-        btnConstructor.onClick.AddListener(() => RequestSpawnServerRpc(2));
-        btnMedic.onClick.AddListener(() => RequestSpawnServerRpc(3));
-        btnArcas.onClick.AddListener(() => RequestSpawnServerRpc(4));
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-    }
-    
-    [ServerRpc(RequireOwnership = false)]
-    void RequestSpawnServerRpc(int choice, ServerRpcParams rpcParams = default)
-    {
-        ulong clientId = rpcParams.Receive.SenderClientId;
-        GameObject prefabToSpawn = null;
-        
-        switch (choice)
+        if (lobbyCamera != null)
         {
-            case 0: prefabToSpawn = tankPlayerPrefab; break;
-            case 1: prefabToSpawn = spionPlayerPrefab; break;
-            case 2: prefabToSpawn = constructorPlayerPrefab; break;
-            case 3: prefabToSpawn = medicPlayerPrefab; break;
-            case 4: prefabToSpawn = arcasPlayerPrefab; break;
+            lobbyCamera.gameObject.SetActive(true);
         }
 
-        if (prefabToSpawn != null)
+        if (StartPanel != null)
         {
-            GameObject newPlayer = Instantiate(prefabToSpawn);
-            newPlayer.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId, true);
+            StartPanel.SetActive(true);
         }
-    }
-    public void HideMenu()
-    { 
-        if (lobbyCamera != null)
+
+        if (ClasePanel != null)
         {
-            StartCoroutine(OpresteCamera());
+            ClasePanel.SetActive(false);
         }
+
+        btnTank.onClick.AddListener(() => ComandaSpawn(0));
+        btnSpion.onClick.AddListener(() => ComandaSpawn(1));
+        btnConstructor.onClick.AddListener(() => ComandaSpawn(2));
+        btnMedic.onClick.AddListener(() => ComandaSpawn(3));
+        btnArcas.onClick.AddListener(() => ComandaSpawn(4));
+
+        btnStartHost.onClick.AddListener(() =>
+        {
+            NetworkManager.Singleton.StartHost();
+            SchimbaMeniuClase();
+        });
+        btnStartClient.onClick.AddListener(() =>
+        {
+            NetworkManager.Singleton.StartClient();
+            SchimbaMeniuClase();
+        });
     }
-    IEnumerator OpresteCamera()
+
+    void SchimbaMeniuClase()
     {
-        yield return new WaitUntil(() => NetworkManager.Singleton.LocalClient.PlayerObject != null);
-        yield return null;
-        if (lobbyCamera != null)
+        if (StartPanel != null)
         {
-            lobbyCamera.gameObject.SetActive(false);
+            StartPanel.SetActive(false);
         }
+
+        if (ClasePanel != null)
+        {
+            ClasePanel.SetActive(true);
+        }
+    }
+
+    public void ComandaSpawn(int index)
+    {
+        if (NetworkManager.Singleton.LocalClient != null && NetworkManager.Singleton.LocalClient.PlayerObject != null)
+        {
+            
+            var spawner = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<PlayerSpawner>();
+
+            if (spawner != null)
+            {
+                spawner.SpawneazaJucator(index);
+                StartCoroutine(AscundeTot());
+            }
+        }
+    }
+
+    IEnumerator AscundeTot()
+    {
+        yield return new WaitForSeconds(0.1f);
+
         if (characterSelectionUI != null)
         {
             characterSelectionUI.SetActive(false);
+        }
+
+        if (lobbyCamera != null)
+        {
+            lobbyCamera.gameObject.SetActive(false);
         }
     }
 }

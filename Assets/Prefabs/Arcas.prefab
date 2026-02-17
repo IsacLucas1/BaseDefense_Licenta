@@ -75,6 +75,37 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1 &2380674231439468318
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 745280046738955759}
+  m_Layer: 0
+  m_Name: SpawnPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &745280046738955759
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2380674231439468318}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.522, y: 0.591, z: 0.772}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 766115141926368927}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2654928454052706197
 GameObject:
   m_ObjectHideFlags: 0
@@ -465,6 +496,7 @@ Transform:
   - {fileID: 2440065537644331566}
   - {fileID: 1054969575484812880}
   - {fileID: 1148551380633336112}
+  - {fileID: 745280046738955759}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &5094180523059882526
@@ -630,6 +662,9 @@ MonoBehaviour:
   speed: 5
   cameraCap: {fileID: 1054969575484812880}
   mouseSensitivity: 200
+  sageataPrefab: {fileID: 5984124316324947075, guid: 6e39b31657ea1484db25effcfaa81677, type: 3}
+  spawnPoint: {fileID: 745280046738955759}
+  attackCooldown: 0.5
 --- !u!114 &2217229455521898125
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -50,7 +50,7 @@ public class BasePlayer : NetworkBehaviour
         }
     }
     
-    void Update()
+    protected virtual void Update()
     {
         if (!IsOwner) return;
         HandleMovement();
