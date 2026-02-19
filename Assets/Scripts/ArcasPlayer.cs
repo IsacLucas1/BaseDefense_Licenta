@@ -36,8 +36,14 @@ public class ArcasPlayer: BasePlayer
     protected override void Update()
     {
         base.Update();
-        if (!IsOwner) return;
-
+        if (!IsOwner)
+        {
+            return;
+        }
+        if (isDead)
+        {
+            return;
+        }
         if (Input.GetMouseButtonDown(0) && Time.time >= nextAttackTime)
         {
             nextAttackTime = Time.time + attackCooldown;

@@ -7,6 +7,13 @@ public class Health : NetworkBehaviour
     public NetworkVariable<int> currentHealth = new NetworkVariable<int>(100);
     public NetworkVariable<int> maxHealth = new NetworkVariable<int>(100);
 
+    private BasePlayer basePlayer;
+    
+    private void Awake()
+    {
+        basePlayer = GetComponent<BasePlayer>();
+    }
+    
     public override void OnNetworkSpawn()
     {
         currentHealth.OnValueChanged += OnHealthChanged;
@@ -25,6 +32,10 @@ public class Health : NetworkBehaviour
             if (currentHealth.Value <= 0)
             {
                 currentHealth.Value = 0;
+                if (basePlayer != null)
+                {
+                    basePlayer.Moarte();
+                }
             }
         }
     }
@@ -35,6 +46,14 @@ public class Health : NetworkBehaviour
         if (newValue <= 0)
         {
              Debug.Log(transform.name + " a murit.");
+        }
+    }
+    
+    public void ResetHealth()
+    {
+        if (IsServer)
+        {
+            currentHealth.Value = maxHealth.Value;
         }
     }
 }

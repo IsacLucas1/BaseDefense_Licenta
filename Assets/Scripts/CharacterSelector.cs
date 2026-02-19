@@ -16,9 +16,14 @@ public class CharacterSelector : NetworkBehaviour
     public Button btnArcas;
     public Camera lobbyCamera;
 
-    [Header("ButoaneStart")] public Button btnStartHost;
+    [Header("ButoaneStart")]
+    public Button btnStartHost;
     public Button btnStartClient;
+    
+    [Header("LocatiiSpawn")]
+    public Transform[] spawnPoints;
 
+    private bool aDatClick = false;
     private void Start()
     {
         if (lobbyCamera != null)
@@ -69,6 +74,10 @@ public class CharacterSelector : NetworkBehaviour
 
     public void ComandaSpawn(int index)
     {
+        if (aDatClick)
+        {
+            return;
+        }
         if (NetworkManager.Singleton.LocalClient != null && NetworkManager.Singleton.LocalClient.PlayerObject != null)
         {
             
@@ -76,7 +85,16 @@ public class CharacterSelector : NetworkBehaviour
 
             if (spawner != null)
             {
-                spawner.SpawneazaJucator(index);
+                Vector3 pozitie = Vector3.zero + Vector3.up *2;
+                Quaternion rotatie = Quaternion.identity;
+                aDatClick = true;
+                
+                if (spawnPoints != null && index < spawnPoints.Length && spawnPoints[index] != null)
+                {
+                    pozitie = spawnPoints[index].position;
+                    rotatie = spawnPoints[index].rotation;
+                }
+                spawner.SpawneazaJucator(index, pozitie, rotatie);
                 StartCoroutine(AscundeTot());
             }
         }
