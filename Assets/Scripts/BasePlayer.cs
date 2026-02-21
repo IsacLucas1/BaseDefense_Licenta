@@ -14,6 +14,7 @@ public class BasePlayer : NetworkBehaviour
 
     private Rigidbody rb;
     protected bool isDead = false;
+    protected bool isRecalling = false;
     
     public NetworkVariable<Vector3> respawnPosition = new NetworkVariable<Vector3>();
     private Quaternion respawnRotation;
@@ -87,9 +88,45 @@ public class BasePlayer : NetworkBehaviour
                 RequestSelfDamageServerRpc();
             }
         }
-        
+        if(Input.GetKeyDown(KeyCode.B))
+        {
+            StartCoroutine(StartRecallCoroutine());
+        }
     }
-    
+
+    private IEnumerator StartRecallCoroutine()
+    {
+        isRecalling = true;
+        Vector3 pozitieInitiala = transform.position;
+        float recallDuration = 3f;
+
+        Debug.Log("Recall initiat...");
+        while (recallDuration > 0)
+        {
+            if (isDead)
+            {
+                isRecalling = false;
+                yield break;
+            }
+            
+            float distanta = Vector3.Distance(pozitieInitiala,transform.position);
+            if (distanta > 0.01f)
+            {
+                    Debug.Log("Recall anulat");
+                isRecalling = false;
+                yield break;
+            }
+            recallDuration -= Time.deltaTime;
+            yield return null;
+        }
+        Debug.Log("Recall complet. TeleportareBaza");
+        transform.position = respawnPosition.Value;
+        if (rb != null)
+        {
+            rb.position = respawnPosition.Value;
+        }
+        isRecalling = false;
+    }
     private void FixedUpdate()
     {
         if (!IsOwner)

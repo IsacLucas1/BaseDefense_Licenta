@@ -1,5 +1,6 @@
 using UnityEngine;
 using Unity.Netcode;
+using System.Collections;
 
 public class ArcasPlayer: BasePlayer
 {
@@ -8,8 +9,11 @@ public class ArcasPlayer: BasePlayer
     public GameObject sageataPrefab;
     public Transform spawnPoint;
     public float attackCooldown = 0.5f;
+    public float attackCooldownBurst = 1.0f;
     
     private float nextAttackTime = 0f;
+    private bool isBurstMode = false;
+    private bool isShootingBurst = false;
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -44,14 +48,41 @@ public class ArcasPlayer: BasePlayer
         {
             return;
         }
+
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            isBurstMode = !isBurstMode;
+            Debug.Log("Arcașul a schimbat modul pe: " + (isBurstMode ? "BURST" : "NORMAL"));
+        }
+
         if (Input.GetMouseButtonDown(0) && Time.time >= nextAttackTime)
         {
-            nextAttackTime = Time.time + attackCooldown;
-            
-            ShootServerRpc();
+            {
+                if (isBurstMode)
+                {
+                    StartCoroutine(BurstRoutine());
+                }
+                else
+                {
+                    ShootServerRpc();
+                    nextAttackTime = Time.time + attackCooldown;
+                }
+            }
         }
     }
 
+    private IEnumerator BurstRoutine()
+    {
+        isShootingBurst = true;
+        nextAttackTime = Time.time + attackCooldownBurst;
+        for (int i = 0; i < 3; i++)
+        {
+            ShootServerRpc();
+            yield return new WaitForSeconds(0.1f);
+        }
+        
+        isShootingBurst = false;
+    }
     [ServerRpc]
     private void ShootServerRpc()
     {
