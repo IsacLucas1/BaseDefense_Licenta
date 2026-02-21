@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6805307348182748439}
   - component: {fileID: 1784097932877971450}
-  m_Layer: 5
+  m_Layer: 6
   m_Name: Slider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -98,7 +98,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6362410988785642492}
-  m_Layer: 5
+  m_Layer: 6
   m_Name: Fill Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -137,7 +137,7 @@ GameObject:
   - component: {fileID: 6395117636623189876}
   - component: {fileID: 6092365427289121118}
   - component: {fileID: 1712575079532512541}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Head
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -244,7 +244,7 @@ GameObject:
   - component: {fileID: 3449390111962804171}
   - component: {fileID: 1604461361025523156}
   - component: {fileID: 4454294921273217575}
-  m_Layer: 5
+  m_Layer: 6
   m_Name: Fill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -319,7 +319,7 @@ GameObject:
   - component: {fileID: 4573461488829761028}
   - component: {fileID: 9161506632677299557}
   - component: {fileID: 6813027432936997161}
-  m_Layer: 5
+  m_Layer: 6
   m_Name: Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -400,7 +400,7 @@ GameObject:
   - component: {fileID: 3261559137917340704}
   - component: {fileID: -7239369929162675044}
   - component: {fileID: 2876856883566789837}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Tank
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
@@ -588,6 +588,8 @@ MonoBehaviour:
   speed: 3
   cameraCap: {fileID: 1054969575484812880}
   mouseSensitivity: 200
+  respawnPosition:
+    m_InternalValue: {x: 0, y: 0, z: 0}
 --- !u!114 &-7239369929162675044
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -645,7 +647,7 @@ GameObject:
   - component: {fileID: 5906359923423200454}
   - component: {fileID: 663166122053965969}
   - component: {fileID: 7015304160202341742}
-  m_Layer: 5
+  m_Layer: 6
   m_Name: HealthCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -762,7 +764,7 @@ GameObject:
   - component: {fileID: 5835386022005587535}
   - component: {fileID: 6228326032125263477}
   - component: {fileID: 3410707726632593753}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: CameraCap
   m_TagString: MainCamera
   m_Icon: {fileID: 0}

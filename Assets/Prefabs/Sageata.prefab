@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 7765843966942880685}
   - component: {fileID: 3916481223629677387}
   - component: {fileID: -6559489699203311061}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Sageata
   m_TagString: Untagged
   m_Icon: {fileID: 0}

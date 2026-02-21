@@ -40,15 +40,11 @@ public class ArcasPlayer: BasePlayer
     protected override void Update()
     {
         base.Update();
-        if (!IsOwner)
+        if (!IsOwner || isDead || isRecalling)
         {
             return;
         }
-        if (isDead)
-        {
-            return;
-        }
-
+        
         if (Input.GetKeyDown(KeyCode.T))
         {
             isBurstMode = !isBurstMode;

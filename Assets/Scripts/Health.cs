@@ -56,4 +56,17 @@ public class Health : NetworkBehaviour
             currentHealth.Value = maxHealth.Value;
         }
     }
+
+    public void Heal(int healAmount)
+    {
+        if (IsServer)
+        {
+            currentHealth.Value += healAmount;
+
+            if (currentHealth.Value > maxHealth.Value)
+            {
+                currentHealth.Value = maxHealth.Value;
+            }
+        }
+    }
 }
