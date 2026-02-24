@@ -1,6 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
 using System.Collections;
+using TMPro;
 
 public class BasePlayer : NetworkBehaviour
 {
@@ -12,6 +13,10 @@ public class BasePlayer : NetworkBehaviour
     public float mouseSensitivity = 200f;
     private float xRotation = 0f;
 
+    [Header("Resurse")]
+    public NetworkVariable<int> lemn = new NetworkVariable<int>(0);
+    public float distantaAdunare = 3f;
+        
     private Rigidbody rb;
     protected bool isDead = false;
     protected bool isRecalling = false;
@@ -55,6 +60,14 @@ public class BasePlayer : NetworkBehaviour
             
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+
+            lemn.OnValueChanged += ActualizeazaTextLemn;
+            
+            if(UIManager.Instance != null)
+            {
+                UIManager.Instance.ActualizeazaLemn(lemn.Value);
+                UIManager.Instance.ActiveazaInterfataJucator();
+            }
         }
     }
 
@@ -64,8 +77,24 @@ public class BasePlayer : NetworkBehaviour
         {
             cameraCap.gameObject.SetActive(false);
             var listener = cameraCap.GetComponent<AudioListener>();
-            if (listener) listener.enabled = false;
+            if (listener)
+            {
+                listener.enabled = false;
+            }
         }
+    }
+    
+    private void ActualizeazaTextLemn(int valoareVeche, int valoareNoua)
+    {
+        if(IsOwner && UIManager.Instance != null)
+        {
+            UIManager.Instance.ActualizeazaLemn(valoareNoua);
+        }
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        lemn.OnValueChanged -= ActualizeazaTextLemn;
     }
     
     protected virtual void Update()
@@ -83,14 +112,19 @@ public class BasePlayer : NetworkBehaviour
         HandleMouseLook();
         if (GetComponent<Health>().currentHealth.Value > 0)
         {
-            if(Input.GetKeyDown(KeyCode.K))
+            if(Input.GetKeyDown(KeyCode.K) && !isRecalling)
             {
                 RequestSelfDamageServerRpc();
             }
         }
-        if(Input.GetKeyDown(KeyCode.B))
+        if(Input.GetKeyDown(KeyCode.B) && !isRecalling)
         {
             StartCoroutine(StartRecallCoroutine());
+        }
+        
+        if(Input.GetKeyDown(KeyCode.E) && !isRecalling)
+        {
+            IncearcaSaTaieCopac();
         }
     }
 
@@ -127,6 +161,29 @@ public class BasePlayer : NetworkBehaviour
         }
         isRecalling = false;
     }
+
+    private void IncearcaSaTaieCopac()
+    {
+        Ray ray = new Ray(cameraCap.position, cameraCap.forward);
+
+        if (Physics.Raycast(ray, out RaycastHit hit, distantaAdunare))
+        {
+            Copac copac = hit.collider.GetComponent<Copac>();
+            if (copac != null)
+            {
+                copac.LovesteCopaculServerRPC(NetworkObjectId);
+            }
+        }
+    }
+    
+    public virtual void AdaugaLemn(int cantitate)
+    {
+        if (IsServer)
+        {
+            lemn.Value += cantitate;
+        }
+    }
+    
     private void FixedUpdate()
     {
         if (!IsOwner)
@@ -138,8 +195,6 @@ public class BasePlayer : NetworkBehaviour
             return;
         }
         HandleMovement();
-        
-        
     }
     
     [ServerRpc]
