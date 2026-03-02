@@ -1,7 +1,6 @@
 using UnityEngine;
 using Unity.Netcode;
 using System.Collections;
-using TMPro;
 
 public class BasePlayer : NetworkBehaviour
 {
@@ -16,6 +15,9 @@ public class BasePlayer : NetworkBehaviour
     [Header("Resurse")]
     public NetworkVariable<int> lemn = new NetworkVariable<int>(0);
     public float distantaAdunare = 3f;
+    
+    public float taiereCooldown = 1f;
+    private float nextTaiereTime = 0f;
         
     private Rigidbody rb;
     protected bool isDead = false;
@@ -99,12 +101,7 @@ public class BasePlayer : NetworkBehaviour
     
     protected virtual void Update()
     {
-        if (!IsOwner)
-        {
-            return;
-        }
-
-        if (isDead)
+        if (!IsOwner || isDead)
         {
             return;
         }
@@ -122,9 +119,10 @@ public class BasePlayer : NetworkBehaviour
             StartCoroutine(StartRecallCoroutine());
         }
         
-        if(Input.GetKeyDown(KeyCode.E) && !isRecalling)
+        if(Input.GetKeyDown(KeyCode.E) && !isRecalling && Time.time >= nextTaiereTime)
         {
             IncearcaSaTaieCopac();
+            nextTaiereTime = Time.time + taiereCooldown;
         }
     }
 
@@ -186,11 +184,7 @@ public class BasePlayer : NetworkBehaviour
     
     private void FixedUpdate()
     {
-        if (!IsOwner)
-        {
-            return;
-        }
-        if (isDead)
+        if (!IsOwner || isDead)
         {
             return;
         }

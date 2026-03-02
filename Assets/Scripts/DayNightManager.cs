@@ -19,7 +19,7 @@ public class DayNightManager : NetworkBehaviour
         {
             if (!startTime.Value)
             {
-                BasePlayer[] jucatoriSpawnati = FindObjectsOfType<BasePlayer>();
+                BasePlayer[] jucatoriSpawnati = FindObjectsByType<BasePlayer>(FindObjectsSortMode.None);
                 if (jucatoriSpawnati.Length >= nrMinJucatori)
                 {
                     startTime.Value = true;

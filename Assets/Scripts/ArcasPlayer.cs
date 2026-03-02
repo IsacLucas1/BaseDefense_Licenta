@@ -51,18 +51,16 @@ public class ArcasPlayer: BasePlayer
             Debug.Log("Arcașul a schimbat modul pe: " + (isBurstMode ? "BURST" : "NORMAL"));
         }
 
-        if (Input.GetMouseButtonDown(0) && Time.time >= nextAttackTime)
+        if (Input.GetMouseButtonDown(0) && Time.time >= nextAttackTime && !isShootingBurst)
         {
+            if (isBurstMode)
             {
-                if (isBurstMode)
-                {
-                    StartCoroutine(BurstRoutine());
-                }
-                else
-                {
-                    ShootServerRpc();
-                    nextAttackTime = Time.time + attackCooldown;
-                }
+                StartCoroutine(BurstRoutine());
+            }
+            else
+            {
+                ShootServerRpc();
+                nextAttackTime = Time.time + attackCooldown;
             }
         }
     }

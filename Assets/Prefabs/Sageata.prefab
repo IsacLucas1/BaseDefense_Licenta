@@ -241,6 +241,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  speed: 10
+  speed: 20
   damage: 10
-  lifetime: 3
+  lifetime: 0.8

@@ -14,7 +14,7 @@ public class Copac : NetworkBehaviour
         viataCopac = new NetworkVariable<int>(lovituriNecesare);
     }
     
-    [ServerRpc(RequireOwnership = false)]
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     public void LovesteCopaculServerRPC(ulong jucatorID)
     {
         if (viataCopac.Value == 0)
@@ -33,8 +33,13 @@ public class Copac : NetworkBehaviour
         viataCopac.Value -= 1;
         if (viataCopac.Value <= 0)
         {
-             GetComponent<NetworkObject>().Despawn(false);  
-             gameObject.SetActive(false);
+            EliminaCopacClientRpc();
         }
+    }
+
+    [ClientRpc]
+    private void EliminaCopacClientRpc()
+    {
+        gameObject.SetActive(false);
     }
 }
