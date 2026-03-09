@@ -10,17 +10,17 @@ public class BasePlayer : NetworkBehaviour
     [Header("Setari Camera")]
     public Transform cameraCap;
     public float mouseSensitivity = 200f;
-    private float xRotation = 0f;
+    private float _xRotation;
 
     [Header("Resurse")]
-    public NetworkVariable<int> lemn = new NetworkVariable<int>(0);
+    public NetworkVariable<int> lemn = new NetworkVariable<int>();
     public float distantaAdunare = 3f;
     
     public float taiereCooldown = 1f;
     private float nextTaiereTime = 0f;
         
     private Rigidbody rb;
-    protected bool isDead = false;
+    public bool isDead { get; protected set; } = false;
     protected bool isRecalling = false;
     
     public NetworkVariable<Vector3> respawnPosition = new NetworkVariable<Vector3>();
@@ -216,10 +216,10 @@ public class BasePlayer : NetworkBehaviour
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
 
-        xRotation -= mouseY;
-        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
+        _xRotation -= mouseY;
+        _xRotation = Mathf.Clamp(_xRotation, -90f, 90f);
 
-        cameraCap.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+        cameraCap.localRotation = Quaternion.Euler(_xRotation, 0f, 0f);
         transform.Rotate(Vector3.up * mouseX);
     }
 
@@ -245,6 +245,9 @@ public class BasePlayer : NetworkBehaviour
             healthComp.ResetHealth();
         }
 
+        isDead = false;
+
+        yield return new WaitForSeconds(0.1f);
         EliminaJucatorulClientRpc(false);
     }
 
@@ -257,6 +260,10 @@ public class BasePlayer : NetworkBehaviour
         Renderer[] renderer = GetComponentsInChildren<Renderer>(true);
         foreach (var r in renderer)
         {
+            if (r is LineRenderer)
+            {
+                continue;
+            }
             r.enabled = isActive;
         }
         
