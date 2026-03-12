@@ -5,7 +5,8 @@ using System.Collections;
 public class BasePlayer : NetworkBehaviour
 {
     [Header("Setari Miscare")]
-    public float speed = 5f;
+    public NetworkVariable<float> speed = new NetworkVariable<float>(5f);
+    protected float speedReference = 5f;
 
     [Header("Setari Camera")]
     public Transform cameraCap;
@@ -29,6 +30,7 @@ public class BasePlayer : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         rb = GetComponent<Rigidbody>();
+        speed.OnValueChanged += ActualizeazaTextViteza;
         if (IsOwner)
         {
             SetupLocalPlayer();
@@ -65,9 +67,24 @@ public class BasePlayer : NetworkBehaviour
 
             lemn.OnValueChanged += ActualizeazaTextLemn;
             
+            Health healthComp = GetComponent<Health>();
+            if (healthComp != null)
+            {
+                healthComp.currentHealth.OnValueChanged += ActualizeazaViata;
+                healthComp.maxHealth.OnValueChanged += ActualizeazaViata;
+            }
+            
             if(UIManager.Instance != null)
             {
                 UIManager.Instance.ActualizeazaLemn(lemn.Value);
+                
+                float coeficientViteza = speed.Value / speedReference;
+                UIManager.Instance.ActualizeazaViteza(coeficientViteza);
+                
+                if (healthComp != null)
+                {
+                    UIManager.Instance.ActualizeazaViata(healthComp.currentHealth.Value, healthComp.maxHealth.Value);
+                }
                 UIManager.Instance.ActiveazaInterfataJucator();
             }
         }
@@ -93,10 +110,39 @@ public class BasePlayer : NetworkBehaviour
             UIManager.Instance.ActualizeazaLemn(valoareNoua);
         }
     }
+    
+    private void ActualizeazaTextViteza(float valoareVeche, float valoareNoua)
+    {
+        if(IsOwner && UIManager.Instance != null)
+        {
+            float coeficientViteza = valoareNoua / speedReference;
+            UIManager.Instance.ActualizeazaViteza(coeficientViteza);
+        }
+    }
+    
+    private void ActualizeazaViata(int valoareVeche, int valoareNoua)
+    {
+        if (IsOwner && UIManager.Instance != null)
+        {
+            Health healthComp = GetComponent<Health>();
+            if (healthComp != null)
+            {
+                UIManager.Instance.ActualizeazaViata(healthComp.currentHealth.Value, healthComp.maxHealth.Value);
+            }
+        }
+    }
 
     public override void OnNetworkDespawn()
     {
         lemn.OnValueChanged -= ActualizeazaTextLemn;
+        speed.OnValueChanged -= ActualizeazaTextViteza;
+        
+        Health healthComp = GetComponent<Health>();
+        if (healthComp != null)
+        {
+            healthComp.currentHealth.OnValueChanged -= ActualizeazaViata;
+            healthComp.maxHealth.OnValueChanged -= ActualizeazaViata;
+        }
     }
     
     protected virtual void Update()
@@ -126,6 +172,14 @@ public class BasePlayer : NetworkBehaviour
         }
     }
 
+    public void BuffViteza()
+    {
+        if (IsServer)
+        {
+            speed.Value += speedReference * 0.20f;
+        }
+    }
+    
     private IEnumerator StartRecallCoroutine()
     {
         isRecalling = true;
@@ -207,7 +261,7 @@ public class BasePlayer : NetworkBehaviour
 
         Vector3 movement = transform.right * x + transform.forward * z;
         
-        Vector3 targetPosition = rb.position + movement.normalized * speed * Time.deltaTime;
+        Vector3 targetPosition = rb.position + movement.normalized * speed.Value * Time.deltaTime;
         rb.MovePosition(targetPosition);
     }
     

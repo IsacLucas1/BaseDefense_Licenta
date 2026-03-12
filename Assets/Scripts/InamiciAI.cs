@@ -1,11 +1,13 @@
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections;
 
 public class InamiciAI : NetworkBehaviour
 {
     [Header("Setari Camp Inamici")]
     private Vector3 centruCamp;
+    public float timpRespawn = 10f;
     
     [Header("Setari Urmarire")]
     public float razaDetectie = 9f;
@@ -20,10 +22,14 @@ public class InamiciAI : NetworkBehaviour
     
     private NavMeshAgent agent;
     private Transform tinta;
+    private Health health;
+    
+    private NetworkVariable<bool> isDead = new NetworkVariable<bool>(false);
     
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
+        health = GetComponent<Health>();
     }
     
     public override void OnNetworkSpawn()
@@ -36,11 +42,29 @@ public class InamiciAI : NetworkBehaviour
         {
             agent.enabled = false;
         }
+
+        if (IsServer)
+        {
+            var health = GetComponent<Health>();
+            if (health != null)
+            {
+                health.maxHealth.Value = 50;
+                health.currentHealth.Value = 50;
+            }
+        }
+        
+        isDead.OnValueChanged = OnDeathStateChanged;
+        ToggleVisuals(!isDead.Value);
+    }
+    
+    public override void OnNetworkDespawn()
+    {
+        isDead.OnValueChanged -= OnDeathStateChanged;
     }
 
     private void Update()
     {
-        if(!IsServer)
+        if(!IsServer || isDead.Value)
         {
             return;
         }
@@ -160,6 +184,64 @@ public class InamiciAI : NetworkBehaviour
         }
     }
 
+    public void Moarte()
+    {
+        if(!IsServer)
+        {
+            return;
+        }
+        
+        isDead.Value = true;
+        agent.enabled = false;
+        tinta = null;
+
+        StartCoroutine(RespawnRoutine());
+    }
+
+    private IEnumerator RespawnRoutine()
+    {
+        yield return new WaitForSeconds(timpRespawn);
+
+        transform.position = centruCamp;
+        if (health != null)
+        {
+            health.ResetHealth();
+        }
+        
+        isDead.Value = false;
+        agent.enabled = true;
+    }
+
+    private void OnDeathStateChanged(bool wasDead, bool isDeadNow)
+    {
+        ToggleVisuals(!isDeadNow);
+    }
+    
+    private void ToggleVisuals(bool active)
+    {
+        Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
+        foreach (var r in renderers)
+        {
+            if (r is LineRenderer)
+            {
+                continue;
+            }
+            r.enabled = active;
+        }
+
+        Collider[] colliders = GetComponentsInChildren<Collider>(true);
+        foreach (var c in colliders)
+        {
+            c.enabled = active;
+        }
+
+        Canvas[] canvases = GetComponentsInChildren<Canvas>(true);
+        foreach (var c in canvases)
+        {
+            c.enabled = active;
+        }
+    }
+    
     private void OnDrawGizmos()
     {
         Vector3 centru = Application.isPlaying ? centruCamp : transform.position;

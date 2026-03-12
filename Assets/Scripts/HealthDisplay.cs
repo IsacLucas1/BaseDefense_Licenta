@@ -23,6 +23,13 @@ public class HealthDisplay : NetworkBehaviour
         }
         if (health != null)
         {
+            BasePlayer player = health.GetComponent<BasePlayer>();
+            if (player != null && player.IsOwner)
+            {
+                gameObject.SetActive(false);
+                return;
+            }
+            
             health.maxHealth.OnValueChanged += SetMaxHealth;
             health.currentHealth.OnValueChanged += UpdateHealthBar;
             bool isNetworkDefault = (health.maxHealth.Value == 100);

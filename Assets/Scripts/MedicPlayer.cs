@@ -2,6 +2,7 @@ using Unity.Netcode;
 using UnityEngine;
 using System.Collections;
 using Unity.VisualScripting;
+using UnityEngine.Rendering.Universal;
 
 public class MedicPlayer : BasePlayer
 {
@@ -10,24 +11,25 @@ public class MedicPlayer : BasePlayer
     int healAmount = 10;
     public float healRange = 10f;
 
+    [Header("Arma Damage")]   
+    public float damageCooldown = 1.0f;
+    int damageAmount = 10;
+    public float damageRange = 10f;
+    
     [Header("Efecte Vizuale")]
     public LineRenderer healBeam;
-    public Transform beamSpawnPoint;
+    public LineRenderer damageBeam;
+    public Transform healBeamSpawnPoint;
+    public Transform damageBeamSpawnPoint;
+    
     private float nextHealTime = 0.0f;
+    private float nextDamageTime = 0.0f;
     public override void OnNetworkSpawn()
     {
-        base.OnNetworkSpawn();
-
-        speed = 6f;
-        transform.localScale = new Vector3(1f, 1f, 1f);
-        
-        if (GetComponent<Renderer>())
-        {
-            GetComponent<Renderer>().material.SetColor("_BaseColor", Color.red);
-        }
-        
         if (IsServer)
         {
+            speed.Value = 5f;
+        
             var health = GetComponent<Health>();
             if (health != null)
             {
@@ -35,10 +37,23 @@ public class MedicPlayer : BasePlayer
                 health.currentHealth.Value = 100;
             }
         }
+        
+        base.OnNetworkSpawn();
+        
+        transform.localScale = new Vector3(1f, 1f, 1f);
+        
+        if (GetComponent<Renderer>())
+        {
+            GetComponent<Renderer>().material.SetColor("_BaseColor", Color.red);
+        }
 
         if (healBeam != null)
         {
             healBeam.enabled = false;
+        }
+        if (damageBeam != null)
+        {
+            damageBeam.enabled = false;
         }
     }
 
@@ -56,11 +71,23 @@ public class MedicPlayer : BasePlayer
             TryToHeal();
             nextHealTime = Time.time + healCooldown;
         }
+        
+        if(Input.GetMouseButtonDown(0) && Time.time >= nextDamageTime)
+        {
+            TryToDamage();
+            nextDamageTime = Time.time + damageCooldown;
+        }
+        
     }
     
     private void TryToHeal()
     {
-        Vector3 startPoint = beamSpawnPoint.position; 
+        if(healBeamSpawnPoint == null || cameraCap == null)
+        {
+            return;
+        }
+        
+        Vector3 startPoint = healBeamSpawnPoint.position; 
         Ray ray = new Ray(startPoint, cameraCap.forward);
         
         Vector3 endPoint = ray.origin + ray.direction * healRange;
@@ -101,19 +128,74 @@ public class MedicPlayer : BasePlayer
     [ClientRpc]
     private void AfiseazaLaserClientRpc(Vector3 start, Vector3 end)
     {
-        StartCoroutine(RazaVizualaCoroutine(start, end));
+        StartCoroutine(RazaVizualaCoroutine(healBeam, start, end));
     }
     
-    private IEnumerator RazaVizualaCoroutine(Vector3 start, Vector3 end)
+    private void TryToDamage()
     {
-        if (healBeam != null)
+        if(damageBeamSpawnPoint == null || cameraCap == null)
         {
-            healBeam.enabled = true;
-            healBeam.SetPosition(0, start);
-            healBeam.SetPosition(1, end);
+            return;
+        }
+        
+        Vector3 startPoint = damageBeamSpawnPoint.position; 
+        Ray ray = new Ray(startPoint, cameraCap.forward);
+        
+        Vector3 endPoint = ray.origin + ray.direction * damageRange;
+        if (Physics.Raycast(ray, out RaycastHit hit, damageRange))
+        {
+            endPoint = hit.point;
+            
+            Health targetHealth = hit.collider.GetComponent<Health>();
+            if (hit.collider.CompareTag("Enemy") && targetHealth != null && targetHealth.gameObject != this.gameObject)
+            {
+                NetworkObject netObj = targetHealth.GetComponent<NetworkObject>();
+                
+                if(netObj != null && netObj.IsSpawned)
+                { 
+                    ulong targetID = targetHealth.GetComponent<NetworkObject>().NetworkObjectId;
+                    DamageServerRpc(targetID, damageAmount, OwnerClientId);
+                }
+            }
+        }
+        AfiseazaLaserDamageServerRpc(startPoint, endPoint);
+    }
+    
+    [ServerRpc]
+    private void DamageServerRpc(ulong targetID, int amount, ulong attackerId)
+    {
+        if(NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(targetID, out NetworkObject targetObj))
+        {
+            Health targetHealth = targetObj.GetComponent<Health>();
+            if (targetHealth != null && targetHealth.currentHealth.Value > 0)
+            {
+                targetHealth.TakeDamage(amount, attackerId);
+            }
+        }
+    }
+    
+    [ServerRpc]
+    private void AfiseazaLaserDamageServerRpc(Vector3 start, Vector3 end)
+    {
+        AfiseazaLaserDamageClientRpc(start, end);
+    }
+    
+    [ClientRpc]
+    private void AfiseazaLaserDamageClientRpc(Vector3 start, Vector3 end)
+    {
+        StartCoroutine(RazaVizualaCoroutine(damageBeam, start, end));
+    }
+    
+    private IEnumerator RazaVizualaCoroutine(LineRenderer raza, Vector3 start, Vector3 end)
+    {
+        if (raza != null)
+        {
+            raza.enabled = true;
+            raza.SetPosition(0, start);
+            raza.SetPosition(1, end);
             
             yield return new WaitForSeconds(0.2f);
-            healBeam.enabled = false;
+            raza.enabled = false;
         }
     }
 }

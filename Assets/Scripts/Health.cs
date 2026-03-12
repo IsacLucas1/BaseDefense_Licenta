@@ -8,10 +8,12 @@ public class Health : NetworkBehaviour
     public NetworkVariable<int> maxHealth = new NetworkVariable<int>(100);
 
     private BasePlayer basePlayer;
+    private InamiciAI inamiciAI;
     
     private void Awake()
     {
         basePlayer = GetComponent<BasePlayer>();
+        inamiciAI = GetComponent<InamiciAI>();
     }
     
     public override void OnNetworkSpawn()
@@ -24,7 +26,7 @@ public class Health : NetworkBehaviour
         currentHealth.OnValueChanged -= OnHealthChanged;
     }
 
-    public void TakeDamage(int damage)
+    public void TakeDamage(int damage, ulong attackerId = ulong.MaxValue)
     {
         if (IsServer)
         {
@@ -35,6 +37,22 @@ public class Health : NetworkBehaviour
                 if (basePlayer != null)
                 {
                     basePlayer.Moarte();
+                }
+                else if (inamiciAI != null)
+                {
+                    inamiciAI.Moarte();
+
+                    if (attackerId != ulong.MaxValue)
+                    {
+                        if (NetworkManager.Singleton.ConnectedClients.TryGetValue(attackerId, out NetworkClient client))
+                        {
+                            BasePlayer killerPlayer = client.PlayerObject.GetComponent<BasePlayer>();
+                            if (killerPlayer != null)
+                            {
+                                killerPlayer.BuffViteza();
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -61,12 +79,8 @@ public class Health : NetworkBehaviour
     {
         if (IsServer)
         {
-            currentHealth.Value += healAmount;
-
-            if (currentHealth.Value > maxHealth.Value)
-            {
-                currentHealth.Value = maxHealth.Value;
-            }
+            int viataNoua = Mathf.Clamp(currentHealth.Value + healAmount, 0, maxHealth.Value);
+            currentHealth.Value = viataNoua;
         }
     }
 }

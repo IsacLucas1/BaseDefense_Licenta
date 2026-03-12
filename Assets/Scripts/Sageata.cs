@@ -56,7 +56,7 @@ public class Sageata : NetworkBehaviour
         Health targetHealth = other.GetComponent<Health>();
         if (other.CompareTag("Enemy") && targetHealth != null)
         {
-            targetHealth.TakeDamage(damage);
+            targetHealth.TakeDamage(damage, ownerId);
             DistrugeSageata();
             return;
         }

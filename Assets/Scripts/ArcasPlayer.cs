@@ -16,18 +16,10 @@ public class ArcasPlayer: BasePlayer
     private bool isShootingBurst = false;
     public override void OnNetworkSpawn()
     {
-        base.OnNetworkSpawn();
-
-        speed = 7f;
-        transform.localScale = new Vector3(0.9f, 0.9f, 0.9f);
-        
-        if (GetComponent<Renderer>())
-        {
-            GetComponent<Renderer>().material.SetColor("_BaseColor", Color.cyan);
-        }
-        
         if (IsServer)
         {
+            speed.Value = 6f;
+        
             var health = GetComponent<Health>();
             if (health != null)
             {
@@ -35,6 +27,16 @@ public class ArcasPlayer: BasePlayer
                 health.currentHealth.Value = 80;
             }
         }
+        base.OnNetworkSpawn();
+        
+        transform.localScale = new Vector3(0.9f, 0.9f, 0.9f);
+        
+        if (GetComponent<Renderer>())
+        {
+            GetComponent<Renderer>().material.SetColor("_BaseColor", Color.cyan);
+        }
+        
+        
     }
     
     protected override void Update()
@@ -59,7 +61,7 @@ public class ArcasPlayer: BasePlayer
             }
             else
             {
-                ShootServerRpc();
+                ShootServerRpc(cameraCap.rotation);
                 nextAttackTime = Time.time + attackCooldown;
             }
         }
@@ -71,16 +73,16 @@ public class ArcasPlayer: BasePlayer
         nextAttackTime = Time.time + attackCooldownBurst;
         for (int i = 0; i < 3; i++)
         {
-            ShootServerRpc();
+            ShootServerRpc(cameraCap.rotation);
             yield return new WaitForSeconds(0.1f);
         }
         
         isShootingBurst = false;
     }
     [ServerRpc]
-    private void ShootServerRpc()
+    private void ShootServerRpc(Quaternion rotatieTragere)
     {
-        GameObject newSageata = Instantiate(sageataPrefab, spawnPoint.position, spawnPoint.rotation);
+        GameObject newSageata = Instantiate(sageataPrefab, spawnPoint.position, rotatieTragere);
         newSageata.GetComponent<NetworkObject>().Spawn();
         Sageata sageataScript = newSageata.GetComponent<Sageata>();
         if (sageataScript != null)
