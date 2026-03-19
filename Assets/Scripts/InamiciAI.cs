@@ -2,6 +2,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
+using Unity.Netcode.Components;
 
 public class InamiciAI : NetworkBehaviour
 {
@@ -10,8 +11,8 @@ public class InamiciAI : NetworkBehaviour
     public float timpRespawn = 10f;
     
     [Header("Setari Urmarire")]
-    public float razaDetectie = 9f;
-    public float distantaMaxUrmarire = 15f;
+    public float razaDetectie = 14f;
+    public float distantaMaxUrmarire = 16f;
     
     [Header("Setari Atac")]
     public float razaAtac = 2f;
@@ -184,7 +185,7 @@ public class InamiciAI : NetworkBehaviour
         }
     }
 
-    public void Moarte()
+    public void Moarte(BasePlayer killer)
     {
         if(!IsServer)
         {
@@ -195,14 +196,33 @@ public class InamiciAI : NetworkBehaviour
         agent.enabled = false;
         tinta = null;
 
+        CampReward loot = GetComponent<CampReward>();
+        if (loot != null)
+        {
+            loot.OferaRecompensa(killer);
+        }
+        
         StartCoroutine(RespawnRoutine());
     }
 
     private IEnumerator RespawnRoutine()
     {
-        yield return new WaitForSeconds(timpRespawn);
+        float timpAsteptareInitial = Mathf.Max(0f, timpRespawn - 0.2f);
+        yield return new WaitForSeconds(timpAsteptareInitial);
 
-        transform.position = centruCamp;
+        agent.enabled = false;
+        NetworkTransform netTransform = GetComponent<NetworkTransform>();
+        if (netTransform != null)
+        {
+            netTransform.Teleport(centruCamp, transform.rotation, transform.localScale);
+        }
+        else
+        {
+            transform.position = centruCamp;
+        }
+        
+        agent.Warp(centruCamp);
+        
         if (health != null)
         {
             health.ResetHealth();

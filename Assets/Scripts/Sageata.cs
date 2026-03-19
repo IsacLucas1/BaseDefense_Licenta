@@ -56,7 +56,18 @@ public class Sageata : NetworkBehaviour
         Health targetHealth = other.GetComponent<Health>();
         if (other.CompareTag("Enemy") && targetHealth != null)
         {
-            targetHealth.TakeDamage(damage, ownerId);
+            int damageFinal = damage;
+            
+            if (NetworkManager.Singleton.ConnectedClients.TryGetValue(ownerId, out NetworkClient client))
+            {
+                BasePlayer tragator = client.PlayerObject.GetComponent<BasePlayer>();
+                if (tragator != null)
+                {
+                    damageFinal += tragator.extraDamage;
+                }
+            }
+            
+            targetHealth.TakeDamage(damageFinal, ownerId);
             DistrugeSageata();
             return;
         }

@@ -11,6 +11,7 @@ public class UIManager : MonoBehaviour
     [Header("UI Elements")]
     public TMP_Text textLemn;
     public TMP_Text textViteza;
+    public TMP_Text textBani;
     public Slider sliderViata;
     public TMP_Text textViata;
 
@@ -52,6 +53,14 @@ public class UIManager : MonoBehaviour
         if (textViteza != null)
         {
             textViteza.text = "Viteza: " +  coeficientViteza.ToString("F2");
+        }
+    }
+    
+    public void ActualizeazaBani(int cantitate)
+    {
+        if (textBani != null)
+        {
+            textBani.text = "Bani: " + cantitate;
         }
     }
     

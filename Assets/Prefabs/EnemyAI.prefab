@@ -212,9 +212,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  timpRespawn: 3
-  razaDetectie: 9
-  distantaMaxUrmarire: 15
+  timpRespawn: 10
+  razaDetectie: 14
+  distantaMaxUrmarire: 16
   razaAtac: 2
   damageAtac: 10
   cooldownAtac: 1.5

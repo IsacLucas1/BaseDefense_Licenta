@@ -34,25 +34,23 @@ public class Health : NetworkBehaviour
             if (currentHealth.Value <= 0)
             {
                 currentHealth.Value = 0;
+                BasePlayer killerPlayer = null;
+                
+                if (attackerId != ulong.MaxValue)
+                {
+                    if (NetworkManager.Singleton.ConnectedClients.TryGetValue(attackerId, out NetworkClient client))
+                    {
+                        killerPlayer = client.PlayerObject.GetComponent<BasePlayer>();
+                    }
+                }
+                
                 if (basePlayer != null)
                 {
                     basePlayer.Moarte();
                 }
                 else if (inamiciAI != null)
                 {
-                    inamiciAI.Moarte();
-
-                    if (attackerId != ulong.MaxValue)
-                    {
-                        if (NetworkManager.Singleton.ConnectedClients.TryGetValue(attackerId, out NetworkClient client))
-                        {
-                            BasePlayer killerPlayer = client.PlayerObject.GetComponent<BasePlayer>();
-                            if (killerPlayer != null)
-                            {
-                                killerPlayer.BuffViteza();
-                            }
-                        }
-                    }
+                    inamiciAI.Moarte(killerPlayer);
                 }
             }
         }

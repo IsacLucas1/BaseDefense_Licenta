@@ -15,6 +15,7 @@ public class BasePlayer : NetworkBehaviour
 
     [Header("Resurse")]
     public NetworkVariable<int> lemn = new NetworkVariable<int>();
+    public NetworkVariable<int> bani = new NetworkVariable<int>(); 
     public float distantaAdunare = 3f;
     
     public float taiereCooldown = 1f;
@@ -26,7 +27,13 @@ public class BasePlayer : NetworkBehaviour
     
     public NetworkVariable<Vector3> respawnPosition = new NetworkVariable<Vector3>();
     private Quaternion respawnRotation;
-
+    
+    private Coroutine corutinaVitezaActiva;
+    private Coroutine corutinaDamageActiva;
+    private int bonusVitezaActiv = 0;
+    private int bonusDamageActiv = 0;
+    public int extraDamage { get; protected set; } = 0;
+    
     public override void OnNetworkSpawn()
     {
         rb = GetComponent<Rigidbody>();
@@ -66,6 +73,7 @@ public class BasePlayer : NetworkBehaviour
             Cursor.visible = false;
 
             lemn.OnValueChanged += ActualizeazaTextLemn;
+            bani.OnValueChanged += ActualizeazaTextBani;
             
             Health healthComp = GetComponent<Health>();
             if (healthComp != null)
@@ -77,6 +85,7 @@ public class BasePlayer : NetworkBehaviour
             if(UIManager.Instance != null)
             {
                 UIManager.Instance.ActualizeazaLemn(lemn.Value);
+                UIManager.Instance.ActualizeazaBani(bani.Value);
                 
                 float coeficientViteza = speed.Value / speedReference;
                 UIManager.Instance.ActualizeazaViteza(coeficientViteza);
@@ -111,6 +120,14 @@ public class BasePlayer : NetworkBehaviour
         }
     }
     
+    public virtual void AdaugaLemn(int cantitate)
+    {
+        if (IsServer)
+        {
+            lemn.Value += cantitate;
+        }
+    }
+    
     private void ActualizeazaTextViteza(float valoareVeche, float valoareNoua)
     {
         if(IsOwner && UIManager.Instance != null)
@@ -131,11 +148,28 @@ public class BasePlayer : NetworkBehaviour
             }
         }
     }
+    
+    private void ActualizeazaTextBani(int valoareVeche, int valoareNoua)
+    {
+        if(IsOwner && UIManager.Instance != null)
+        {
+            UIManager.Instance.ActualizeazaBani(valoareNoua);
+        }
+    }
+
+    public  void AdaugaBani(int cantitate)
+    {
+        if (IsServer)
+        {
+            bani.Value += cantitate;
+        }
+    }
 
     public override void OnNetworkDespawn()
     {
         lemn.OnValueChanged -= ActualizeazaTextLemn;
         speed.OnValueChanged -= ActualizeazaTextViteza;
+        bani.OnValueChanged -= ActualizeazaTextBani;
         
         Health healthComp = GetComponent<Health>();
         if (healthComp != null)
@@ -172,12 +206,61 @@ public class BasePlayer : NetworkBehaviour
         }
     }
 
-    public void BuffViteza()
+    public virtual void PrimesteRecompensa(TipCamp camp, int valoare, float durata)
     {
-        if (IsServer)
+        if(!IsServer)
         {
-            speed.Value += speedReference * 0.20f;
+            return;
         }
+
+        switch (camp)
+        {
+            case TipCamp.Viteza:
+                if (corutinaVitezaActiva != null)
+                {
+                    StopCoroutine(corutinaVitezaActiva);
+                    speed.Value -= bonusVitezaActiv;
+                }
+                corutinaVitezaActiva = StartCoroutine(BuffVitezaRoutine(valoare, durata));
+                break;
+            case TipCamp.Damage:
+                if (corutinaDamageActiva != null)
+                {
+                    StopCoroutine(corutinaDamageActiva);
+                    extraDamage -= bonusDamageActiv;
+                }
+                corutinaDamageActiva = StartCoroutine(BuffDamageRoutine(valoare, durata));
+                break;
+            case TipCamp.Bani:
+                AdaugaBani(valoare);
+                Debug.Log($"Jucatorul a primit {valoare} bani!");
+                break;
+            case TipCamp.Lemn:
+                break;
+        }
+    }
+
+    protected IEnumerator BuffVitezaRoutine(int valoareBonusViteza, float durataBonusViteza)
+    {
+        bonusVitezaActiv = valoareBonusViteza;
+        speed.Value += bonusVitezaActiv;
+        
+        yield return new WaitForSeconds(durataBonusViteza);
+        
+        speed.Value -= valoareBonusViteza;
+        bonusVitezaActiv = 0;
+        corutinaVitezaActiva = null;
+    }
+    protected IEnumerator BuffDamageRoutine(int valoareBonusDamage, float durataBonusDamage)
+    {
+        bonusDamageActiv = valoareBonusDamage;
+        extraDamage += bonusDamageActiv;
+        
+        yield return new WaitForSeconds(durataBonusDamage);
+        
+        extraDamage -= valoareBonusDamage;
+        bonusDamageActiv = 0;
+        corutinaVitezaActiva = null;
     }
     
     private IEnumerator StartRecallCoroutine()
@@ -225,14 +308,6 @@ public class BasePlayer : NetworkBehaviour
             {
                 copac.LovesteCopaculServerRPC(NetworkObjectId);
             }
-        }
-    }
-    
-    public virtual void AdaugaLemn(int cantitate)
-    {
-        if (IsServer)
-        {
-            lemn.Value += cantitate;
         }
     }
     
