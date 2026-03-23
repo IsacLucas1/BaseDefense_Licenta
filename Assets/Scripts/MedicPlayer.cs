@@ -61,19 +61,21 @@ public class MedicPlayer : BasePlayer
     {
         base.Update();
         
-        if (!IsOwner || isDead || isRecalling)
+        if (!IsOwner || isDead)
         {
             return;
         }
         
         if(Input.GetMouseButtonDown(1) && Time.time >= nextHealTime)
         {
+            AnuleazaRecall();
             TryToHeal();
             nextHealTime = Time.time + healCooldown;
         }
         
         if(Input.GetMouseButtonDown(0) && Time.time >= nextDamageTime)
         {
+            AnuleazaRecall();
             TryToDamage();
             nextDamageTime = Time.time + damageCooldown;
         }
@@ -154,24 +156,11 @@ public class MedicPlayer : BasePlayer
                 if(netObj != null && netObj.IsSpawned)
                 { 
                     ulong targetID = targetHealth.GetComponent<NetworkObject>().NetworkObjectId;
-                    DamageServerRpc(targetID, damageAmount, OwnerClientId);
+                    DamageServerRpc(targetID, damageAmount + extraDamage.Value, OwnerClientId);
                 }
             }
         }
         AfiseazaLaserDamageServerRpc(startPoint, endPoint);
-    }
-    
-    [ServerRpc]
-    private void DamageServerRpc(ulong targetID, int amount, ulong attackerId)
-    {
-        if(NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(targetID, out NetworkObject targetObj))
-        {
-            Health targetHealth = targetObj.GetComponent<Health>();
-            if (targetHealth != null && targetHealth.currentHealth.Value > 0)
-            {
-                targetHealth.TakeDamage(amount, attackerId);
-            }
-        }
     }
     
     [ServerRpc]

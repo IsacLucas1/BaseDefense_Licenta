@@ -2680,7 +2680,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2117756749800487769, guid: 1475b8b6926ea754fbe864bc7211688d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 103.9
+      value: 55
       objectReference: {fileID: 0}
     - target: {fileID: 2117756749800487769, guid: 1475b8b6926ea754fbe864bc7211688d, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2688,7 +2688,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2117756749800487769, guid: 1475b8b6926ea754fbe864bc7211688d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -11.3
+      value: -40
       objectReference: {fileID: 0}
     - target: {fileID: 2117756749800487769, guid: 1475b8b6926ea754fbe864bc7211688d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2725,7 +2725,7 @@ PrefabInstance:
     - target: {fileID: 3622093649395119641, guid: 1475b8b6926ea754fbe864bc7211688d, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 3cf419ca6acd20d47bdffb016c15e4bf, type: 2}
+      objectReference: {fileID: 2100000, guid: 2499ad66a3dfe554693348e619084e57, type: 2}
     - target: {fileID: 4008265482262714464, guid: 1475b8b6926ea754fbe864bc7211688d, type: 3}
       propertyPath: GlobalObjectIdHash
       value: 3873177115
@@ -2780,13 +2780,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  camp: 0
+  camp: 3
   bonusViteza: 2
   durataViteza: 10
-  bonusDamage: 5
+  bonusDamage: 10
   durataDamage: 15
   cantitateBani: 100
-  cantitateLemn: 80
+  cantitateLemn: 30
 --- !u!1 &1193304890
 GameObject:
   m_ObjectHideFlags: 0
@@ -5587,7 +5587,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2117756749800487769, guid: 1475b8b6926ea754fbe864bc7211688d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 57.1
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 2117756749800487769, guid: 1475b8b6926ea754fbe864bc7211688d, type: 3}
       propertyPath: m_LocalPosition.y
@@ -5595,7 +5595,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2117756749800487769, guid: 1475b8b6926ea754fbe864bc7211688d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -11.3
+      value: -40
       objectReference: {fileID: 0}
     - target: {fileID: 2117756749800487769, guid: 1475b8b6926ea754fbe864bc7211688d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -5693,7 +5693,7 @@ MonoBehaviour:
   bonusDamage: 10
   durataDamage: 15
   cantitateBani: 100
-  cantitateLemn: 80
+  cantitateLemn: 30
 --- !u!1 &1880545017
 GameObject:
   m_ObjectHideFlags: 0
@@ -6196,7 +6196,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2117756749800487769, guid: 1475b8b6926ea754fbe864bc7211688d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 54.2
+      value: 55
       objectReference: {fileID: 0}
     - target: {fileID: 2117756749800487769, guid: 1475b8b6926ea754fbe864bc7211688d, type: 3}
       propertyPath: m_LocalPosition.y
@@ -6204,7 +6204,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2117756749800487769, guid: 1475b8b6926ea754fbe864bc7211688d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 44.5
+      value: 45
       objectReference: {fileID: 0}
     - target: {fileID: 2117756749800487769, guid: 1475b8b6926ea754fbe864bc7211688d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -6299,10 +6299,10 @@ MonoBehaviour:
   camp: 0
   bonusViteza: 2
   durataViteza: 10
-  bonusDamage: 15
+  bonusDamage: 10
   durataDamage: 15
   cantitateBani: 100
-  cantitateLemn: 80
+  cantitateLemn: 30
 --- !u!1001 &1949297666
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6647,7 +6647,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2117756749800487769, guid: 1475b8b6926ea754fbe864bc7211688d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 103.9
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 2117756749800487769, guid: 1475b8b6926ea754fbe864bc7211688d, type: 3}
       propertyPath: m_LocalPosition.y
@@ -6655,7 +6655,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2117756749800487769, guid: 1475b8b6926ea754fbe864bc7211688d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 44.5
+      value: 45
       objectReference: {fileID: 0}
     - target: {fileID: 2117756749800487769, guid: 1475b8b6926ea754fbe864bc7211688d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -6753,7 +6753,7 @@ MonoBehaviour:
   bonusDamage: 10
   durataDamage: 15
   cantitateBani: 100
-  cantitateLemn: 80
+  cantitateLemn: 30
 --- !u!1 &2118544874
 GameObject:
   m_ObjectHideFlags: 0

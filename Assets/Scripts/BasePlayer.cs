@@ -15,7 +15,8 @@ public class BasePlayer : NetworkBehaviour
 
     [Header("Resurse")]
     public NetworkVariable<int> lemn = new NetworkVariable<int>();
-    public NetworkVariable<int> bani = new NetworkVariable<int>(); 
+    public NetworkVariable<int> bani = new NetworkVariable<int>();
+    public NetworkVariable<int> extraDamage = new NetworkVariable<int>(0);
     public float distantaAdunare = 3f;
     
     public float taiereCooldown = 1f;
@@ -24,6 +25,7 @@ public class BasePlayer : NetworkBehaviour
     private Rigidbody rb;
     public bool isDead { get; protected set; } = false;
     protected bool isRecalling = false;
+    protected Coroutine recallCoroutineActiva;
     
     public NetworkVariable<Vector3> respawnPosition = new NetworkVariable<Vector3>();
     private Quaternion respawnRotation;
@@ -32,7 +34,6 @@ public class BasePlayer : NetworkBehaviour
     private Coroutine corutinaDamageActiva;
     private int bonusVitezaActiv = 0;
     private int bonusDamageActiv = 0;
-    public int extraDamage { get; protected set; } = 0;
     
     public override void OnNetworkSpawn()
     {
@@ -189,18 +190,20 @@ public class BasePlayer : NetworkBehaviour
         HandleMouseLook();
         if (GetComponent<Health>().currentHealth.Value > 0)
         {
-            if(Input.GetKeyDown(KeyCode.K) && !isRecalling)
+            if(Input.GetKeyDown(KeyCode.K))
             {
+                AnuleazaRecall();
                 RequestSelfDamageServerRpc();
             }
         }
         if(Input.GetKeyDown(KeyCode.B) && !isRecalling)
         {
-            StartCoroutine(StartRecallCoroutine());
+            recallCoroutineActiva = StartCoroutine(StartRecallCoroutine());
         }
         
-        if(Input.GetKeyDown(KeyCode.E) && !isRecalling && Time.time >= nextTaiereTime)
+        if(Input.GetKeyDown(KeyCode.E) && Time.time >= nextTaiereTime)
         {
+            AnuleazaRecall();
             IncearcaSaTaieCopac();
             nextTaiereTime = Time.time + taiereCooldown;
         }
@@ -227,15 +230,15 @@ public class BasePlayer : NetworkBehaviour
                 if (corutinaDamageActiva != null)
                 {
                     StopCoroutine(corutinaDamageActiva);
-                    extraDamage -= bonusDamageActiv;
+                    extraDamage.Value -= bonusDamageActiv;
                 }
                 corutinaDamageActiva = StartCoroutine(BuffDamageRoutine(valoare, durata));
                 break;
             case TipCamp.Bani:
                 AdaugaBani(valoare);
-                Debug.Log($"Jucatorul a primit {valoare} bani!");
                 break;
             case TipCamp.Lemn:
+                AdaugaLemn(valoare);
                 break;
         }
     }
@@ -254,13 +257,40 @@ public class BasePlayer : NetworkBehaviour
     protected IEnumerator BuffDamageRoutine(int valoareBonusDamage, float durataBonusDamage)
     {
         bonusDamageActiv = valoareBonusDamage;
-        extraDamage += bonusDamageActiv;
+        extraDamage.Value += bonusDamageActiv;
         
         yield return new WaitForSeconds(durataBonusDamage);
         
-        extraDamage -= valoareBonusDamage;
+        extraDamage.Value -= valoareBonusDamage;
         bonusDamageActiv = 0;
-        corutinaVitezaActiva = null;
+        corutinaDamageActiva = null;
+    }
+    
+    [ServerRpc]
+    protected void DamageServerRpc(ulong targetID, int amount, ulong attackerId)
+    {
+        if(NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(targetID, out NetworkObject targetObj))
+        {
+            Health targetHealth = targetObj.GetComponent<Health>();
+            if (targetHealth != null && targetHealth.currentHealth.Value > 0)
+            {
+                targetHealth.TakeDamage(amount, attackerId);
+            }
+        }
+    }
+    
+    protected void AnuleazaRecall()
+    {
+        if (isRecalling)
+        {
+            isRecalling = false;
+            if (recallCoroutineActiva != null)
+            {
+                StopCoroutine(recallCoroutineActiva);
+                recallCoroutineActiva = null;
+            }
+            Debug.Log("Recall anulat din cauza unei actiuni.");
+        }
     }
     
     private IEnumerator StartRecallCoroutine()
@@ -281,7 +311,7 @@ public class BasePlayer : NetworkBehaviour
             float distanta = Vector3.Distance(pozitieInitiala,transform.position);
             if (distanta > 0.01f)
             {
-                    Debug.Log("Recall anulat");
+                Debug.Log("Recall anulat");
                 isRecalling = false;
                 yield break;
             }

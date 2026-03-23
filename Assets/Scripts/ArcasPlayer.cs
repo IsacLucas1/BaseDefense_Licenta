@@ -42,7 +42,7 @@ public class ArcasPlayer: BasePlayer
     protected override void Update()
     {
         base.Update();
-        if (!IsOwner || isDead || isRecalling)
+        if (!IsOwner || isDead)
         {
             return;
         }
@@ -55,6 +55,7 @@ public class ArcasPlayer: BasePlayer
 
         if (Input.GetMouseButtonDown(0) && Time.time >= nextAttackTime && !isShootingBurst)
         {
+            AnuleazaRecall();
             if (isBurstMode)
             {
                 StartCoroutine(BurstRoutine());
@@ -83,11 +84,13 @@ public class ArcasPlayer: BasePlayer
     private void ShootServerRpc(Quaternion rotatieTragere)
     {
         GameObject newSageata = Instantiate(sageataPrefab, spawnPoint.position, rotatieTragere);
-        newSageata.GetComponent<NetworkObject>().Spawn();
         Sageata sageataScript = newSageata.GetComponent<Sageata>();
+        
         if (sageataScript != null)
         {
             sageataScript.Initialize(OwnerClientId);
         }
+        
+        newSageata.GetComponent<NetworkObject>().Spawn();
     }
 }

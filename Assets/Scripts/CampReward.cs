@@ -16,16 +16,16 @@ public class CampReward : NetworkBehaviour
     public TipCamp camp = TipCamp.Viteza;
     
     [Header("Setari Viteza")]
-    public int bonusViteza = 5;      
+    public int bonusViteza = 2;      
     public float durataViteza = 10f;  
 
     [Header("Setari Damage")]
-    public int bonusDamage = 15;      
+    public int bonusDamage = 10;      
     public float durataDamage = 15f;  
 
     [Header("Setari Resurse")]
     public int cantitateBani = 100;   
-    public int cantitateLemn = 80;
+    public int cantitateLemn = 30;
     
     public void OferaRecompensa(BasePlayer jucator)
     {

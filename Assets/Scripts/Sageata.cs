@@ -63,7 +63,7 @@ public class Sageata : NetworkBehaviour
                 BasePlayer tragator = client.PlayerObject.GetComponent<BasePlayer>();
                 if (tragator != null)
                 {
-                    damageFinal += tragator.extraDamage;
+                    damageFinal += tragator.extraDamage.Value;
                 }
             }
             
