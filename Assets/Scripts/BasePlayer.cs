@@ -240,6 +240,9 @@ public class BasePlayer : NetworkBehaviour
             case TipCamp.Lemn:
                 AdaugaLemn(valoare);
                 break;
+            case TipCamp.Obisnuit:
+                AdaugaBani(valoare);
+                break;
         }
     }
 

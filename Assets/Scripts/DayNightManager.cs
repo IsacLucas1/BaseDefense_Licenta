@@ -7,6 +7,9 @@ public class DayNightManager : NetworkBehaviour
     public Light lumina;
     public float ziDurata = 120f;
 
+    [Header("Referinte Night Spawner")]
+    public NightSpawner nightSpawner;
+    
     private float nrMinJucatori = 2f;
     private NetworkVariable<float> timpCurent = new NetworkVariable<float>(0f);
     private NetworkVariable<bool> startTime = new NetworkVariable<bool>(false);
@@ -28,10 +31,23 @@ public class DayNightManager : NetworkBehaviour
 
             if (startTime.Value)
             {
-                timpCurent.Value += Time.deltaTime;
-                if (timpCurent.Value >= ziDurata)
+                bool opresteTimpulPentruInamici = false;
+
+                if (timpCurent.Value >= ziDurata - 10f)
                 {
-                    timpCurent.Value = 0f;
+                    if (nightSpawner != null && nightSpawner.SuntInamiciInViata())
+                    {
+                        opresteTimpulPentruInamici = true;
+                    }
+                }
+
+                if (!opresteTimpulPentruInamici)
+                {
+                    timpCurent.Value += Time.deltaTime;
+                    if (timpCurent.Value >= ziDurata)
+                    {
+                        timpCurent.Value = 0f;
+                    }
                 }
             }
         }

@@ -6,7 +6,8 @@ public enum TipCamp
     Viteza,
     Damage,
     Bani,
-    Lemn
+    Lemn,
+    Obisnuit
 }
 
 public class CampReward : NetworkBehaviour
@@ -26,6 +27,7 @@ public class CampReward : NetworkBehaviour
     [Header("Setari Resurse")]
     public int cantitateBani = 100;   
     public int cantitateLemn = 30;
+    public int cantitateBaniObisnuit = 10;
     
     public void OferaRecompensa(BasePlayer jucator)
     {
@@ -46,6 +48,9 @@ public class CampReward : NetworkBehaviour
                 break;
             case TipCamp.Lemn:
                 jucator.PrimesteRecompensa(camp, cantitateLemn, 0f);
+                break;
+            case TipCamp.Obisnuit:
+                jucator.PrimesteRecompensa(camp, cantitateBaniObisnuit, 0f);
                 break;
         }
     }

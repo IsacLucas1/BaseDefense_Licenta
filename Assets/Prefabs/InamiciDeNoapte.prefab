@@ -50,11 +50,12 @@ GameObject:
   - component: {fileID: 2039759314801311756}
   - component: {fileID: 4234804413618057554}
   - component: {fileID: 4008265482262714464}
-  - component: {fileID: 4146792016417805404}
   - component: {fileID: 4795853118200565888}
   - component: {fileID: 5933628056567839636}
+  - component: {fileID: 5877641613696072047}
+  - component: {fileID: 6158865393659136339}
   m_Layer: 0
-  m_Name: EnemyAI
+  m_Name: InamiciDeNoapte
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -186,7 +187,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3807272713
+  GlobalObjectIdHash: 3560192801
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -199,25 +200,6 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
---- !u!114 &4146792016417805404
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3540156360035009601}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 955ad6ac59d87394ca7235f123ae0034, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  timpRespawn: 10
-  razaDetectie: 14
-  distantaMaxUrmarire: 16
-  razaAtac: 2
-  damageAtac: 10
-  cooldownAtac: 1.5
 --- !u!114 &4795853118200565888
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -281,6 +263,46 @@ MonoBehaviour:
     m_InternalValue: 100
   maxHealth:
     m_InternalValue: 100
+--- !u!114 &5877641613696072047
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3540156360035009601}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93743f7701a7d514289c2a52623cfc0a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  razaDetectie: 14
+  distantaMaxUrmarire: 16
+  razaAtac: 2
+  damageAtac: 10
+  cooldownAtac: 1.5
+  tintaBaza: {fileID: 0}
+--- !u!114 &6158865393659136339
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3540156360035009601}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5812e4b597728644b663b0650375b00, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  camp: 4
+  bonusViteza: 2
+  durataViteza: 10
+  bonusDamage: 10
+  durataDamage: 15
+  cantitateBani: 100
+  cantitateLemn: 30
+  cantitateBaniObisnuit: 10
 --- !u!1 &4668034801505069207
 GameObject:
   m_ObjectHideFlags: 0
