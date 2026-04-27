@@ -206,7 +206,7 @@ GameObject:
   - component: {fileID: 366949959606120194}
   - component: {fileID: 7992170534879461243}
   - component: {fileID: 2083258573683392616}
-  - component: {fileID: 5715069486706415335}
+  - component: {fileID: 7656300085365459487}
   m_Layer: 0
   m_Name: Sabie
   m_TagString: Untagged
@@ -330,7 +330,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 1
---- !u!114 &5715069486706415335
+--- !u!114 &7656300085365459487
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -342,7 +342,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 866814e19d821614da0ec594e75bd532, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  constructorPlayer: {fileID: 8736521571267994847}
+  meleePlayer: {fileID: 8736521571267994847}
 --- !u!1 &4272983549770186121
 GameObject:
   m_ObjectHideFlags: 0
@@ -586,14 +586,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5605236131903571810}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0.17364825, z: 0, w: 0.9848078}
-  m_LocalPosition: {x: 0.52, y: 0.3, z: 0.3}
+  m_LocalRotation: {x: 0, y: -0.13052624, z: 0, w: 0.9914449}
+  m_LocalPosition: {x: 0.53, y: 0.3, z: 0.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7306298871013051487}
   m_Father: {fileID: 766115141926368927}
-  m_LocalEulerAnglesHint: {x: 0, y: -20, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -15, z: 0}
 --- !u!1 &7023224180006059190
 GameObject:
   m_ObjectHideFlags: 0
@@ -811,11 +811,12 @@ MonoBehaviour:
   taiereCooldown: 1
   respawnPosition:
     m_InternalValue: {x: 0, y: 0, z: 0}
+  damageArma: 10
+  atacCooldown: 0.7
+  durataAnimatie: 0.3
+  pivotArma: {fileID: 7672423666459444788}
   multiplicatorLemn: 2
-  damageSabie: 10
-  sabieCooldown: 0.7
   constructieCooldown: 0.8
-  pivotSabie: {fileID: 7672423666459444788}
 --- !u!114 &2233721316420083636
 MonoBehaviour:
   m_ObjectHideFlags: 0

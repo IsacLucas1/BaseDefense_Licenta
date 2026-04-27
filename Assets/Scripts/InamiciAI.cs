@@ -13,6 +13,10 @@ public abstract class InamiciAI : NetworkBehaviour
     public int damageAtac = 10;
     public float cooldownAtac = 1.5f;
 
+    [Header("Efecte Status (Crowd Control)")]
+    protected Transform tauntTarget;
+    protected float tauntEndTime = 0f;
+    
     protected float nextAttackTime = 0f;
     protected NavMeshAgent agent;
     protected Transform tinta;
@@ -64,8 +68,37 @@ public abstract class InamiciAI : NetworkBehaviour
         }
     }
 
+    public void AplicaTaunt(Transform noulTauntTarget, float durataTaunt)
+    {
+        if (!IsServer || isDead.Value)
+        {
+            return;
+        }
+        
+        tauntTarget = noulTauntTarget;
+        tauntEndTime = Time.time + durataTaunt;
+
+        if (agent.hasPath)
+        {
+            agent.ResetPath();
+        }
+    }
+    
     protected virtual void GasesteJucator()
     {
+        if(Time.time < tauntEndTime && tauntTarget != null)
+        {
+            if (VerificaLimitaUrmarire(tauntTarget.position))
+            {
+                tinta = tauntTarget;
+                return;
+            }
+        }
+        else if (Time.time < tauntEndTime && tauntTarget == null)
+        {
+            tauntTarget = null;
+        }
+        
         float razaCautare = razaDetectie * 1.5f;
         Collider[] jucatoriInZona = Physics.OverlapSphere(transform.position, razaCautare);
         

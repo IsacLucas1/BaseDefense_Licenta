@@ -2755,7 +2755,7 @@ MonoBehaviour:
   - {fileID: 2008236352}
   - {fileID: 132971286}
   - {fileID: 998731677}
-  inamiciPerNoapte: 10
+  inamiciPerNoapte: 1
   timpIntreSpawns: 1.5
   dayNightManager: {fileID: 352120444}
   obiectivBaza: {fileID: 1673021916}

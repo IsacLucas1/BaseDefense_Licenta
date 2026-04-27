@@ -23,8 +23,8 @@ public class ArcasPlayer: BasePlayer
             var health = GetComponent<Health>();
             if (health != null)
             {
-                health.maxHealth.Value = 80;
-                health.currentHealth.Value = 80;
+                health.maxHealth.Value = 90;
+                health.currentHealth.Value = 90;
             }
         }
         base.OnNetworkSpawn();

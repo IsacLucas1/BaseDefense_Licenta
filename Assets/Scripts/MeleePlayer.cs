@@ -1,0 +1,128 @@
+using UnityEngine;
+using Unity.Netcode;
+using System.Collections;
+
+public abstract class MeleePlayer : BasePlayer
+{
+    [Header("Setari Atac")] 
+    public int damageArma = 10;
+    public float atacCooldown = 0.7f;
+    public float durataAnimatie = 0.3f;
+    
+    protected float nextAttackTime = 0f;
+    protected float nextAttackTimeServer = 0f;
+
+    [Header("Referinte Vizuale")] 
+    public Transform pivotArma;
+    
+    protected bool isAttacking = false;
+    protected bool canDealdamage = false;
+    protected bool enemyHit = false;
+    
+    protected override void Update()
+    {
+        base.Update();
+        if (!IsOwner || isDead)
+        {
+            return;
+        }
+        if (Input.GetMouseButtonDown(0) && Time.time >= nextAttackTime)
+        {
+            AnuleazaRecall();
+            IncearcaSaAtaci();
+        }
+    }
+    
+    protected void IncearcaSaAtaci()
+    {
+        nextAttackTime = Time.time + atacCooldown;
+        StartCoroutine(AnimatieAtacArma());
+        PerformAttackServerRpc();
+    }
+
+    [ServerRpc]
+    protected void PerformAttackServerRpc(ServerRpcParams rpcParams = default)
+    {
+        if (Time.time < nextAttackTimeServer)
+        {
+            return;
+        }
+        nextAttackTimeServer = Time.time + atacCooldown;
+        PlayAttackAnimationClientRpc();
+    }
+
+    [ClientRpc]
+    protected void PlayAttackAnimationClientRpc()
+    {
+        if(!IsOwner)
+        {
+            StartCoroutine(AnimatieAtacArma());
+        }
+    }
+
+    protected virtual IEnumerator AnimatieAtacArma()
+    {
+        if (pivotArma == null)
+        {
+            yield break;
+        }
+
+        isAttacking = true;
+        canDealdamage = true;
+        enemyHit = false;
+
+        Quaternion rotatieInitiala = pivotArma.localRotation;
+        Quaternion rotatieAtac = rotatieInitiala * Quaternion.Euler(90f, 0f, 0f);
+
+        float timpAnimatie = 0f;
+
+        while (timpAnimatie < durataAnimatie)
+        {
+            timpAnimatie += Time.deltaTime;
+            pivotArma.localRotation = Quaternion.Lerp(rotatieInitiala, rotatieAtac, timpAnimatie / durataAnimatie);
+            yield return null;
+        }
+
+        canDealdamage = false;
+        yield return new WaitForSeconds(0.1f);
+
+        timpAnimatie = 0f;
+        while (timpAnimatie < durataAnimatie)
+        {
+            timpAnimatie += Time.deltaTime;
+            pivotArma.localRotation = Quaternion.Lerp(rotatieAtac, rotatieInitiala, timpAnimatie / durataAnimatie);
+            yield return null;
+        }
+        
+        pivotArma.localRotation = rotatieInitiala;
+        isAttacking = false;
+        enemyHit = false;
+    }
+    
+    public virtual void InamicLovit(Collider target)
+    {
+        if (!IsOwner || !canDealdamage || enemyHit)
+        {
+            return;
+        }
+
+        if (target.CompareTag("Enemy"))
+        {
+            Health enemyHealth = target.GetComponent<Health>();
+
+            if (enemyHealth != null && enemyHealth.currentHealth.Value > 0)
+            {
+                enemyHit = true; 
+                NetworkObject netObj = target.GetComponent<NetworkObject>();
+                if (netObj != null && netObj.IsSpawned)
+                {
+                    DamageServerRpc(netObj.NetworkObjectId, damageArma + extraDamage.Value, OwnerClientId);
+                }
+            }
+        }
+        else
+        {
+            enemyHit = true;
+        }
+    }
+}
