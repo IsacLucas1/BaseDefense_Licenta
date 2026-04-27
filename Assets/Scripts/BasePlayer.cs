@@ -21,7 +21,10 @@ public class BasePlayer : NetworkBehaviour
     
     public float taiereCooldown = 1f;
     private float nextTaiereTime = 0f;
-        
+    
+    [Header("Status Efecte")]
+    public NetworkVariable<bool> isInvisible = new NetworkVariable<bool>(false);
+    
     private Rigidbody rb;
     public bool isDead { get; protected set; } = false;
     protected bool isRecalling = false;
@@ -206,6 +209,12 @@ public class BasePlayer : NetworkBehaviour
             AnuleazaRecall();
             IncearcaSaTaieCopac();
             nextTaiereTime = Time.time + taiereCooldown;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            AnuleazaRecall();
+            IncearcaInteractiuneaWarRoom();
         }
     }
 
@@ -463,6 +472,20 @@ public class BasePlayer : NetworkBehaviour
         if (rb != null)
         {
             rb.position = pozitie;
+        }
+    }
+    
+    private void IncearcaInteractiuneaWarRoom()
+    {
+        Ray ray = new Ray(cameraCap.position, cameraCap.forward);
+
+        if (Physics.Raycast(ray, out RaycastHit hit, distantaAdunare))
+        {
+            ButonWarRoom warRoom = hit.collider.GetComponent<ButonWarRoom>();
+            if (warRoom != null)
+            {
+                warRoom.ApasaButon();
+            }
         }
     }
 }

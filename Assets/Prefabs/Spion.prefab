@@ -67,7 +67,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 09a026c537c7df2419668295524b9977, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -277,7 +277,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 09a026c537c7df2419668295524b9977, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5285,7 +5285,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 09a026c537c7df2419668295524b9977, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5426,6 +5426,8 @@ MonoBehaviour:
     m_InternalValue: 0
   distantaAdunare: 3
   taiereCooldown: 1
+  isInvisible:
+    m_InternalValue: 0
   respawnPosition:
     m_InternalValue: {x: 0, y: 0, z: 0}
   damageArma: 10
@@ -5435,6 +5437,8 @@ MonoBehaviour:
   multiplicatorDamageBackstab: 2
   tolerantaUnghiBackstab: 0.6
   backstabParticles: {fileID: 7185595651632728699}
+  durataInvizibilitate: 5
+  cooldownInvizibilitate: 10
 --- !u!114 &6048972318377788815
 MonoBehaviour:
   m_ObjectHideFlags: 0

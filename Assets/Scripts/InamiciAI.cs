@@ -108,7 +108,7 @@ public abstract class InamiciAI : NetworkBehaviour
         foreach (Collider col in jucatoriInZona)
         {
             BasePlayer player = col.GetComponent<BasePlayer>();
-            if (player != null && !player.isDead)
+            if (player != null && !player.isDead && !player.isInvisible.Value)
             {
                 if (!VerificaLimitaUrmarire(col.transform.position)) continue;
                 

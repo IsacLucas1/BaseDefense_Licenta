@@ -4,11 +4,17 @@ using UnityEngine;
 
 public class SpionPlayer : MeleePlayer
 {
-    [Header("Spion Specific")] public int multiplicatorDamageBackstab = 2;
+    [Header("Setari Backstab")]
+    public int multiplicatorDamageBackstab = 2;
     public float tolerantaUnghiBackstab = 0.6f;
     
     public ParticleSystem backstabParticles;
 
+    [Header("Setari Invizibilitate")]
+    public float durataInvizibilitate = 5f;
+    public float cooldownInvizibilitate = 10f;
+    private float nextInvizibilitateTime = 0f;
+    
     public override void OnNetworkSpawn()
     {
         damageArma = 15;
@@ -34,6 +40,57 @@ public class SpionPlayer : MeleePlayer
         if (GetComponent<Renderer>())
         {
             GetComponent<Renderer>().material.SetColor("_BaseColor", Color.blue);
+        }
+    }
+
+    protected override void Update()
+    {
+        base.Update();
+        
+        if (!IsOwner || isDead)
+        {
+            return;
+        }
+        
+        if (Input.GetKeyDown(KeyCode.Q) && Time.time >= nextInvizibilitateTime)
+        {
+            AnuleazaRecall(); 
+            ActiveazaInvizibilitateServerRpc();
+            nextInvizibilitateTime = Time.time + cooldownInvizibilitate;
+        }
+    }
+
+    [ServerRpc]
+    private void ActiveazaInvizibilitateServerRpc()
+    {
+        StartCoroutine(RutinaInvizibilitate());
+    }
+    
+    private IEnumerator RutinaInvizibilitate()
+    {
+        isInvisible.Value = true;
+        UpdateVizualInvizibilitateClientRpc(true);
+        
+        yield return new WaitForSeconds(durataInvizibilitate);
+        
+        isInvisible.Value = false;
+        UpdateVizualInvizibilitateClientRpc(false);
+    }
+
+    [ClientRpc]
+    private void UpdateVizualInvizibilitateClientRpc(bool invizibil)
+    {
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+        foreach (var r in renderers)
+        {
+            if (r.GetComponent<ParticleSystem>() != null || r is LineRenderer) continue;
+            
+            if (r.material.HasProperty("_BaseColor"))
+            {
+                Color col = r.material.GetColor("_BaseColor");
+                col.a = invizibil ? 0.4f : 1.0f; 
+                r.material.SetColor("_BaseColor", col);
+            }
         }
     }
 

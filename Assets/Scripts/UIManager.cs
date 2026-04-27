@@ -14,6 +14,13 @@ public class UIManager : MonoBehaviour
     public TMP_Text textBani;
     public Slider sliderViata;
     public TMP_Text textViata;
+    
+    [Header("Sistem Vot War Room")]
+    public GameObject WarRoomVotingPanel;
+    public TMPro.TextMeshProUGUI textTimpVot;
+    public TMPro.TextMeshProUGUI textScorVot;
+    public GameObject butonDa;
+    public GameObject butonNu;
 
     private void Awake()
     {
@@ -75,6 +82,75 @@ public class UIManager : MonoBehaviour
         if (textViata != null)
         {
             textViata.text = valoareCurenta + " / " + valoareMaxima;
+        }
+    }
+    
+    public void ArataPanouVot(bool activeaza)
+    {
+        if (WarRoomVotingPanel != null)
+        {
+            WarRoomVotingPanel.SetActive(activeaza);
+
+            if (activeaza)
+            {
+                if (butonDa != null)
+                {
+                    butonDa.SetActive(true);
+                }
+
+                if (butonNu != null)
+                {
+                    butonNu.SetActive(true);
+                }
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+            else
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
+        }
+    }
+    
+    public void ActualizeazaTextTimpVot(float timp)
+    {
+        if (textTimpVot != null)
+        {
+            textTimpVot.text = "Timp Rămas: " + timp.ToString("0") + "s";
+        }
+    }
+
+    public void ActualizeazaScorVot(int da, int nu)
+    {
+        if (textScorVot != null)
+        {
+            textScorVot.text = "DA: " + da + " / 3  |  NU: " + nu;
+        }
+    }
+    
+    public void ButonVotDa()
+    {
+        WarRoomManager.Instance.InregistreazaVotServerRpc(true);
+        AscundeButonVoturi();
+    }
+
+    public void ButonVotNu()
+    {
+        WarRoomManager.Instance.InregistreazaVotServerRpc(false);
+        AscundeButonVoturi();
+    }
+    
+    private void AscundeButonVoturi()
+    {
+        if (butonDa != null)
+        {
+            butonDa.SetActive(false);
+        }
+
+        if (butonNu != null)
+        {
+            butonNu.SetActive(false);
         }
     }
 }
