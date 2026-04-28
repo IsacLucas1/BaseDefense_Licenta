@@ -21,6 +21,16 @@ public class UIManager : MonoBehaviour
     public TMPro.TextMeshProUGUI textScorVot;
     public GameObject butonDa;
     public GameObject butonNu;
+    
+    [Header("Abilitati Cooldown")]
+    public Image imagineCooldownTaunt;
+    public Image imagineCooldownInvizibilitate;
+    public Image imagineBuffViteza;
+    public Image imagineBuffDamage;
+    
+    
+    
+    public bool jocPauza = false;
 
     private void Awake()
     {
@@ -93,11 +103,18 @@ public class UIManager : MonoBehaviour
 
             if (activeaza)
             {
+                jocPauza = true;
+                
+                if (WarRoomManager.Instance != null)
+                {
+                    ActualizeazaTextTimpVot(WarRoomManager.Instance.durataVot);
+                }
+                ActualizeazaScorVot(0,0);
+                
                 if (butonDa != null)
                 {
                     butonDa.SetActive(true);
                 }
-
                 if (butonNu != null)
                 {
                     butonNu.SetActive(true);
@@ -109,6 +126,7 @@ public class UIManager : MonoBehaviour
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
+                StartCoroutine(DeblocheazaJocDupaVot());
             }
         }
     }
@@ -153,4 +171,75 @@ public class UIManager : MonoBehaviour
             butonNu.SetActive(false);
         }
     }
+    
+    private System.Collections.IEnumerator DeblocheazaJocDupaVot()
+    {
+        yield return new WaitForSeconds(0.1f);
+        jocPauza = false;
+    }
+    
+    public void SeteazaVizibilitateTaunt(bool vizibil)
+    {
+        if (imagineCooldownTaunt != null)
+        {
+            imagineCooldownTaunt.gameObject.SetActive(vizibil);
+        }
+    }
+    
+    public void ActualizeazaCooldownTaunt(float procentaj)
+    {
+        if (imagineCooldownTaunt != null)
+        {
+            imagineCooldownTaunt.fillAmount = procentaj;
+        }
+    }
+    
+    public void SeteazaVizibilitateInvizibilitate(bool vizibil)
+    {
+        if (imagineCooldownInvizibilitate != null)
+        {
+            imagineCooldownInvizibilitate.gameObject.SetActive(vizibil);
+        }
+    }
+    
+    public void ActualizeazaCooldownInvizibilitate(float procentaj)
+    {
+        if (imagineCooldownInvizibilitate != null)
+        {
+            imagineCooldownInvizibilitate.fillAmount = procentaj;
+        }
+    }
+    
+    public void SeteazaVizibilitateBuffViteza(bool vizibil)
+    {
+        if (imagineBuffViteza != null)
+        {
+            imagineBuffViteza.gameObject.SetActive(vizibil);
+        }
+    }
+
+    public void ActualizeazaBuffViteza(float procentaj)
+    {
+        if (imagineBuffViteza != null)
+        {
+            imagineBuffViteza.fillAmount = procentaj;
+        }
+    }
+
+    public void SeteazaVizibilitateBuffDamage(bool vizibil)
+    {
+        if (imagineBuffDamage != null)
+        {
+            imagineBuffDamage.gameObject.SetActive(vizibil);
+        }
+    }
+
+    public void ActualizeazaBuffDamage(float procentaj)
+    {
+        if (imagineBuffDamage != null)
+        {
+            imagineBuffDamage.fillAmount = procentaj;
+        }
+    }
+    
 }

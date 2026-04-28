@@ -9,6 +9,12 @@ public abstract class MeleePlayer : BasePlayer
     public float atacCooldown = 0.7f;
     public float durataAnimatie = 0.3f;
     
+    [Header("Setari Hitbox (Sfera de Lovire)")]
+    [Tooltip("Cat de departe in fața jucatorului se aplică lovitura")]
+    public float distantaLovitura = 1.5f;
+    [Tooltip("Cat de mare/lată este raza zonei de lovire")]
+    public float razaLovitura = 1.5f;
+    
     protected float nextAttackTime = 0f;
     protected float nextAttackTimeServer = 0f;
 
@@ -26,10 +32,35 @@ public abstract class MeleePlayer : BasePlayer
         {
             return;
         }
+        if (UIManager.Instance != null && UIManager.Instance.jocPauza)
+        {
+            return;
+        }
+        
+        if (canDealdamage && !enemyHit)
+        {
+            DetecteazaLovitura();
+        }
+        
         if (Input.GetMouseButtonDown(0) && Time.time >= nextAttackTime)
         {
             AnuleazaRecall();
             IncearcaSaAtaci();
+        }
+    }
+    
+    private void DetecteazaLovitura()
+    {
+        Vector3 centruLovitura = transform.position + transform.forward * distantaLovitura;
+        Collider[] hitColliders = Physics.OverlapSphere(centruLovitura, razaLovitura);
+
+        foreach (Collider hitCollider in hitColliders)
+        {
+            InamicLovit(hitCollider);
+            if (enemyHit)
+            {
+                break;
+            }
         }
     }
     
@@ -68,7 +99,7 @@ public abstract class MeleePlayer : BasePlayer
         }
 
         isAttacking = true;
-        canDealdamage = true;
+        canDealdamage = false;
         enemyHit = false;
 
         Quaternion rotatieInitiala = pivotArma.localRotation;
@@ -80,6 +111,11 @@ public abstract class MeleePlayer : BasePlayer
         {
             timpAnimatie += Time.deltaTime;
             pivotArma.localRotation = Quaternion.Lerp(rotatieInitiala, rotatieAtac, timpAnimatie / durataAnimatie);
+            
+            if (timpAnimatie >= durataAnimatie / 2f) 
+            {
+                canDealdamage = true;
+            }
             yield return null;
         }
 
@@ -120,9 +156,12 @@ public abstract class MeleePlayer : BasePlayer
                 }
             }
         }
-        else
-        {
-            enemyHit = true;
-        }
+    }
+    
+    protected virtual void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Vector3 centrulLoviturii = transform.position + Vector3.up * 1f + transform.forward * distantaLovitura;
+        Gizmos.DrawWireSphere(centrulLoviturii, razaLovitura);
     }
 }

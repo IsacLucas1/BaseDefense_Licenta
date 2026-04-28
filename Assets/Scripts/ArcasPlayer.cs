@@ -46,6 +46,10 @@ public class ArcasPlayer: BasePlayer
         {
             return;
         }
+        if (UIManager.Instance != null && UIManager.Instance.jocPauza)
+        {
+            return;
+        }
         
         if (Input.GetKeyDown(KeyCode.T))
         {

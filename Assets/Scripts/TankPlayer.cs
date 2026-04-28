@@ -40,6 +40,15 @@ public class TankPlayer : MeleePlayer
         }
     }
 
+    protected override void SetupLocalPlayer()
+    {
+        base.SetupLocalPlayer();
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.SeteazaVizibilitateTaunt(true);
+        }
+    }
+    
     protected override void Update()
     {
         base.Update();
@@ -47,11 +56,31 @@ public class TankPlayer : MeleePlayer
         {
             return;
         }
+        if (UIManager.Instance != null && UIManager.Instance.jocPauza)
+        {
+            return;
+        }
+        
+        if(UIManager.Instance != null)
+        {
+            float procentaj = 1f;
+
+            if (Time.time < nextTauntTime)
+            {
+                float timpRamas = nextTauntTime- Time.time; 
+                procentaj = 1f - (timpRamas / tauntCooldown);
+            }
+            
+            UIManager.Instance.ActualizeazaCooldownTaunt(procentaj);
+        }
+        
         if (Input.GetKeyDown(KeyCode.T) && Time.time >= nextTauntTime)
         {
             AnuleazaRecall();
             ActiveazaTaunt();
         }
+        
+        
     }
     
     private void ActiveazaTaunt()

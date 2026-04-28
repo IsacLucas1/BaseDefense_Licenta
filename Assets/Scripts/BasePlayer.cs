@@ -37,6 +37,10 @@ public class BasePlayer : NetworkBehaviour
     private Coroutine corutinaDamageActiva;
     private int bonusVitezaActiv = 0;
     private int bonusDamageActiv = 0;
+    private float buffVitezaTimpFinal;
+    private float buffVitezaDurataTotala;
+    private float buffDamageTimpFinal;
+    private float buffDamageDurataTotala;
     
     public override void OnNetworkSpawn()
     {
@@ -189,8 +193,31 @@ public class BasePlayer : NetworkBehaviour
         {
             return;
         }
+
+        if (UIManager.Instance != null && UIManager.Instance.jocPauza)
+        {
+            return;
+        }
         
         HandleMouseLook();
+
+        if (UIManager.Instance != null)
+        {
+            if (Time.time < buffVitezaTimpFinal)
+            {
+                float timpRamas = buffVitezaTimpFinal - Time.time;
+                float procentaj = timpRamas / buffVitezaDurataTotala;
+                UIManager.Instance.ActualizeazaBuffViteza(procentaj);
+            }
+
+            if (Time.time < buffDamageTimpFinal)
+            {
+                float timpRamas = buffDamageTimpFinal - Time.time;
+                float procentaj = timpRamas / buffDamageDurataTotala;
+                UIManager.Instance.ActualizeazaBuffDamage(procentaj);
+            }
+        }
+
         if (GetComponent<Health>().currentHealth.Value > 0)
         {
             if(Input.GetKeyDown(KeyCode.K))
@@ -255,27 +282,74 @@ public class BasePlayer : NetworkBehaviour
         }
     }
 
+    [ClientRpc]
+    private void ActiveazaBuffUIClientRpc(TipCamp tip, float durata)
+    {
+        if (!IsOwner || UIManager.Instance == null)
+        {
+            return;
+        } 
+
+        if (tip == TipCamp.Viteza)
+        {
+            buffVitezaDurataTotala = durata;
+            buffVitezaTimpFinal = Time.time + durata;
+            UIManager.Instance.SeteazaVizibilitateBuffViteza(true);
+        }
+        else if (tip == TipCamp.Damage)
+        {
+            buffDamageDurataTotala = durata;
+            buffDamageTimpFinal = Time.time + durata;
+            UIManager.Instance.SeteazaVizibilitateBuffDamage(true);
+        }
+    }
+
+    [ClientRpc]
+    private void DezactiveazaBuffUIClientRpc(TipCamp tip)
+    {
+        if (!IsOwner || UIManager.Instance == null)
+        {
+            return;
+        }
+
+        if (tip == TipCamp.Viteza)
+        {
+            UIManager.Instance.SeteazaVizibilitateBuffViteza(false);
+        }
+        else if (tip == TipCamp.Damage)
+        {
+            UIManager.Instance.SeteazaVizibilitateBuffDamage(false);
+        }
+    }
     protected IEnumerator BuffVitezaRoutine(int valoareBonusViteza, float durataBonusViteza)
     {
         bonusVitezaActiv = valoareBonusViteza;
         speed.Value += bonusVitezaActiv;
+        
+        ActiveazaBuffUIClientRpc(TipCamp.Viteza, durataBonusViteza);
         
         yield return new WaitForSeconds(durataBonusViteza);
         
         speed.Value -= valoareBonusViteza;
         bonusVitezaActiv = 0;
         corutinaVitezaActiva = null;
+       
+        DezactiveazaBuffUIClientRpc(TipCamp.Viteza); 
     }
     protected IEnumerator BuffDamageRoutine(int valoareBonusDamage, float durataBonusDamage)
     {
         bonusDamageActiv = valoareBonusDamage;
         extraDamage.Value += bonusDamageActiv;
         
+        ActiveazaBuffUIClientRpc(TipCamp.Damage, durataBonusDamage);
+        
         yield return new WaitForSeconds(durataBonusDamage);
         
         extraDamage.Value -= valoareBonusDamage;
         bonusDamageActiv = 0;
         corutinaDamageActiva = null;
+        
+        DezactiveazaBuffUIClientRpc(TipCamp.Damage);
     }
     
     [ServerRpc]
@@ -485,6 +559,12 @@ public class BasePlayer : NetworkBehaviour
             if (warRoom != null)
             {
                 warRoom.ApasaButon();
+            }
+            
+            DepozitLemn depozit = hit.collider.GetComponent<DepozitLemn>();
+            if (depozit != null)
+            {
+                depozit.IncearcaDepozitareLemn(this);
             }
         }
     }

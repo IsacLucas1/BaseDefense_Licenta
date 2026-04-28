@@ -65,6 +65,10 @@ public class MedicPlayer : BasePlayer
         {
             return;
         }
+        if (UIManager.Instance != null && UIManager.Instance.jocPauza)
+        {
+            return;
+        }
         
         if(Input.GetMouseButtonDown(1) && Time.time >= nextHealTime)
         {

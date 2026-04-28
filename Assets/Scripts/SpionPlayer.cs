@@ -42,6 +42,15 @@ public class SpionPlayer : MeleePlayer
             GetComponent<Renderer>().material.SetColor("_BaseColor", Color.blue);
         }
     }
+    
+    protected override void SetupLocalPlayer()
+    {
+        base.SetupLocalPlayer();
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.SeteazaVizibilitateInvizibilitate(true);
+        }
+    }
 
     protected override void Update()
     {
@@ -50,6 +59,23 @@ public class SpionPlayer : MeleePlayer
         if (!IsOwner || isDead)
         {
             return;
+        }
+        if (UIManager.Instance != null && UIManager.Instance.jocPauza)
+        {
+            return;
+        }
+        
+        if(UIManager.Instance != null)
+        {
+            float procentaj = 1f;
+
+            if (Time.time < nextInvizibilitateTime)
+            {
+                float timpRamas = nextInvizibilitateTime- Time.time; 
+                procentaj = 1f - (timpRamas / cooldownInvizibilitate);
+            }
+            
+            UIManager.Instance.ActualizeazaCooldownInvizibilitate(procentaj);
         }
         
         if (Input.GetKeyDown(KeyCode.Q) && Time.time >= nextInvizibilitateTime)
@@ -106,7 +132,6 @@ public class SpionPlayer : MeleePlayer
         enemyHit = false;
         
         Vector3 pozitieInitiala = pivotArma.localPosition;
-
         Vector3 offsetAtac = pivotArma.localRotation * new Vector3(0, 1.5f, 0);
         Vector3 pozitieAtac = offsetAtac + pozitieInitiala;
 
@@ -129,6 +154,10 @@ public class SpionPlayer : MeleePlayer
             pivotArma.localPosition = Vector3.Lerp(pozitieAtac, pozitieInitiala, timpAnimatie / durataAnimatie);
             yield return null;
         }
+        
+        pivotArma.localPosition = pozitieInitiala;
+        isAttacking = false;
+        enemyHit = false;
     }
     
     public override void InamicLovit(Collider target)
@@ -169,10 +198,6 @@ public class SpionPlayer : MeleePlayer
                     DamageServerRpc(netObj.NetworkObjectId, damageFinal + extraDamage.Value, OwnerClientId);
                 }
             }
-        }
-        else
-        {
-            enemyHit = true;
         }
     }
 

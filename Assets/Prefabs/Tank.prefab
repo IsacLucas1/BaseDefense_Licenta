@@ -5243,7 +5243,6 @@ GameObject:
   - component: {fileID: 8531395016047893918}
   - component: {fileID: 4700121394456097723}
   - component: {fileID: 6858780513199440031}
-  - component: {fileID: 582552210913687263}
   m_Layer: 0
   m_Name: Ciocan
   m_TagString: Untagged
@@ -5338,21 +5337,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.4280319, y: 0.99999976, z: 1.5835274}
-  m_Center: {x: 0.03346207, y: 0, z: 0.0034110248}
---- !u!114 &582552210913687263
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4752168810764259856}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 866814e19d821614da0ec594e75bd532, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  meleePlayer: {fileID: 3261559137917340704}
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &6440611635876686182
 GameObject:
   m_ObjectHideFlags: 0
@@ -5644,11 +5630,15 @@ MonoBehaviour:
     m_InternalValue: 0
   distantaAdunare: 3
   taiereCooldown: 1
+  isInvisible:
+    m_InternalValue: 0
   respawnPosition:
     m_InternalValue: {x: 0, y: 0, z: 0}
   damageArma: 10
   atacCooldown: 0.7
   durataAnimatie: 0.3
+  distantaLovitura: 1
+  razaLovitura: 0.8
   pivotArma: {fileID: 7379683851666519447}
   tauntRadius: 10
   tauntDuration: 5

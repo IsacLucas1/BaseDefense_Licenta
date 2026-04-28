@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 6899708779219934065}
   - component: {fileID: 4648297617585548586}
   - component: {fileID: 7558588156594316895}
-  - component: {fileID: 2141730459494568791}
   m_Layer: 0
   m_Name: Cutit
   m_TagString: Untagged
@@ -108,21 +107,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.727109, y: 1.0376955, z: 1.1728978}
-  m_Center: {x: 0.03924712, y: 0.018847723, z: 0.08644889}
---- !u!114 &2141730459494568791
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1304945144107351273}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 866814e19d821614da0ec594e75bd532, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  meleePlayer: {fileID: -830341950394980684}
+  m_Size: {x: 1.0000001, y: 1, z: 1.0000006}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &2600411951133043556
 GameObject:
   m_ObjectHideFlags: 0
@@ -5433,6 +5419,8 @@ MonoBehaviour:
   damageArma: 10
   atacCooldown: 0.7
   durataAnimatie: 0.3
+  distantaLovitura: 1.2
+  razaLovitura: 1.2
   pivotArma: {fileID: 4381283961031879704}
   multiplicatorDamageBackstab: 2
   tolerantaUnghiBackstab: 0.6

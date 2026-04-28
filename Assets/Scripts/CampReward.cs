@@ -22,7 +22,7 @@ public class CampReward : NetworkBehaviour
 
     [Header("Setari Damage")]
     public int bonusDamage = 10;      
-    public float durataDamage = 15f;  
+    public float durataDamage = 10f;  
 
     [Header("Setari Resurse")]
     public int cantitateBani = 100;   

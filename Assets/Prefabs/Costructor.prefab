@@ -206,7 +206,6 @@ GameObject:
   - component: {fileID: 366949959606120194}
   - component: {fileID: 7992170534879461243}
   - component: {fileID: 2083258573683392616}
-  - component: {fileID: 7656300085365459487}
   m_Layer: 0
   m_Name: Sabie
   m_TagString: Untagged
@@ -301,8 +300,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.674937, y: 1.0244948, z: 1.7346317}
-  m_Center: {x: 0.068677805, y: 0.012247518, z: -0.07017837}
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &2083258573683392616
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -330,19 +329,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 1
---- !u!114 &7656300085365459487
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4032883453817613566}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 866814e19d821614da0ec594e75bd532, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  meleePlayer: {fileID: 8736521571267994847}
 --- !u!1 &4272983549770186121
 GameObject:
   m_ObjectHideFlags: 0
@@ -809,11 +795,15 @@ MonoBehaviour:
     m_InternalValue: 0
   distantaAdunare: 3
   taiereCooldown: 1
+  isInvisible:
+    m_InternalValue: 0
   respawnPosition:
     m_InternalValue: {x: 0, y: 0, z: 0}
   damageArma: 10
   atacCooldown: 0.7
   durataAnimatie: 0.3
+  distantaLovitura: 0.7
+  razaLovitura: 0.7
   pivotArma: {fileID: 7672423666459444788}
   multiplicatorLemn: 2
   constructieCooldown: 0.8

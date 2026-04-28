@@ -1,3 +1,4 @@
+using System;
 using Unity.Netcode;
 using UnityEngine;
 using System.Collections;
@@ -6,25 +7,25 @@ using System.Collections.Generic;
 public class WarRoomManager : NetworkBehaviour
 {
     public static WarRoomManager Instance;
-    
-    [Header("Setari Vot")]
-    public float durataVot = 30f;
+
+    [Header("Setari Vot")] public float durataVot = 30f;
     public int voturiNecesare = 3;
-    
+
     public NetworkVariable<bool> votInCurs = new NetworkVariable<bool>(false);
     public NetworkVariable<bool> butonActiv = new NetworkVariable<bool>(false);
-    
+
     private List<ulong> jucatoriCareAuVotat = new List<ulong>();
     private int voturiDa = 0;
     private int voturiNu = 0;
-    
-    [Header("Efecte Vizuale Buton")]
-    public Renderer rendererButon;
-    public Color culoareInactiv = new Color(0.3f, 0f, 0f, 1f); 
-    
-    [ColorUsage(true, true)] 
-    public Color culoareActiv = Color.red; 
-    
+
+    [Header("Efecte Vizuale Buton")] public Renderer rendererButon;
+    public Color culoareInactiv = new Color(0.3f, 0f, 0f, 1f);
+
+    [ColorUsage(true, true)] public Color culoareActiv = Color.red;
+
+    private float timpRamasVot;
+    private int ultimulTimpTrimis;
+
     private void Awake()
     {
         if (Instance == null)
@@ -36,13 +37,35 @@ public class WarRoomManager : NetworkBehaviour
             Destroy(gameObject);
         }
     }
-    
+
     private void Start()
     {
         if (rendererButon != null && !butonActiv.Value)
         {
             rendererButon.material.SetColor("_BaseColor", culoareInactiv);
             rendererButon.material.SetColor("_EmissionColor", Color.black);
+        }
+    }
+
+    private void Update()
+    {
+        if (!IsServer || !votInCurs.Value)
+        {
+            return;
+        }
+
+        timpRamasVot -= Time.unscaledDeltaTime;
+        
+        int secundeRamas = Mathf.CeilToInt(timpRamasVot);
+        if (secundeRamas != ultimulTimpTrimis && secundeRamas >= 0)
+        {
+            ultimulTimpTrimis = secundeRamas;
+            ActualizeazaTimpRamasClientRpc(timpRamasVot);
+        }
+        
+        if(secundeRamas <= 0)
+        {
+            EvalueazaRezultatVot();
         }
     }
 
@@ -77,25 +100,10 @@ public class WarRoomManager : NetworkBehaviour
         jucatoriCareAuVotat.Clear();
         voturiDa = 0;
         voturiNu = 0;
-        
-        DeschideMeniuVotClientRpc();
-        StartCoroutine(CronometruVot());
-    }
-    
-    private IEnumerator CronometruVot()
-    {
-        float timpRamas = durataVot;
-        while (timpRamas > 0f && votInCurs.Value)
-        {
-            yield return new WaitForSeconds(1f);
-            timpRamas -= 1f;
-            ActualizeazaTimpRamasClientRpc(timpRamas);
-        }
 
-        if (votInCurs.Value)
-        {
-            EvalueazaRezultatVot();
-        }
+        timpRamasVot = durataVot;
+        ultimulTimpTrimis = Mathf.FloorToInt(durataVot);
+        DeschideMeniuVotClientRpc();
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]

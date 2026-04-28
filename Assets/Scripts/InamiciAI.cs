@@ -192,10 +192,20 @@ public abstract class InamiciAI : NetworkBehaviour
         }
 
         Collider[] colliders = GetComponentsInChildren<Collider>(true);
-        foreach (var c in colliders) c.enabled = active;
+        foreach (var c in colliders)
+        {
+            c.enabled = active;
+        }
 
         Canvas[] canvases = GetComponentsInChildren<Canvas>(true);
-        foreach (var c in canvases) c.enabled = active;
+        foreach (var c in canvases)
+        {
+            if (c.gameObject.name == "CanvasRespawnCamp")
+            {
+                continue;
+            }
+            c.enabled = active;
+        }
     }
     
     protected virtual void OnDrawGizmos()

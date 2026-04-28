@@ -57,6 +57,10 @@ public class ConstructorPlayer : MeleePlayer
         {
             return;
         }
+        if (UIManager.Instance != null && UIManager.Instance.jocPauza)
+        {
+            return;
+        }
         
         if (Input.GetKeyDown(KeyCode.F) && Time.time >= nextConstructieTime)
         {
