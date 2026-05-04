@@ -16,6 +16,12 @@ public class ArcasPlayer: BasePlayer
     private bool isShootingBurst = false;
     public override void OnNetworkSpawn()
     {
+        if (animator == null)
+        {
+            animator = GetComponentInChildren<Animator>();
+            animator.SetFloat("AnimSpeed", 1f);
+        }
+        
         if (IsServer)
         {
             speed.Value = 6f;
@@ -35,8 +41,6 @@ public class ArcasPlayer: BasePlayer
         {
             GetComponent<Renderer>().material.SetColor("_BaseColor", Color.cyan);
         }
-        
-        
     }
     
     protected override void Update()
@@ -66,16 +70,45 @@ public class ArcasPlayer: BasePlayer
             }
             else
             {
-                ShootServerRpc(cameraCap.rotation);
+                if (netAnimator != null) 
+                {
+                    netAnimator.SetTrigger("Attack");
+                }
+                else if (animator != null) 
+                {
+                    animator.SetTrigger("Attack");
+                }
                 nextAttackTime = Time.time + attackCooldown;
             }
         }
     }
 
+    public void ExecutaTragereDinAnimatie()
+    {
+        if (!IsOwner)
+        {
+            return;
+        }
+        if (isBurstMode) 
+        {
+            return;
+        }
+        ShootServerRpc(cameraCap.rotation);
+    }
+    
     private IEnumerator BurstRoutine()
     {
         isShootingBurst = true;
         nextAttackTime = Time.time + attackCooldownBurst;
+        if (netAnimator != null) 
+        {
+            netAnimator.SetTrigger("Attack");
+        }
+        else if (animator != null)
+        {
+            animator.SetTrigger("Attack");
+        }
+        yield return new WaitForSeconds(0.2f);
         for (int i = 0; i < 3; i++)
         {
             ShootServerRpc(cameraCap.rotation);
@@ -84,6 +117,7 @@ public class ArcasPlayer: BasePlayer
         
         isShootingBurst = false;
     }
+    
     [ServerRpc]
     private void ShootServerRpc(Quaternion rotatieTragere)
     {

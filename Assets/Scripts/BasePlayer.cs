@@ -22,8 +22,12 @@ public class BasePlayer : NetworkBehaviour
     public float taiereCooldown = 1f;
     private float nextTaiereTime = 0f;
     
-    [Header("Status Efecte")]
+    [Header("Efecte Vizuale")]
     public NetworkVariable<bool> isInvisible = new NetworkVariable<bool>(false);
+    public ParticleSystem efectMoarte;
+    public Animator animator;
+    
+    protected ClientNetworkAnimator netAnimator;
     
     private Rigidbody rb;
     public bool isDead { get; protected set; } = false;
@@ -46,6 +50,14 @@ public class BasePlayer : NetworkBehaviour
     {
         rb = GetComponent<Rigidbody>();
         speed.OnValueChanged += ActualizeazaTextViteza;
+        animator = GetComponentInChildren<Animator>();
+        netAnimator = GetComponentInChildren<ClientNetworkAnimator>();
+        
+        if (efectMoarte != null)
+        {
+            efectMoarte.gameObject.SetActive(false); 
+        }
+        
         if (IsOwner)
         {
             SetupLocalPlayer();
@@ -450,6 +462,12 @@ public class BasePlayer : NetworkBehaviour
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
 
+        if (animator != null && animator.isActiveAndEnabled) 
+        {
+            animator.SetFloat("MoveX", x);
+            animator.SetFloat("MoveY", z);
+        }
+        
         Vector3 movement = transform.right * x + transform.forward * z;
         
         Vector3 targetPosition = rb.position + movement.normalized * speed.Value * Time.deltaTime;
@@ -502,10 +520,26 @@ public class BasePlayer : NetworkBehaviour
         isDead = stareMoarte;
         bool isActive = !stareMoarte;
         
+        if (stareMoarte && efectMoarte != null)
+        {
+            efectMoarte.gameObject.SetActive(true); 
+            efectMoarte.Play(true); 
+        }
+        else if (!stareMoarte && efectMoarte != null)
+        {
+            efectMoarte.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            efectMoarte.gameObject.SetActive(false);
+        }
+        
         Renderer[] renderer = GetComponentsInChildren<Renderer>(true);
         foreach (var r in renderer)
         {
             if (r is LineRenderer)
+            {
+                continue;
+            }
+            
+            if (efectMoarte != null && r.transform.IsChildOf(efectMoarte.transform))
             {
                 continue;
             }
