@@ -49,6 +49,11 @@ public abstract class MeleePlayer : BasePlayer
         }
     }
     
+    public override int ObtineDamageTotal()
+    {
+        return damageArma + extraDamage.Value;
+    }
+    
     private void DetecteazaLovitura()
     {
         Vector3 centruLovitura = transform.position + transform.forward * distantaLovitura;
@@ -67,7 +72,14 @@ public abstract class MeleePlayer : BasePlayer
     protected void IncearcaSaAtaci()
     {
         nextAttackTime = Time.time + atacCooldown;
-        StartCoroutine(AnimatieAtacArma());
+        if (netAnimator != null)
+        {
+            netAnimator.SetTrigger("Attack");
+        }
+        else
+        {
+            StartCoroutine(AnimatieAtacArma());
+        }
         PerformAttackServerRpc();
     }
 
@@ -87,10 +99,32 @@ public abstract class MeleePlayer : BasePlayer
     {
         if(!IsOwner)
         {
-            StartCoroutine(AnimatieAtacArma());
+            if (netAnimator != null)
+            {
+                netAnimator.SetTrigger("Attack");
+            }
+            else
+            {
+                StartCoroutine(AnimatieAtacArma());
+            }
         }
     }
 
+    public void ExecutaLovituraDinAnimatie()
+    {
+        if (!IsOwner || isDead)
+        {
+            return;
+        }
+        
+        canDealdamage = true;
+        enemyHit = false;
+        
+        DetecteazaLovitura();
+        
+        canDealdamage = false;
+    }
+    
     protected virtual IEnumerator AnimatieAtacArma()
     {
         if (pivotArma == null)

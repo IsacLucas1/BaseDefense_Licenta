@@ -76,6 +76,11 @@ public class BasePlayer : NetworkBehaviour
             respawnRotation = rotation;
         }
     }
+    
+    public virtual int ObtineDamageTotal()
+    {
+        return extraDamage.Value;
+    }
 
     protected virtual void SetupLocalPlayer()
     {
@@ -94,6 +99,7 @@ public class BasePlayer : NetworkBehaviour
 
             lemn.OnValueChanged += ActualizeazaTextLemn;
             bani.OnValueChanged += ActualizeazaTextBani;
+            extraDamage.OnValueChanged += ActualizeazaTextDamage;
             
             Health healthComp = GetComponent<Health>();
             if (healthComp != null)
@@ -106,6 +112,7 @@ public class BasePlayer : NetworkBehaviour
             {
                 UIManager.Instance.ActualizeazaLemn(lemn.Value);
                 UIManager.Instance.ActualizeazaBani(bani.Value);
+                UIManager.Instance.ActualizeazaDamage(ObtineDamageTotal());
                 
                 float coeficientViteza = speed.Value / speedReference;
                 UIManager.Instance.ActualizeazaViteza(coeficientViteza);
@@ -184,12 +191,21 @@ public class BasePlayer : NetworkBehaviour
             bani.Value += cantitate;
         }
     }
+    
+    private void ActualizeazaTextDamage(int valoareVeche, int valoareNoua)
+    {
+        if (IsOwner && UIManager.Instance != null)
+        {
+            UIManager.Instance.ActualizeazaDamage(ObtineDamageTotal());
+        }
+    }
 
     public override void OnNetworkDespawn()
     {
         lemn.OnValueChanged -= ActualizeazaTextLemn;
         speed.OnValueChanged -= ActualizeazaTextViteza;
         bani.OnValueChanged -= ActualizeazaTextBani;
+        extraDamage.OnValueChanged -= ActualizeazaTextDamage;
         
         Health healthComp = GetComponent<Health>();
         if (healthComp != null)

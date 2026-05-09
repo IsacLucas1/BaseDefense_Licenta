@@ -34,13 +34,14 @@ public class ArcasPlayer: BasePlayer
             }
         }
         base.OnNetworkSpawn();
-        
+       
+        /*
         transform.localScale = new Vector3(0.9f, 0.9f, 0.9f);
         
         if (GetComponent<Renderer>())
         {
             GetComponent<Renderer>().material.SetColor("_BaseColor", Color.cyan);
-        }
+        }*/
     }
     
     protected override void Update()
@@ -83,6 +84,19 @@ public class ArcasPlayer: BasePlayer
         }
     }
 
+    public override int ObtineDamageTotal()
+    {
+        if (sageataPrefab != null)
+        {
+            Sageata sag = sageataPrefab.GetComponent<Sageata>();
+            if (sag != null)
+            {
+                return sag.damage + extraDamage.Value;
+            }
+        }
+        return extraDamage.Value;
+    }
+    
     public void ExecutaTragereDinAnimatie()
     {
         if (!IsOwner)

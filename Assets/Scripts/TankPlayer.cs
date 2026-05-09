@@ -32,12 +32,13 @@ public class TankPlayer : MeleePlayer
         
         base.OnNetworkSpawn();
         
+        /*
         transform.localScale = new Vector3(1.2f, 1.2f, 1.2f);
         
         if (GetComponent<Renderer>())
         {
             GetComponent<Renderer>().material.SetColor("_BaseColor", Color.green);
-        }
+        }*/
     }
 
     protected override void SetupLocalPlayer()

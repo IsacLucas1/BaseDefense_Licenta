@@ -678,6 +678,7 @@ MonoBehaviour:
   isInvisible:
     m_InternalValue: 0
   efectMoarte: {fileID: 0}
+  animator: {fileID: 0}
   respawnPosition:
     m_InternalValue: {x: 0, y: 0, z: 0}
   healCooldown: 1
@@ -945,7 +946,7 @@ Camera:
   m_GameObject: {fileID: 7894491727346753412}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 2
+  m_ClearFlags: 1
   m_BackGroundColor: {r: 0.5019608, g: 0.5019608, b: 0.5019608, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2

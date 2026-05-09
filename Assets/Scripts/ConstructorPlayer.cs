@@ -73,12 +73,6 @@ public class ConstructorPlayer : MeleePlayer
             AnuleazaRecall();
             IncearcaSaDistrugaZid();
         }
-        
-        if(Input.GetMouseButton(0) && Time.time >= nextAttackTime && !isAttacking)
-        {
-            AnuleazaRecall();
-            IncearcaSaAtaci();
-        }
     }
     
     private void IncearcaSaConstruiascaSauRepare()

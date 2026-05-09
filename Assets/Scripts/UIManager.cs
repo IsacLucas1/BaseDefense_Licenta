@@ -12,6 +12,7 @@ public class UIManager : MonoBehaviour
     public TMP_Text textLemn;
     public TMP_Text textViteza;
     public TMP_Text textBani;
+    public TMP_Text textDamage;
     public Slider sliderViata;
     public TMP_Text textViata;
     
@@ -61,7 +62,7 @@ public class UIManager : MonoBehaviour
     {
         if (textLemn != null)
         {
-            textLemn.text = "Lemn: " + cantitate;
+            textLemn.text = "<sprite=0>: " + cantitate;
         }
     }
     
@@ -69,7 +70,7 @@ public class UIManager : MonoBehaviour
     {
         if (textViteza != null)
         {
-            textViteza.text = "Viteza: " +  coeficientViteza.ToString("F2");
+            textViteza.text = "<sprite=0>: " +  coeficientViteza.ToString("F2");
         }
     }
     
@@ -77,7 +78,7 @@ public class UIManager : MonoBehaviour
     {
         if (textBani != null)
         {
-            textBani.text = "Bani: " + cantitate;
+            textBani.text = "<sprite=0>: " + cantitate;
         }
     }
     
@@ -91,7 +92,15 @@ public class UIManager : MonoBehaviour
 
         if (textViata != null)
         {
-            textViata.text = valoareCurenta + " / " + valoareMaxima;
+            textViata.text ="<sprite=0> " + valoareCurenta + " / " + valoareMaxima;
+        }
+    }
+    
+    public void ActualizeazaDamage(int valoareDamage)
+    {
+        if (textDamage != null)
+        {
+            textDamage.text = "<sprite=0>: " + valoareDamage;
         }
     }
     

@@ -86,6 +86,11 @@ public class MedicPlayer : BasePlayer
         
     }
     
+    public override int ObtineDamageTotal()
+    {
+        return damageAmount + extraDamage.Value;
+    }
+    
     private void TryToHeal()
     {
         if(healBeamSpawnPoint == null || cameraCap == null)

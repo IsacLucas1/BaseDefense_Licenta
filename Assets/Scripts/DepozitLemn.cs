@@ -28,7 +28,7 @@ public class DepozitLemn : NetworkBehaviour
     {
         if (textCantitateLemn != null)
         {
-            textCantitateLemn.text = "Lemn Stocat: " + valoareNoua;
+            textCantitateLemn.text = "<sprite=0> : " + valoareNoua;
         }
     }
     
@@ -67,7 +67,7 @@ public class DepozitLemn : NetworkBehaviour
             {
                 if (lemnStocat.Value > 0)
                 {
-                    jucator.AdaugaLemn(lemnStocat.Value/constructorPlayer.multiplicatorLemn);
+                    jucator.lemn.Value += lemnStocat.Value;
                     lemnStocat.Value = 0;
                 }
             }
