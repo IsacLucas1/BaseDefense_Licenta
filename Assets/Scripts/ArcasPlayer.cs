@@ -14,6 +14,8 @@ public class ArcasPlayer: BasePlayer
     private float nextAttackTime = 0f;
     private bool isBurstMode = false;
     private bool isShootingBurst = false;
+    public int sagetiPerBurst = 3;
+    
     public override void OnNetworkSpawn()
     {
         if (animator == null)
@@ -34,14 +36,6 @@ public class ArcasPlayer: BasePlayer
             }
         }
         base.OnNetworkSpawn();
-       
-        /*
-        transform.localScale = new Vector3(0.9f, 0.9f, 0.9f);
-        
-        if (GetComponent<Renderer>())
-        {
-            GetComponent<Renderer>().material.SetColor("_BaseColor", Color.cyan);
-        }*/
     }
     
     protected override void Update()
@@ -123,10 +117,10 @@ public class ArcasPlayer: BasePlayer
             animator.SetTrigger("Attack");
         }
         yield return new WaitForSeconds(0.2f);
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < sagetiPerBurst; i++)
         {
             ShootServerRpc(cameraCap.rotation);
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.08f);
         }
         
         isShootingBurst = false;
@@ -144,5 +138,12 @@ public class ArcasPlayer: BasePlayer
         }
         
         newSageata.GetComponent<NetworkObject>().Spawn();
+    }
+    
+    protected override void AplicaUpgradeClasa()
+    {
+        sagetiPerBurst = 4; 
+        
+        Debug.Log("Arcașul a primit Burst Suprem: 4 săgeți!");
     }
 }

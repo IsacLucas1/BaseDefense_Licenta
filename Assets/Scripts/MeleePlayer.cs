@@ -69,11 +69,35 @@ public abstract class MeleePlayer : BasePlayer
         }
     }
     
+    public virtual void InamicLovit(Collider target)
+    {
+        if (!IsOwner || !canDealdamage || enemyHit)
+        {
+            return;
+        }
+
+        if (target.CompareTag("Enemy"))
+        {
+            Health enemyHealth = target.GetComponent<Health>();
+
+            if (enemyHealth != null && enemyHealth.currentHealth.Value > 0)
+            {
+                enemyHit = true; 
+                NetworkObject netObj = target.GetComponent<NetworkObject>();
+                if (netObj != null && netObj.IsSpawned)
+                {
+                    DamageServerRpc(netObj.NetworkObjectId, damageArma + extraDamage.Value, OwnerClientId);
+                }
+            }
+        }
+    }
+    
     protected void IncearcaSaAtaci()
     {
         nextAttackTime = Time.time + atacCooldown;
         if (netAnimator != null)
         {
+            netAnimator.ResetTrigger("Attack");
             netAnimator.SetTrigger("Attack");
         }
         else
@@ -99,11 +123,7 @@ public abstract class MeleePlayer : BasePlayer
     {
         if(!IsOwner)
         {
-            if (netAnimator != null)
-            {
-                netAnimator.SetTrigger("Attack");
-            }
-            else
+            if (netAnimator == null)
             {
                 StartCoroutine(AnimatieAtacArma());
             }
@@ -116,12 +136,16 @@ public abstract class MeleePlayer : BasePlayer
         {
             return;
         }
-        
+
+        StartCoroutine(FereastraLovituraRoutine());
+    }
+    
+    private IEnumerator FereastraLovituraRoutine()
+    {
         canDealdamage = true;
         enemyHit = false;
         
-        DetecteazaLovitura();
-        
+        yield return new WaitForSeconds(0.25f);
         canDealdamage = false;
     }
     
@@ -169,28 +193,7 @@ public abstract class MeleePlayer : BasePlayer
         enemyHit = false;
     }
     
-    public virtual void InamicLovit(Collider target)
-    {
-        if (!IsOwner || !canDealdamage || enemyHit)
-        {
-            return;
-        }
-
-        if (target.CompareTag("Enemy"))
-        {
-            Health enemyHealth = target.GetComponent<Health>();
-
-            if (enemyHealth != null && enemyHealth.currentHealth.Value > 0)
-            {
-                enemyHit = true; 
-                NetworkObject netObj = target.GetComponent<NetworkObject>();
-                if (netObj != null && netObj.IsSpawned)
-                {
-                    DamageServerRpc(netObj.NetworkObjectId, damageArma + extraDamage.Value, OwnerClientId);
-                }
-            }
-        }
-    }
+   
     
     protected virtual void OnDrawGizmos()
     {

@@ -196,4 +196,13 @@ public class MedicPlayer : BasePlayer
             raza.enabled = false;
         }
     }
+    
+    protected override void AplicaUpgradeClasa()
+    {
+        healAmount = 30; 
+        healRange = 20f;
+        healCooldown = 0.4f; 
+
+        Debug.Log("Medicul a primit Upgrade-ul Suprem: Hyper-Heal activat!");
+    }
 }

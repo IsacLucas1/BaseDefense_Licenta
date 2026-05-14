@@ -29,7 +29,14 @@ public class UIManager : MonoBehaviour
     public Image imagineBuffViteza;
     public Image imagineBuffDamage;
     
-    
+    [Header("Magazin Upgrade")]
+    public GameObject ShopPanel;
+    public TMP_Text textBaniShop;
+    public TMP_Text textEroareShop;
+    public Slider sliderViataShop; 
+    public TMP_Text textViataShop;
+    public TMP_Text textButonUpgradeClasa;
+    private Coroutine corutinaEroareShop;
     
     public bool jocPauza = false;
 
@@ -80,6 +87,10 @@ public class UIManager : MonoBehaviour
         {
             textBani.text = "<sprite=0>: " + cantitate;
         }
+        if (textBaniShop != null)
+        {
+            textBaniShop.text = "<sprite=0>: " + cantitate;
+        }
     }
     
     public void ActualizeazaViata(int valoareCurenta, int valoareMaxima)
@@ -93,6 +104,16 @@ public class UIManager : MonoBehaviour
         if (textViata != null)
         {
             textViata.text ="<sprite=0> " + valoareCurenta + " / " + valoareMaxima;
+        }
+        
+        if (sliderViataShop != null)
+        {
+            sliderViataShop.maxValue = valoareMaxima;
+            sliderViataShop.value = valoareCurenta;
+        }
+        if (textViataShop != null)
+        {
+            textViataShop.text = "<sprite=0> " + valoareCurenta + " / " + valoareMaxima;
         }
     }
     
@@ -185,6 +206,94 @@ public class UIManager : MonoBehaviour
     {
         yield return new WaitForSeconds(0.1f);
         jocPauza = false;
+    }
+    
+    public void ArataMagazin(bool activeaza)
+    {
+        if (ShopPanel != null)
+        {
+            ShopPanel.SetActive(activeaza);
+
+            if (activeaza)
+            {
+                jocPauza = true; 
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+                
+                if (Unity.Netcode.NetworkManager.Singleton.LocalClient?.PlayerObject != null)
+                {
+                    var player = Unity.Netcode.NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<BasePlayer>();
+                    if (player != null)
+                    {
+                        ActualizeazaBani(player.bani.Value);
+                        var hp = player.GetComponent<Health>();
+                        if (hp != null)
+                        {
+                            ActualizeazaViata(hp.currentHealth.Value, hp.maxHealth.Value);
+                        }
+                        if (textButonUpgradeClasa != null)
+                        {
+                            if (player is TankPlayer)
+                            {
+                                textButonUpgradeClasa.text = "Super Taunt\n<sprite=0> 250";
+                            }
+                            else if (player is SpionPlayer)
+                            {
+                                textButonUpgradeClasa.text = "Maestrul Umbrelor\n<sprite=0> 250";
+                            }
+                            else if (player is ConstructorPlayer)
+                            {
+                                textButonUpgradeClasa.text = "Inginer Expert - Ziduri la jumatate de pret \n<sprite=0> 250";
+                            }
+                            else if (player is MedicPlayer)
+                            {
+                                textButonUpgradeClasa.text = "Hyper Heal and Hyper Heal Range\n<sprite=0> 250";
+                            }
+                            else if (player is ArcasPlayer)
+                            {
+                                textButonUpgradeClasa.text = "Burst Multiplicat\n<sprite=0> 250";
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+                StartCoroutine(DeblocheazaJocDupaMagazin());
+            }
+        }
+    }
+
+    private System.Collections.IEnumerator DeblocheazaJocDupaMagazin()
+    {
+        yield return new WaitForSeconds(0.1f);
+        jocPauza = false;
+    }
+    
+    public void ArataEroareMagazin(string mesaj)
+    {
+        if (textEroareShop != null)
+        {
+            textEroareShop.text = mesaj;
+            textEroareShop.gameObject.SetActive(true);
+
+            if (corutinaEroareShop != null)
+            {
+                StopCoroutine(corutinaEroareShop);
+            }
+            corutinaEroareShop = StartCoroutine(AscundeEroareRoutine());
+        }
+    }
+
+    private System.Collections.IEnumerator AscundeEroareRoutine()
+    {
+        yield return new WaitForSeconds(3f); 
+        if (textEroareShop != null)
+        {
+            textEroareShop.gameObject.SetActive(false);
+        }
     }
     
     public void SeteazaVizibilitateTaunt(bool vizibil)

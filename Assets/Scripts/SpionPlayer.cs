@@ -12,7 +12,7 @@ public class SpionPlayer : MeleePlayer
 
     [Header("Setari Invizibilitate")]
     public float durataInvizibilitate = 5f;
-    public float cooldownInvizibilitate = 10f;
+    public float cooldownInvizibilitate = 15f;
     private float nextInvizibilitateTime = 0f;
     
     public override void OnNetworkSpawn()
@@ -214,5 +214,12 @@ public class SpionPlayer : MeleePlayer
         {
             backstabParticles.Play();
         }
+    }
+    
+    protected override void AplicaUpgradeClasa()
+    {
+        durataInvizibilitate += 3f; 
+        cooldownInvizibilitate -= 2f; 
+        multiplicatorDamageBackstab += 1; 
     }
 }

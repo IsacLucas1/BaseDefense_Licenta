@@ -5412,6 +5412,7 @@ MonoBehaviour:
     m_InternalValue: 0
   distantaAdunare: 3
   taiereCooldown: 1
+  upgradeClasaCumparat: 0
   isInvisible:
     m_InternalValue: 0
   efectMoarte: {fileID: 0}
@@ -5421,14 +5422,14 @@ MonoBehaviour:
   damageArma: 10
   atacCooldown: 0.7
   durataAnimatie: 0.3
-  distantaLovitura: 1.2
+  distantaLovitura: 1.4
   razaLovitura: 1.2
   pivotArma: {fileID: 4381283961031879704}
   multiplicatorDamageBackstab: 2
   tolerantaUnghiBackstab: 0.6
   backstabParticles: {fileID: 7185595651632728699}
   durataInvizibilitate: 5
-  cooldownInvizibilitate: 10
+  cooldownInvizibilitate: 15
 --- !u!114 &6048972318377788815
 MonoBehaviour:
   m_ObjectHideFlags: 0

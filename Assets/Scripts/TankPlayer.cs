@@ -5,7 +5,7 @@ using System.Collections;
 public class TankPlayer : MeleePlayer
 {
     [Header("Setari Tanc")] 
-    public float tauntRadius = 15f;
+    public float tauntRadius = 10f;
     public float tauntDuration = 5f;
     public float tauntCooldown = 10f;
     private float nextTauntTime = 0f;
@@ -31,14 +31,6 @@ public class TankPlayer : MeleePlayer
         }
         
         base.OnNetworkSpawn();
-        
-        /*
-        transform.localScale = new Vector3(1.2f, 1.2f, 1.2f);
-        
-        if (GetComponent<Renderer>())
-        {
-            GetComponent<Renderer>().material.SetColor("_BaseColor", Color.green);
-        }*/
     }
 
     protected override void SetupLocalPlayer()
@@ -118,4 +110,10 @@ public class TankPlayer : MeleePlayer
         Debug.Log("Tancul a activat Taunt!");
     }
     
+    protected override void AplicaUpgradeClasa()
+    {
+        tauntRadius += 10f; 
+        tauntCooldown -= 3f; 
+        Debug.Log("Tancul a primit Super-Taunt!");
+    }
 }

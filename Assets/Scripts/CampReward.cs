@@ -17,7 +17,7 @@ public class CampReward : NetworkBehaviour
     public TipCamp camp = TipCamp.Viteza;
     
     [Header("Setari Viteza")]
-    public int bonusViteza = 2;      
+    public int bonusViteza = 1;      
     public float durataViteza = 10f;  
 
     [Header("Setari Damage")]

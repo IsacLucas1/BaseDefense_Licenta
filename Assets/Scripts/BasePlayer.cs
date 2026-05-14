@@ -21,6 +21,8 @@ public class BasePlayer : NetworkBehaviour
     
     public float taiereCooldown = 1f;
     private float nextTaiereTime = 0f;
+    private bool inZonaMagazin = false;
+    public bool upgradeClasaCumparat = false;
     
     [Header("Efecte Vizuale")]
     public NetworkVariable<bool> isInvisible = new NetworkVariable<bool>(false);
@@ -45,6 +47,8 @@ public class BasePlayer : NetworkBehaviour
     private float buffVitezaDurataTotala;
     private float buffDamageTimpFinal;
     private float buffDamageDurataTotala;
+    private float timpRamasViteza = 0f;
+    private float timpRamasDamage = 0f;
     
     public override void OnNetworkSpawn()
     {
@@ -259,11 +263,26 @@ public class BasePlayer : NetworkBehaviour
             recallCoroutineActiva = StartCoroutine(StartRecallCoroutine());
         }
         
-        if(Input.GetKeyDown(KeyCode.E) && Time.time >= nextTaiereTime)
+        if (Input.GetKeyDown(KeyCode.E))
         {
             AnuleazaRecall();
-            IncearcaSaTaieCopac();
-            nextTaiereTime = Time.time + taiereCooldown;
+            
+            if (UIManager.Instance != null && UIManager.Instance.ShopPanel != null && UIManager.Instance.ShopPanel.activeSelf)
+            {
+                UIManager.Instance.ArataMagazin(false);
+            }
+            else if (inZonaMagazin)
+            {
+                if (UIManager.Instance != null)
+                {
+                    UIManager.Instance.ArataMagazin(true);
+                }
+            }
+            else if (Time.time >= nextTaiereTime)
+            {
+                IncearcaSaTaieCopac();
+                nextTaiereTime = Time.time + taiereCooldown;
+            }
         }
 
         if (Input.GetKeyDown(KeyCode.Z))
@@ -273,6 +292,11 @@ public class BasePlayer : NetworkBehaviour
         }
     }
 
+    public void SeteazaInZonaMagazin(bool stare)
+    {
+        inZonaMagazin = stare;
+    }
+    
     public virtual void PrimesteRecompensa(TipCamp camp, int valoare, float durata)
     {
         if(!IsServer)
@@ -283,20 +307,35 @@ public class BasePlayer : NetworkBehaviour
         switch (camp)
         {
             case TipCamp.Viteza:
-                if (corutinaVitezaActiva != null)
+                if (timpRamasViteza <= 0f)
                 {
-                    StopCoroutine(corutinaVitezaActiva);
-                    speed.Value -= bonusVitezaActiv;
+                    bonusVitezaActiv = valoare;
+                    speed.Value += bonusVitezaActiv;
                 }
-                corutinaVitezaActiva = StartCoroutine(BuffVitezaRoutine(valoare, durata));
+                timpRamasViteza += durata;
+                
+                ActiveazaBuffUIClientRpc(TipCamp.Viteza, timpRamasViteza);
+
+                if (corutinaVitezaActiva == null)
+                {
+                    corutinaVitezaActiva = StartCoroutine(BuffVitezaRoutine());
+                }
+                
                 break;
             case TipCamp.Damage:
-                if (corutinaDamageActiva != null)
+                if (timpRamasDamage <= 0f)
                 {
-                    StopCoroutine(corutinaDamageActiva);
-                    extraDamage.Value -= bonusDamageActiv;
+                    bonusDamageActiv = valoare;
+                    extraDamage.Value += bonusDamageActiv;
                 }
-                corutinaDamageActiva = StartCoroutine(BuffDamageRoutine(valoare, durata));
+                timpRamasDamage += durata;
+                
+                ActiveazaBuffUIClientRpc(TipCamp.Damage, timpRamasDamage);
+                
+                if (corutinaDamageActiva == null)
+                {
+                    corutinaDamageActiva = StartCoroutine(BuffDamageRoutine());
+                }
                 break;
             case TipCamp.Bani:
                 AdaugaBani(valoare);
@@ -349,31 +388,29 @@ public class BasePlayer : NetworkBehaviour
             UIManager.Instance.SeteazaVizibilitateBuffDamage(false);
         }
     }
-    protected IEnumerator BuffVitezaRoutine(int valoareBonusViteza, float durataBonusViteza)
+    protected IEnumerator BuffVitezaRoutine()
     {
-        bonusVitezaActiv = valoareBonusViteza;
-        speed.Value += bonusVitezaActiv;
+        while (timpRamasViteza > 0)
+        {
+            timpRamasViteza -= Time.deltaTime; 
+            yield return null;
+        }
         
-        ActiveazaBuffUIClientRpc(TipCamp.Viteza, durataBonusViteza);
-        
-        yield return new WaitForSeconds(durataBonusViteza);
-        
-        speed.Value -= valoareBonusViteza;
+        speed.Value -= bonusVitezaActiv;
         bonusVitezaActiv = 0;
         corutinaVitezaActiva = null;
        
-        DezactiveazaBuffUIClientRpc(TipCamp.Viteza); 
+        DezactiveazaBuffUIClientRpc(TipCamp.Viteza);
     }
-    protected IEnumerator BuffDamageRoutine(int valoareBonusDamage, float durataBonusDamage)
+    protected IEnumerator BuffDamageRoutine()
     {
-        bonusDamageActiv = valoareBonusDamage;
-        extraDamage.Value += bonusDamageActiv;
+        while (timpRamasDamage > 0)
+        {
+            timpRamasDamage -= Time.deltaTime;
+            yield return null;
+        }
         
-        ActiveazaBuffUIClientRpc(TipCamp.Damage, durataBonusDamage);
-        
-        yield return new WaitForSeconds(durataBonusDamage);
-        
-        extraDamage.Value -= valoareBonusDamage;
+        extraDamage.Value -= bonusDamageActiv;
         bonusDamageActiv = 0;
         corutinaDamageActiva = null;
         
@@ -457,7 +494,7 @@ public class BasePlayer : NetworkBehaviour
     
     private void FixedUpdate()
     {
-        if (!IsOwner || isDead)
+        if (!IsOwner || isDead || (UIManager.Instance != null && UIManager.Instance.jocPauza))
         {
             return;
         }
@@ -618,4 +655,149 @@ public class BasePlayer : NetworkBehaviour
             }
         }
     }
+    
+    [ServerRpc]
+    public void CumparaUpgradeServerRpc(int upgradeId)
+    {
+        int cost = 0;
+        
+        switch (upgradeId)
+        {
+            case 1: cost = 100; break; // Viteza
+            case 2: cost = 150; break; // Damage
+            case 3: cost = 50;  break; // + Lemn
+            case 4: cost = 40;  break; // + Viata
+            case 5: cost = 200; break; // + Viata Max
+            case 6: cost = 60;  break; // Bonus Viteza temp
+            case 7: cost = 80;  break; // Bonus Damage temp
+            case 8: cost = 120; break; // Taiere rapida
+            case 9: cost = 300; break; // Viata Ziduri
+        }
+        
+        if (bani.Value < cost)
+        {
+            AfiseazaEroareMagazinClientRpc("Nu ai suficienți bani!");
+            return; 
+        }
+        
+        if (upgradeId == 4)
+        {
+            Health h = GetComponent<Health>();
+            if (h != null && h.currentHealth.Value >= h.maxHealth.Value)
+            {
+                AfiseazaEroareMagazinClientRpc("Ai deja viața la maximum!"); 
+                return; 
+            }
+        }
+        else if (upgradeId == 6)
+        {
+            if (timpRamasViteza > 0f)
+            {
+                AfiseazaEroareMagazinClientRpc("Ai deja un bonus de viteză activ!"); 
+                return;
+            }
+        }
+        else if (upgradeId == 7)
+        {
+            if (timpRamasDamage > 0f)
+            {
+                AfiseazaEroareMagazinClientRpc("Ai deja un bonus de damage activ!"); 
+                return;
+            }
+        }
+        
+        bani.Value -= cost; 
+
+        switch (upgradeId)
+        {
+            case 1: speed.Value += 1f; break;
+            case 2: extraDamage.Value += 5; break;
+            case 3: lemn.Value += 50; break;
+            case 4: 
+                Health h1 = GetComponent<Health>();
+                if (h1 != null)
+                {
+                    h1.Heal(50);
+                }
+                break;
+            case 5: 
+                Health h2 = GetComponent<Health>();
+                if (h2 != null)
+                {
+                    h2.maxHealth.Value += 50;
+                    h2.currentHealth.Value += 50;
+                }
+                break;
+            case 6: PrimesteRecompensa(TipCamp.Viteza, 1, 30f); break;
+            case 7: PrimesteRecompensa(TipCamp.Damage, 10, 30f); break;
+            case 8: UpgradeTaiereLemnClientRpc(); break;
+            case 9: 
+                Zid[] ziduri = FindObjectsByType<Zid>(FindObjectsSortMode.None);
+                foreach (Zid z in ziduri)
+                {
+                    z.CresteCapacitateaServer(50);
+                }
+                break;
+        }
+        Debug.Log($"Upgrade-ul cu ID-ul {upgradeId} a fost achizitionat!");
+    }
+
+    [ClientRpc]
+    private void AfiseazaEroareMagazinClientRpc(string mesajEroare)
+    {
+        if (IsOwner && UIManager.Instance != null)
+        {
+            UIManager.Instance.ArataEroareMagazin(mesajEroare);
+        }
+    }
+    
+    [ClientRpc]
+    private void UpgradeTaiereLemnClientRpc()
+    {
+        if (IsOwner)
+        {
+            taiereCooldown = Mathf.Max(0.2f, taiereCooldown - 0.2f);
+        }
+    }
+    
+    [ServerRpc]
+    public void CumparaUpgradeClasaServerRpc()
+    {
+        int cost = 250; 
+        
+        if (upgradeClasaCumparat)
+        {
+            AfiseazaEroareMagazinClientRpc("Ai cumpărat deja Upgrade-ul de Clasă!");
+            return;
+        }
+        
+        if (bani.Value < cost)
+        {
+            AfiseazaEroareMagazinClientRpc("Nu ai suficienți bani pentru Upgrade-ul de Clasă!");
+            return;
+        }
+
+        bani.Value -= cost;
+        
+        AplicaUpgradeClasa(); 
+        ConfirmaUpgradeCumparatClientRpc(); 
+        
+        Debug.Log("Upgrade de clasă achiziționat!");
+    }
+
+    [ClientRpc]
+    private void ConfirmaUpgradeCumparatClientRpc()
+    {
+        upgradeClasaCumparat = true;
+        if (IsOwner && !IsServer)
+        {
+            AplicaUpgradeClasa();
+        }
+    }
+    
+    protected virtual void AplicaUpgradeClasa()
+    {
+        
+    }
+    
 }

@@ -7,6 +7,7 @@ public class ConstructorPlayer : MeleePlayer
 { 
     [Header("Setari Constructor")]
     public int multiplicatorLemn = 2;
+    public int costConstructie = 10;
     
     [Header("Setari Constructie")]
     public float constructieCooldown = 0.8f;
@@ -84,13 +85,11 @@ public class ConstructorPlayer : MeleePlayer
 
             if (zid != null)
             {
-                if (zid.viata.Value < zid.viataMax)
+                if (zid.viata.Value < zid.viataMax.Value)
                 {
-                    int costConstructie = 10;
-                                    
                     if(lemn.Value >= costConstructie)
                     {
-                        Debug.Log("Am trimis comanda la server sa construiasca zidul!");
+                        Debug.Log("Construiesc cu costul: " + costConstructie);
                         ConstruiesteZidServerRpc(zid.NetworkObjectId, costConstructie);
                         nextConstructieTime = Time.time + constructieCooldown;
                     }
@@ -104,14 +103,6 @@ public class ConstructorPlayer : MeleePlayer
                     Debug.Log("Acest zid este deja la 100% viață!");
                 }
             }
-            else
-            {
-                Debug.Log("Mă uit la " + hit.collider.name + " dar nu este un Zid.");
-            }
-        }
-        else
-        {
-            Debug.Log("Nu mă uit la niciun obiect sau sunt prea departe.");
         }
     }
 
@@ -123,7 +114,7 @@ public class ConstructorPlayer : MeleePlayer
             if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(zidId, out var obj))
             {
                 Zid zid = obj.GetComponent<Zid>();
-                if (zid != null && zid.viata.Value < zid.viataMax)
+                if (zid != null && zid.viata.Value < zid.viataMax.Value)
                 {
                     lemn.Value -= cost;
                     zid.ConstruiesteSauReparaServerRpc(20);
@@ -168,5 +159,11 @@ public class ConstructorPlayer : MeleePlayer
                 zid.PrimesteDamage(damage);
             }
         }
+    }
+    
+    protected override void AplicaUpgradeClasa()
+    {
+        costConstructie = 5; // Înjumătățim costul zidurilor
+        Debug.Log("Constructorul a primit Upgrade-ul Suprem: Ziduri la jumătate de preț!");
     }
 }

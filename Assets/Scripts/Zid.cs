@@ -7,8 +7,9 @@ using UnityEngine.AI;
 public class Zid : NetworkBehaviour
 {
     [Header("Setari Zid")]
-    public int viataMax = 100;
-
+    public int viataMaxInspector = 100;
+    
+    public NetworkVariable<int> viataMax = new NetworkVariable<int>(100);
     public NetworkVariable<int> viata = new NetworkVariable<int>(0);
     
     private Collider zidCollider;
@@ -36,7 +37,15 @@ public class Zid : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        viata.OnValueChanged += LaSchimbareViata;
+        if (IsServer)
+        {
+            viataMax.Value = viataMaxInspector;
+        }
+        
+        viata.OnValueChanged += (oldVal, newVal) => ActualizeazaZid(newVal);
+        
+        viataMax.OnValueChanged += (oldVal, newVal) => ActualizeazaZid(viata.Value);
+
         ActualizeazaZid(viata.Value);
     }
     
@@ -65,7 +74,7 @@ public class Zid : NetworkBehaviour
             }
             SeteazaOpacitate(0.3f, false);
         }
-        else if (viataCurenta >= viataMax)
+        else if (viataCurenta >= viataMax.Value)
         {
             if (zidCollider != null)
             {
@@ -87,12 +96,20 @@ public class Zid : NetworkBehaviour
             {
                 navMeshObstacle.enabled = true;
             }
-            float procent = (float)viataCurenta / viataMax;
+            float procent = (float)viataCurenta / viataMax.Value;
             float alpha = Mathf.Lerp(0.3f, 1f, procent);
             SeteazaOpacitate(alpha, false);
         }
     }
 
+    public void CresteCapacitateaServer(int bonus)
+    {
+        if (IsServer)
+        {
+            viataMax.Value += bonus;
+        }
+    }
+    
     private void SeteazaOpacitate(float alpha, bool devineOpac)
     {
         if (wallRenderer != null)
@@ -127,7 +144,7 @@ public class Zid : NetworkBehaviour
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     public void ConstruiesteSauReparaServerRpc(int viataAdaugata)
     {
-        viata.Value = Mathf.Min(viata.Value + viataAdaugata, viataMax);
+        viata.Value = Mathf.Min(viata.Value + viataAdaugata, viataMax.Value);
     }
     
     public void PrimesteDamage(int damage)

@@ -15,7 +15,7 @@ MonoBehaviour:
   assetVersion: 2
   m_TextWrappingMode: 1
   m_enableKerning: 1
-  m_ActiveFontFeatures: 00000000
+  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 0
   m_enableTintAllSprites: 0
   m_enableParseEscapeCharacters: 1
@@ -36,17 +36,21 @@ MonoBehaviour:
   m_fallbackFontAssets: []
   m_matchMaterialPreset: 1
   m_HideSubTextObjects: 0
-  m_defaultSpriteAsset: {fileID: 11400000, guid: c41005c129ba4d66911b75229fd70b45,
-    type: 2}
+  m_defaultSpriteAsset: {fileID: 11400000, guid: c41005c129ba4d66911b75229fd70b45, type: 2}
   m_defaultSpriteAssetPath: Sprite Assets/
   m_enableEmojiSupport: 1
   m_MissingCharacterSpriteUnicode: 0
-  m_EmojiFallbackTextAssets: []
+  m_EmojiFallbackTextAssets:
+  - {fileID: 11400000, guid: f278b29d9fad1a8408d9f7199a08c755, type: 2}
+  - {fileID: 11400000, guid: 7621c94a352a8014eb54af7f6cebeecf, type: 2}
+  - {fileID: 11400000, guid: d93728a2b9e24134caf51c76c1321275, type: 2}
+  - {fileID: 11400000, guid: 30353a9fbde25c94eb0baefccba677ae, type: 2}
+  - {fileID: 11400000, guid: 91ea55a2bf2298943abd24f35a0995c3, type: 2}
+  - {fileID: 11400000, guid: 54fa07f7a3a4b4f4a84024db4de7075c, type: 2}
+  - {fileID: 11400000, guid: 485b1bb76eba87a45a854394c4d43876, type: 2}
   m_defaultColorGradientPresetsPath: Color Gradient Presets/
-  m_defaultStyleSheet: {fileID: 11400000, guid: f952c082cb03451daed3ee968ac6c63e,
-    type: 2}
+  m_defaultStyleSheet: {fileID: 11400000, guid: f952c082cb03451daed3ee968ac6c63e, type: 2}
   m_StyleSheetsResourcePath: 
   m_leadingCharacters: {fileID: 4900000, guid: d82c1b31c7e74239bff1220585707d2b, type: 3}
-  m_followingCharacters: {fileID: 4900000, guid: fade42e8bc714b018fac513c043d323b,
-    type: 3}
+  m_followingCharacters: {fileID: 4900000, guid: fade42e8bc714b018fac513c043d323b, type: 3}
   m_UseModernHangulLineBreakingRules: 0
