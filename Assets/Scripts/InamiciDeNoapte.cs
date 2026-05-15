@@ -10,9 +10,11 @@ public class InamiciDeNoapte : InamiciAI
     
     protected override void Update()
     {
-        if (!IsServer || isDead.Value) return;
+        if (!IsServer || isDead.Value)
+        {
+            return;
+        }
 
-        // Daca a ajuns deja la baza, IGNORA cautarea de jucatori si executa doar atacul pe baza
         if (aAjunsLaBaza)
         {
             ComportamentFaraTinta();
@@ -51,7 +53,7 @@ public class InamiciDeNoapte : InamiciAI
 
         float distantaPanaLaBaza = Vector3.Distance(transform.position, tintaBaza.position);
         
-        if (distantaPanaLaBaza <= razaAtac +2f)
+        if (distantaPanaLaBaza <= razaAtac + 2f)
         {
             aAjunsLaBaza = true; 
             tinta = null; 

@@ -58,7 +58,7 @@ public class ConstructorPlayer : MeleePlayer
         {
             return;
         }
-        if (UIManager.Instance != null && UIManager.Instance.jocPauza)
+        if (UIManager.Instance != null  && (UIManager.Instance.jocPauza || UIManager.Instance.esteInMagazin))
         {
             return;
         }

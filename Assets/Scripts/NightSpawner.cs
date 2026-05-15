@@ -85,4 +85,49 @@ public class NightSpawner : NetworkBehaviour
         }
         return false;
     }
+    
+    // Functie apelata de HouseManager cand Spionul trage maneta-capcana
+    public void DeclanseazaAtacSurpriza()
+    {
+        if (IsServer)
+        {
+            StartCoroutine(SpawnAtacSurprizaRoutine());
+        }
+    }
+
+    private IEnumerator SpawnAtacSurprizaRoutine()
+    {
+        inamiciInViata.RemoveAll(inamic => inamic == null);
+
+        for (int i = 0; i < inamiciPerNoapte; i++)
+        {
+            if (puncteSpawn.Length == 0)
+            {
+                yield break;
+            }
+
+            Transform punctSpawnAles = puncteSpawn[Random.Range(0, puncteSpawn.Length)];
+            GameObject inamicInstantiat = Instantiate(inamicPrefab, punctSpawnAles.position, punctSpawnAles.rotation);
+            
+            NetworkObject netObj = inamicInstantiat.GetComponent<NetworkObject>();
+            if (netObj != null)
+            {
+                netObj.Spawn();
+            }
+            
+            InamiciDeNoapte scriptDeNoapte = inamicInstantiat.GetComponent<InamiciDeNoapte>();
+            if (scriptDeNoapte != null)
+            {
+                scriptDeNoapte.tintaBaza = obiectivBaza;
+            }
+            
+            Health healthInamic = inamicInstantiat.GetComponent<Health>();
+            if (healthInamic != null)
+            {
+                inamiciInViata.Add(healthInamic);
+            }
+            
+            yield return new WaitForSeconds(timpIntreSpawns);
+        }
+    }
 }

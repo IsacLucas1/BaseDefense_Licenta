@@ -1,6 +1,8 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using System.Collections;
+
 public class UIManager : MonoBehaviour
 {
     public static UIManager Instance { get; private set; }
@@ -15,6 +17,7 @@ public class UIManager : MonoBehaviour
     public TMP_Text textDamage;
     public Slider sliderViata;
     public TMP_Text textViata;
+    public TMP_Text textNotificareSpion; 
     
     [Header("Sistem Vot War Room")]
     public GameObject WarRoomVotingPanel;
@@ -35,8 +38,15 @@ public class UIManager : MonoBehaviour
     public TMP_Text textEroareShop;
     public Slider sliderViataShop; 
     public TMP_Text textViataShop;
+    public TMP_Text textLemnShop;
+    public TMP_Text textVitezaShop;
+    public TMP_Text textDamageShop;
+    public Image imagineBuffVitezaShop;
+    public Image imagineBuffDamageShop;
     public TMP_Text textButonUpgradeClasa;
+    public Button[] butoaneMagazin;
     private Coroutine corutinaEroareShop;
+    public bool esteInMagazin = false;
     
     public bool jocPauza = false;
 
@@ -55,6 +65,16 @@ public class UIManager : MonoBehaviour
         {
             InterfataJucator.SetActive(false);
         }
+
+        if (sliderViata != null)
+        {
+            sliderViata.interactable = false;
+        }
+
+        if (sliderViataShop != null)
+        {
+            sliderViataShop.interactable = false;
+        }
     }
     
     public void ActiveazaInterfataJucator()
@@ -71,6 +91,10 @@ public class UIManager : MonoBehaviour
         {
             textLemn.text = "<sprite=0>: " + cantitate;
         }
+        if (textLemnShop != null)
+        {
+            textLemnShop.text = "<sprite=0>: " + cantitate;
+        }
     }
     
     public void ActualizeazaViteza(float coeficientViteza)
@@ -78,6 +102,10 @@ public class UIManager : MonoBehaviour
         if (textViteza != null)
         {
             textViteza.text = "<sprite=0>: " +  coeficientViteza.ToString("F2");
+        }
+        if (textVitezaShop != null)
+        {
+            textVitezaShop.text = "<sprite=0>: " +  coeficientViteza.ToString("F2");
         }
     }
     
@@ -123,6 +151,10 @@ public class UIManager : MonoBehaviour
         {
             textDamage.text = "<sprite=0>: " + valoareDamage;
         }
+        if (textDamageShop != null)
+        {
+            textDamageShop.text = "<sprite=0>: " + valoareDamage;
+        }
     }
     
     public void ArataPanouVot(bool activeaza)
@@ -134,6 +166,7 @@ public class UIManager : MonoBehaviour
             if (activeaza)
             {
                 jocPauza = true;
+                SeteazaStareButoaneShop(false);
                 
                 if (WarRoomManager.Instance != null)
                 {
@@ -154,8 +187,12 @@ public class UIManager : MonoBehaviour
             }
             else
             {
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
+                SeteazaStareButoaneShop(true);
+                if (!esteInMagazin) 
+                {
+                    Cursor.lockState = CursorLockMode.Locked;
+                    Cursor.visible = false;
+                }
                 StartCoroutine(DeblocheazaJocDupaVot());
             }
         }
@@ -208,6 +245,20 @@ public class UIManager : MonoBehaviour
         jocPauza = false;
     }
     
+    public void SeteazaStareButoaneShop(bool interactabil)
+    {
+        if (butoaneMagazin != null)
+        {
+            foreach (Button btn in butoaneMagazin)
+            {
+                if (btn != null)
+                {
+                    btn.interactable = interactabil;
+                }
+            }
+        }
+    }
+    
     public void ArataMagazin(bool activeaza)
     {
         if (ShopPanel != null)
@@ -216,9 +267,12 @@ public class UIManager : MonoBehaviour
 
             if (activeaza)
             {
-                jocPauza = true; 
+                esteInMagazin = true;
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
+                
+                bool votActiv = WarRoomManager.Instance != null && WarRoomManager.Instance.votInCurs.Value;
+                SeteazaStareButoaneShop(!votActiv);
                 
                 if (Unity.Netcode.NetworkManager.Singleton.LocalClient?.PlayerObject != null)
                 {
@@ -269,7 +323,7 @@ public class UIManager : MonoBehaviour
     private System.Collections.IEnumerator DeblocheazaJocDupaMagazin()
     {
         yield return new WaitForSeconds(0.1f);
-        jocPauza = false;
+        esteInMagazin = false;
     }
     
     public void ArataEroareMagazin(string mesaj)
@@ -328,11 +382,31 @@ public class UIManager : MonoBehaviour
         }
     }
     
+    public void ArataNotificare(string mesaj)
+    {
+        if (textNotificareSpion != null)
+        {
+            textNotificareSpion.text = mesaj;
+            textNotificareSpion.gameObject.SetActive(true);
+            StartCoroutine(AscundeNotificare(3f));
+        }
+    }
+
+    private IEnumerator AscundeNotificare(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        textNotificareSpion.gameObject.SetActive(false);
+    }
+    
     public void SeteazaVizibilitateBuffViteza(bool vizibil)
     {
         if (imagineBuffViteza != null)
         {
             imagineBuffViteza.gameObject.SetActive(vizibil);
+        }
+        if (imagineBuffVitezaShop != null)
+        {
+            imagineBuffVitezaShop.gameObject.SetActive(vizibil);
         }
     }
 
@@ -342,6 +416,10 @@ public class UIManager : MonoBehaviour
         {
             imagineBuffViteza.fillAmount = procentaj;
         }
+        if (imagineBuffVitezaShop != null)
+        {
+            imagineBuffVitezaShop.fillAmount = procentaj;
+        }
     }
 
     public void SeteazaVizibilitateBuffDamage(bool vizibil)
@@ -350,6 +428,10 @@ public class UIManager : MonoBehaviour
         {
             imagineBuffDamage.gameObject.SetActive(vizibil);
         }
+        if (imagineBuffDamageShop != null)
+        {
+            imagineBuffDamageShop.gameObject.SetActive(vizibil);
+        }
     }
 
     public void ActualizeazaBuffDamage(float procentaj)
@@ -357,6 +439,10 @@ public class UIManager : MonoBehaviour
         if (imagineBuffDamage != null)
         {
             imagineBuffDamage.fillAmount = procentaj;
+        }
+        if (imagineBuffDamageShop != null)
+        {
+            imagineBuffDamageShop.fillAmount = procentaj;
         }
     }
     

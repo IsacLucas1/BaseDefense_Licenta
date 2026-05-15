@@ -13,6 +13,10 @@ public class HealthDisplay : NetworkBehaviour
     private void Start()
     {
         cam = Camera.main;
+        if (healthBar != null)
+        {
+            healthBar.interactable = false;
+        }
     }
 
     public override void OnNetworkSpawn()

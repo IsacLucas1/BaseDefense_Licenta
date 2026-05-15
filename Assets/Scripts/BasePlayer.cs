@@ -230,8 +230,6 @@ public class BasePlayer : NetworkBehaviour
         {
             return;
         }
-        
-        HandleMouseLook();
 
         if (UIManager.Instance != null)
         {
@@ -249,6 +247,18 @@ public class BasePlayer : NetworkBehaviour
                 UIManager.Instance.ActualizeazaBuffDamage(procentaj);
             }
         }
+        
+        if (UIManager.Instance != null && UIManager.Instance.esteInMagazin)
+        {
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                AnuleazaRecall(); 
+                UIManager.Instance.ArataMagazin(false);
+            }
+            return; 
+        }
+        
+        HandleMouseLook();
 
         if (GetComponent<Health>().currentHealth.Value > 0)
         {
@@ -265,22 +275,15 @@ public class BasePlayer : NetworkBehaviour
         
         if (Input.GetKeyDown(KeyCode.E))
         {
-            AnuleazaRecall();
-            
-            if (UIManager.Instance != null && UIManager.Instance.ShopPanel != null && UIManager.Instance.ShopPanel.activeSelf)
+            if (inZonaMagazin)
             {
-                UIManager.Instance.ArataMagazin(false);
-            }
-            else if (inZonaMagazin)
-            {
-                if (UIManager.Instance != null)
-                {
-                    UIManager.Instance.ArataMagazin(true);
-                }
+                AnuleazaRecall();
+                UIManager.Instance.ArataMagazin(true); 
             }
             else if (Time.time >= nextTaiereTime)
             {
-                IncearcaSaTaieCopac();
+                AnuleazaRecall();
+                IncearcaSaTaieCopac(); 
                 nextTaiereTime = Time.time + taiereCooldown;
             }
         }
@@ -494,7 +497,7 @@ public class BasePlayer : NetworkBehaviour
     
     private void FixedUpdate()
     {
-        if (!IsOwner || isDead || (UIManager.Instance != null && UIManager.Instance.jocPauza))
+        if (!IsOwner || isDead || (UIManager.Instance != null && (UIManager.Instance.jocPauza || UIManager.Instance.esteInMagazin)))
         {
             return;
         }
@@ -502,7 +505,7 @@ public class BasePlayer : NetworkBehaviour
     }
     
     [ServerRpc]
-    void RequestSelfDamageServerRpc()
+    private void RequestSelfDamageServerRpc()
     {
         if (GetComponent<Health>())
         {
@@ -510,7 +513,7 @@ public class BasePlayer : NetworkBehaviour
         }
     }
 
-    void HandleMovement()
+    private void HandleMovement()
     {
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
@@ -527,7 +530,7 @@ public class BasePlayer : NetworkBehaviour
         rb.MovePosition(targetPosition);
     }
     
-    void HandleMouseLook()
+    private void HandleMouseLook()
     {
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
@@ -548,7 +551,7 @@ public class BasePlayer : NetworkBehaviour
         StartCoroutine(RespawnRoutine());
     }
     
-    IEnumerator RespawnRoutine()
+    private IEnumerator RespawnRoutine()
     {
         isDead = true;
         EliminaJucatorulClientRpc(true);
@@ -568,9 +571,19 @@ public class BasePlayer : NetworkBehaviour
     }
 
     [ClientRpc]
-    void EliminaJucatorulClientRpc(bool stareMoarte)
+    private void EliminaJucatorulClientRpc(bool stareMoarte)
     {
         isDead = stareMoarte;
+        
+        if (IsOwner && stareMoarte)
+        {
+            if (UIManager.Instance != null && UIManager.Instance.esteInMagazin)
+            {
+                UIManager.Instance.ArataMagazin(false);
+                Debug.Log("Jucătorul a murit, magazinul a fost închis automat.");
+            }
+        }
+        
         bool isActive = !stareMoarte;
         
         if (stareMoarte && efectMoarte != null)
@@ -627,7 +640,7 @@ public class BasePlayer : NetworkBehaviour
     }
     
     [ClientRpc]
-    void TeleporteazaInBazaClientRpc(Vector3 pozitie)
+    private void TeleporteazaInBazaClientRpc(Vector3 pozitie)
     {
         transform.position = pozitie;
         if (rb != null)
@@ -659,6 +672,11 @@ public class BasePlayer : NetworkBehaviour
     [ServerRpc]
     public void CumparaUpgradeServerRpc(int upgradeId)
     {
+        if (WarRoomManager.Instance != null && WarRoomManager.Instance.votInCurs.Value)
+        {
+            return;
+        }
+        
         int cost = 0;
         
         switch (upgradeId)
@@ -763,6 +781,11 @@ public class BasePlayer : NetworkBehaviour
     [ServerRpc]
     public void CumparaUpgradeClasaServerRpc()
     {
+        if (WarRoomManager.Instance != null && WarRoomManager.Instance.votInCurs.Value)
+        {
+            return;
+        }
+        
         int cost = 250; 
         
         if (upgradeClasaCumparat)

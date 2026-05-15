@@ -795,6 +795,7 @@ MonoBehaviour:
     m_InternalValue: 0
   distantaAdunare: 3
   taiereCooldown: 1
+  upgradeClasaCumparat: 0
   isInvisible:
     m_InternalValue: 0
   efectMoarte: {fileID: 0}
@@ -808,6 +809,7 @@ MonoBehaviour:
   razaLovitura: 0.7
   pivotArma: {fileID: 7672423666459444788}
   multiplicatorLemn: 2
+  costConstructie: 10
   constructieCooldown: 0.8
 --- !u!114 &2233721316420083636
 MonoBehaviour:
@@ -852,7 +854,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 112
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!1 &7894491727346753412
 GameObject:
   m_ObjectHideFlags: 0
@@ -1067,7 +1069,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 0}
   m_FillRect: {fileID: 2841645381112836302}
   m_HandleRect: {fileID: 0}

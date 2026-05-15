@@ -65,7 +65,7 @@ public class MedicPlayer : BasePlayer
         {
             return;
         }
-        if (UIManager.Instance != null && UIManager.Instance.jocPauza)
+        if (UIManager.Instance != null  && (UIManager.Instance.jocPauza || UIManager.Instance.esteInMagazin))
         {
             return;
         }

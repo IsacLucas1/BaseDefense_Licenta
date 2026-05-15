@@ -114,8 +114,11 @@ public abstract class InamiciAI : NetworkBehaviour
                 
                 float distantaJucatorInamic = Vector3.Distance(transform.position, col.transform.position);
                 float distantaEvaluata = distantaJucatorInamic;
-                
-                if (tinta == col.transform) distantaEvaluata -= 2f;
+
+                if (tinta == col.transform)
+                {
+                    distantaEvaluata -= 2f;
+                }
                 
                 float razaAcceptata = (tinta == col.transform) ? razaCautare : razaDetectie;
                 if(distantaJucatorInamic <= razaAcceptata && distantaEvaluata < distantaMinima)

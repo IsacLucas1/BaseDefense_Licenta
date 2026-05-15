@@ -33,6 +33,21 @@ public class SpionPlayer : MeleePlayer
             }
         }
 
+        Collider[] colidereSpion = GetComponentsInChildren<Collider>();
+        UsaCasa[] usi = FindObjectsByType<UsaCasa>(FindObjectsSortMode.None);
+
+        foreach (Collider coliderSpion in colidereSpion)
+        {
+            foreach (UsaCasa usa in usi)
+            {
+                Collider coliderUsa = usa.GetComponent<Collider>();
+                if (coliderUsa != null)
+                {
+                    Physics.IgnoreCollision(coliderSpion, coliderUsa, true);
+                }
+            }
+        }
+        
         base.OnNetworkSpawn();
 
         transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
@@ -60,7 +75,7 @@ public class SpionPlayer : MeleePlayer
         {
             return;
         }
-        if (UIManager.Instance != null && UIManager.Instance.jocPauza)
+        if (UIManager.Instance != null  && (UIManager.Instance.jocPauza || UIManager.Instance.esteInMagazin))
         {
             return;
         }
@@ -83,6 +98,12 @@ public class SpionPlayer : MeleePlayer
             AnuleazaRecall(); 
             ActiveazaInvizibilitateServerRpc();
             nextInvizibilitateTime = Time.time + cooldownInvizibilitate;
+        }
+        
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            AnuleazaRecall();
+            IncearcaInteractiuneManeta();
         }
     }
 
@@ -213,6 +234,24 @@ public class SpionPlayer : MeleePlayer
         if (backstabParticles != null)
         {
             backstabParticles.Play();
+        }
+    }
+    
+    private void IncearcaInteractiuneManeta()
+    {
+        if (cameraCap == null)
+        {
+            return;
+        }
+        
+        Ray ray = new Ray(cameraCap.position, cameraCap.forward);
+        if (Physics.Raycast(ray, out RaycastHit hit, distantaAdunare))
+        {
+            LeverCasa maneta = hit.collider.GetComponent<LeverCasa>();
+            if (maneta != null)
+            {
+                maneta.IncearcaTragere(OwnerClientId);
+            }
         }
     }
     

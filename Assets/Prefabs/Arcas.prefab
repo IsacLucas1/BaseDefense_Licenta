@@ -183,7 +183,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 0}
   m_FillRect: {fileID: 466386321493059334}
   m_HandleRect: {fileID: 0}
@@ -572,6 +572,7 @@ MonoBehaviour:
     m_InternalValue: 0
   distantaAdunare: 3
   taiereCooldown: 1
+  upgradeClasaCumparat: 0
   isInvisible:
     m_InternalValue: 0
   efectMoarte: {fileID: 867827878866229857}
@@ -582,6 +583,7 @@ MonoBehaviour:
   spawnPoint: {fileID: 745280046738955759}
   attackCooldown: 0.5
   attackCooldownBurst: 1
+  sagetiPerBurst: 3
 --- !u!114 &2217229455521898125
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -625,7 +627,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 112
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!1 &7044303387896040124
 GameObject:
   m_ObjectHideFlags: 0
