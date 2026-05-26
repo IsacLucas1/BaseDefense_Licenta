@@ -11,21 +11,11 @@ public class DayNightManager : NetworkBehaviour
     public NightSpawner nightSpawner;
     
     private float nrMinJucatori = 2f;
+    private NetworkVariable<float> timpCurent = new NetworkVariable<float>(0f);
     private NetworkVariable<bool> startTime = new NetworkVariable<bool>(false);
-    private NetworkVariable<bool> timpulMerge = new NetworkVariable<bool>(false);
-    public NetworkVariable<float> timpSincronizatServer = new NetworkVariable<float>(0f);
-    
-    private float timpCurentLocal = 0f;
-    private float timerSincronizare = 0f;
-    public bool EsteZi => (timpCurentLocal / ziDurata) < 0.5f;
+    public bool EsteZi => (timpCurent.Value / ziDurata) < 0.5f;
     public bool EsteNoapte => !EsteZi;
 
-    public override void OnNetworkSpawn()
-    {
-        // Când un jucător intră în joc, preia timpul exact de la server o singură dată
-        timpCurentLocal = timpSincronizatServer.Value;
-    }
-    
     private void Update()
     {
         if (IsServer)
@@ -36,7 +26,6 @@ public class DayNightManager : NetworkBehaviour
                 if (jucatoriSpawnati.Length >= nrMinJucatori)
                 {
                     startTime.Value = true;
-                    timpulMerge.Value = true;
                 }
             }
 
@@ -44,48 +33,27 @@ public class DayNightManager : NetworkBehaviour
             {
                 bool opresteTimpulPentruInamici = false;
 
-                if (timpCurentLocal >= ziDurata - 2f)
+                if (timpCurent.Value >= ziDurata - 10f)
                 {
                     if (nightSpawner != null && nightSpawner.SuntInamiciInViata())
                     {
                         opresteTimpulPentruInamici = true;
                     }
-                    else if (timpCurentLocal < ziDurata)
+                }
+
+                if (!opresteTimpulPentruInamici)
+                {
+                    timpCurent.Value += Time.deltaTime;
+                    if (timpCurent.Value >= ziDurata)
                     {
-                        timpCurentLocal = ziDurata; 
-                        timpSincronizatServer.Value = 0f; 
-                        timerSincronizare = 1f; 
+                        timpCurent.Value = 0f;
                     }
                 }
-
-                timpulMerge.Value = !opresteTimpulPentruInamici;
-                timerSincronizare += Time.deltaTime;
-                
-                if (timerSincronizare >= 1f)
-                {
-                    timpSincronizatServer.Value = timpCurentLocal;
-                    timerSincronizare = 0f;
-                }
             }
         }
-        
-        if (timpulMerge.Value)
-        {
-            timpCurentLocal += Time.deltaTime;
-            if (timpCurentLocal >= ziDurata)
-            {
-                timpCurentLocal = 0f;
-            }
-        }
-        
-        if (!IsServer && Mathf.Abs(timpCurentLocal - timpSincronizatServer.Value) > 1f)
-        {
-            timpCurentLocal = timpSincronizatServer.Value;
-        }
-        
         UpdateLumina();
     }
-
+    
     private void UpdateLumina()
     {
         if (lumina == null)
@@ -93,7 +61,7 @@ public class DayNightManager : NetworkBehaviour
             return;
         }
         
-        float procentZi = timpCurentLocal / ziDurata;
+        float procentZi = timpCurent.Value / ziDurata;
 
         float unghiRotatieSoare = (procentZi * 360f);
         
