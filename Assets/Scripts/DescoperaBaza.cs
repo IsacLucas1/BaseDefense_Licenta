@@ -16,7 +16,7 @@ public class DescoperireBaza : NetworkBehaviour
         if (jucator != null)
         {
             bazaGasita = true;
-            Debug.Log("Baza inamică a fost descoperită!");
+            Debug.Log("Baza inamica a fost descoperita!");
             
             if (WarRoomManager.Instance != null)
             {

@@ -21,7 +21,7 @@ public class LeverCasa : NetworkBehaviour
         if (meshManeta != null) meshManeta.material.color = culoareTras;
     }
 
-    // Funcția apelată de Raycast-ul Spionului
+    // Functia apelata de Raycast-ul Spionului
     public void IncearcaTragere(ulong spionId)
     {
         if (!aFostTras.Value)
@@ -32,7 +32,7 @@ public class LeverCasa : NetworkBehaviour
         {
             if (UIManager.Instance != null) 
             {
-                UIManager.Instance.ArataEroareMagazin("Această manetă a fost deja trasă.");
+                UIManager.Instance.ArataEroareMagazin("Aceasta maneta a fost deja trasa.");
             }
         }
     }

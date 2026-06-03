@@ -58,7 +58,7 @@ public class Health : NetworkBehaviour
     
     private void OnHealthChanged(int oldValue, int newValue)
     {
-        Debug.Log(transform.name + " a primit daune. Sănătate curentă: " + newValue);
+        Debug.Log(transform.name + " a primit daune. Sanatate curenta: " + newValue);
         if (newValue <= 0)
         {
              Debug.Log(transform.name + " a murit.");

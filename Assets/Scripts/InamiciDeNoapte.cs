@@ -1,28 +1,18 @@
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class InamiciDeNoapte : InamiciAI
 {
     [Header("Setari Noapte")]
     public Transform tintaBaza;
-    
-    private bool aAjunsLaBaza = false;
-    
-    protected override void Update()
-    {
-        if (!IsServer || isDead.Value)
-        {
-            return;
-        }
 
-        if (aAjunsLaBaza)
-        {
-            ComportamentFaraTinta();
-        }
-        else
-        {
-            base.Update();
-        }
+    private SiegePathfinder siegePathfinder;
+    
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+        siegePathfinder = GetComponent<SiegePathfinder>(); 
     }
     
     protected override bool VerificaLimitaUrmarire(Vector3 pozitieJucator)
@@ -42,7 +32,61 @@ public class InamiciDeNoapte : InamiciAI
         
         return true;
     }
+
+    protected override bool PoateUrmariJucator(BasePlayer player)
+    {
+        if (player == null || agent == null || !agent.isActiveAndEnabled || !agent.isOnNavMesh)
+        {
+            return false;
+        }
+
+        NavMeshPath pathSpreJucator = new NavMeshPath();
+        return agent.CalculatePath(player.transform.position, pathSpreJucator) && pathSpreJucator.status == NavMeshPathStatus.PathComplete;
+    }
     
+    protected override void GasesteJucator()
+    {
+        if (tintaBaza == null)
+        {
+            return;
+        }
+        Collider cristalCol = tintaBaza.GetComponent<Collider>();
+        Vector3 punctSuprafataCristal = cristalCol != null ? cristalCol.ClosestPoint(transform.position) : tintaBaza.position;
+        float distantaPanaLaBaza = Vector3.Distance(transform.position, punctSuprafataCristal);
+        
+        if (distantaPanaLaBaza <= razaAtac + 0.5f)
+        {
+            tinta = null;
+            return; 
+        }
+        
+        if (siegePathfinder != null && siegePathfinder.AsediazaZidCurent && siegePathfinder.ZidDeSpart != null)
+        {
+            Zid scriptZid = siegePathfinder.ZidDeSpart.GetComponent<Zid>();
+            if (scriptZid != null && scriptZid.viata.Value > 0)
+            {
+                //Distanta pana la suprafata zidului
+                Collider zidCol = siegePathfinder.ZidDeSpart.GetComponent<Collider>();
+                Vector3 punctSuprafata = zidCol.ClosestPoint(transform.position);
+                float distantaLaSuprafata = Vector3.Distance(transform.position, punctSuprafata);
+
+                if (distantaLaSuprafata <= razaAtac + 0.5f) 
+                {
+                    if (Time.time < tauntEndTime && tauntTarget != null)
+                    {
+                        tinta = tauntTarget; 
+                    }
+                    else
+                    {
+                        tinta = null; 
+                    }
+                    return; 
+                }
+            }
+        }
+        
+        base.GasesteJucator();
+    }
     
     protected override void ComportamentFaraTinta()
     {
@@ -51,41 +95,76 @@ public class InamiciDeNoapte : InamiciAI
             return;
         }
 
-        float distantaPanaLaBaza = Vector3.Distance(transform.position, tintaBaza.position);
+        Collider cristalCol = tintaBaza.GetComponent<Collider>();
+        Vector3 punctSuprafataCristal = cristalCol != null ? cristalCol.ClosestPoint(transform.position) : tintaBaza.position;
+        float distantaPanaLaBaza = Vector3.Distance(transform.position, punctSuprafataCristal);
         
-        if (distantaPanaLaBaza <= razaAtac + 2f)
+        if (distantaPanaLaBaza <= razaAtac + 0.5f)
         {
-            aAjunsLaBaza = true; 
-            tinta = null; 
-            
             agent.isStopped = true;
+            agent.velocity = Vector3.zero;
             
             Vector3 directieprivire = new Vector3(tintaBaza.position.x, transform.position.y, tintaBaza.position.z);
             transform.LookAt(directieprivire);
             
             if (Time.time >= nextAttackTime)
             {
-                Health healthBaza = tintaBaza.GetComponent<Health>();
-                if (healthBaza != null)
-                {
-                    healthBaza.TakeDamage(damageAtac);
-                    Debug.Log("Inamicul a lovit baza!");
-                }
-                
+                tinta = tintaBaza;
+                Ataca();
+                tinta = null;
                 nextAttackTime = Time.time + cooldownAtac;
+            }
+
+            return;
+        }
+        
+        if (siegePathfinder == null)
+        {
+            agent.isStopped = false;
+            agent.SetDestination(tintaBaza.position);
+            return;
+        }
+
+        siegePathfinder.CalculeazaSiNavigheaza(tintaBaza.position);
+
+        if (siegePathfinder.AsediazaZidCurent && siegePathfinder.ZidDeSpart != null)
+        {
+            Zid scriptZid = siegePathfinder.ZidDeSpart.GetComponent<Zid>();
+            if (scriptZid != null && scriptZid.viata.Value > 0)
+            {
+                Collider zidCol = siegePathfinder.ZidDeSpart.GetComponent<Collider>();
+                Vector3 punctSuprafata = zidCol.ClosestPoint(transform.position);
+                float distantaPanaLaZid = Vector3.Distance(transform.position, punctSuprafata);
+
+                if (distantaPanaLaZid <= razaAtac + 0.5f)
+                {
+                    agent.isStopped = true;
+                    agent.velocity = Vector3.zero;
+
+                    Vector3 directieZid = new Vector3(siegePathfinder.ZidDeSpart.position.x, transform.position.y, siegePathfinder.ZidDeSpart.position.z);
+                    transform.LookAt(directieZid);
+
+                    if (Time.time >= nextAttackTime)
+                    {
+                        tinta = siegePathfinder.ZidDeSpart;
+                        Ataca();
+                        tinta = null;
+                        nextAttackTime = Time.time + cooldownAtac;
+                    }
+                }
+                else
+                {
+                    agent.isStopped = false;
+                }
+            }
+            else
+            {
+                agent.isStopped = false;
             }
         }
         else
         {
-            if (agent.isStopped)
-            {
-                agent.isStopped = false;
-            }
-
-            if (Vector3.Distance(agent.destination, tintaBaza.position) > 1f)
-            {
-                agent.SetDestination(tintaBaza.position);
-            }
+            agent.isStopped = false;
         }
     }
 

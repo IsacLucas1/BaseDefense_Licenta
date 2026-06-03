@@ -98,7 +98,7 @@ public class HouseManager : NetworkBehaviour
                 {
                     WarRoomManager.Instance.ActiveazaButon();
                 }
-                AfiseazaMesajGlobalClientRpc("Spionul a descoperit Baza Inamică! Butonul din War Room este activ!");
+                AfiseazaMesajGlobalClientRpc("Spionul a descoperit Baza Inamica! Butonul din War Room este activ!");
                 break;
 
             case TipCasa.BaniPentruToti:
@@ -110,11 +110,11 @@ public class HouseManager : NetworkBehaviour
                         player.bani.Value += baniRecompensa;
                     }
                 }
-                AfiseazaMesajGlobalClientRpc($"Comoară găsită! Toți jucătorii au primit {baniRecompensa} de bani.");
+                AfiseazaMesajGlobalClientRpc($"Comoara gasita! Toti jucatorii au primit {baniRecompensa} de bani.");
                 break;
 
             case TipCasa.CapcanaBaza:
-                AfiseazaMesajGlobalClientRpc("Spionul a declanșat o capcană! Baza voastră este atacată!");
+                AfiseazaMesajGlobalClientRpc("Spionul a declansat o capcana! Baza voastra este atacata!");
                 NightSpawner spawner = FindFirstObjectByType<NightSpawner>();
                 if (spawner != null)
                 {
@@ -123,7 +123,7 @@ public class HouseManager : NetworkBehaviour
                 break;
 
             case TipCasa.CapcanaLocala: 
-                AfiseazaMesajGlobalClientRpc("Spionul a fost prins într-o ambuscadă la o casă din pădure!");
+                AfiseazaMesajGlobalClientRpc("Spionul a fost prins într-o ambuscada la o casa din padure!");
                 if (inamicPrefab != null)
                 {
                     Transform spionTransform = null;
@@ -138,7 +138,7 @@ public class HouseManager : NetworkBehaviour
 
                     if (spionTransform == null)
                     {
-                        Debug.LogError($"[Eroare Netcode] Nu am putut găsi Spionul cu ClientId {spionId} pe server!");
+                        Debug.LogError($"[Eroare Netcode] Nu am putut gasi Spionul cu ClientId {spionId} pe server!");
                     }
                     
                     Vector3 offsetAfara = new Vector3(6f, 0f, 6f);

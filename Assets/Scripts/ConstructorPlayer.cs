@@ -10,7 +10,7 @@ public class ConstructorPlayer : MeleePlayer
     public int costConstructie = 10;
     
     [Header("Setari Constructie")]
-    public float constructieCooldown = 0.8f;
+    public float constructieCooldown = 0.1f;
     private float nextConstructieTime = 0f;
     
     
@@ -21,7 +21,7 @@ public class ConstructorPlayer : MeleePlayer
         durataAnimatie = 0.3f;
         if (IsServer)
         {
-            speed.Value = 5f;
+            speed.Value = 10f;
         
             var health = GetComponent<Health>();
             if (health != null)
@@ -29,6 +29,8 @@ public class ConstructorPlayer : MeleePlayer
                 health.maxHealth.Value = 120;
                 health.currentHealth.Value = 120;
             }
+
+            lemn.Value = 4000;
         }
         base.OnNetworkSpawn();
         
@@ -100,7 +102,7 @@ public class ConstructorPlayer : MeleePlayer
                 }
                 else
                 {
-                    Debug.Log("Acest zid este deja la 100% viață!");
+                    Debug.Log("Acest zid este deja la 100% viata!");
                 }
             }
         }
@@ -143,7 +145,7 @@ public class ConstructorPlayer : MeleePlayer
             }
             else
             {
-                Debug.Log("Mă uit la " + hit.collider.name + " dar nu este un Zid.");
+                Debug.Log("Ma uit la " + hit.collider.name + " dar nu este un Zid.");
             }
         }
     }
@@ -163,7 +165,7 @@ public class ConstructorPlayer : MeleePlayer
     
     protected override void AplicaUpgradeClasa()
     {
-        costConstructie = 5; // Înjumătățim costul zidurilor
-        Debug.Log("Constructorul a primit Upgrade-ul Suprem: Ziduri la jumătate de preț!");
+        costConstructie = 5; 
+        Debug.Log("Constructorul a primit Upgrade-ul Suprem: Ziduri la jumatate de pret!");
     }
 }

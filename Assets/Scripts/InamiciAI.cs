@@ -88,18 +88,15 @@ public abstract class InamiciAI : NetworkBehaviour
     {
         if(Time.time < tauntEndTime && tauntTarget != null)
         {
-            if (VerificaLimitaUrmarire(tauntTarget.position))
-            {
-                tinta = tauntTarget;
-                return;
-            }
+            tinta = tauntTarget;
+            return;
         }
-        else if (Time.time < tauntEndTime && tauntTarget == null)
+        else if (Time.time >= tauntEndTime)
         {
             tauntTarget = null;
         }
         
-        float razaCautare = razaDetectie * 1.5f;
+        float razaCautare = razaDetectie * 1.25f;
         Collider[] jucatoriInZona = Physics.OverlapSphere(transform.position, razaCautare);
         
         Transform celMaiApropiatJucator = null;
@@ -111,6 +108,7 @@ public abstract class InamiciAI : NetworkBehaviour
             if (player != null && !player.isDead && !player.isInvisible.Value)
             {
                 if (!VerificaLimitaUrmarire(col.transform.position)) continue;
+                if (!PoateUrmariJucator(player)) continue;
                 
                 float distantaJucatorInamic = Vector3.Distance(transform.position, col.transform.position);
                 float distantaEvaluata = distantaJucatorInamic;
@@ -138,6 +136,8 @@ public abstract class InamiciAI : NetworkBehaviour
     
     protected virtual bool VerificaLimitaUrmarire(Vector3 pozitieJucator) { return true; }
 
+    protected virtual bool PoateUrmariJucator(BasePlayer player) { return true; }
+
     protected virtual void UrmaresteSiAtacaJucator()
     {
         float distantaJucator = Vector3.Distance(transform.position, tinta.position);
@@ -158,6 +158,41 @@ public abstract class InamiciAI : NetworkBehaviour
         {
             agent.isStopped = false;
             agent.SetDestination(tinta.position);
+
+            if (!agent.pathPending && agent.pathStatus == NavMeshPathStatus.PathPartial)
+            {
+                Vector3 directieSpreTinta = (tinta.position - transform.position).normalized;
+                
+                if (Physics.Raycast(transform.position + Vector3.up, directieSpreTinta, out RaycastHit hit, distantaJucator))
+                {
+                    Zid zid = hit.collider.GetComponent<Zid>();
+                    
+                    if (zid != null && zid.viata.Value > 0)
+                    {
+                        Collider zidCol = zid.GetComponent<Collider>();
+                        Vector3 punctSuprafata = zidCol.ClosestPoint(transform.position);
+                        float distantaPanaLaZid = Vector3.Distance(transform.position, punctSuprafata);
+
+                        if (distantaPanaLaZid <= razaAtac + 0.5f)
+                        {
+                            agent.isStopped = true;
+                            agent.velocity = Vector3.zero;
+                            
+                            Vector3 directieZid = new Vector3(zid.transform.position.x, transform.position.y, zid.transform.position.z);
+                            transform.LookAt(directieZid);
+
+                            if (Time.time >= nextAttackTime)
+                            {
+                                Transform tintaVeche = tinta; 
+                                tinta = zid.transform;
+                                Ataca();
+                                tinta = tintaVeche;
+                                nextAttackTime = Time.time + cooldownAtac;
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
     
@@ -166,7 +201,18 @@ public abstract class InamiciAI : NetworkBehaviour
         if (tinta != null)
         {
             Health healthTinta = tinta.GetComponent<Health>();
-            if (healthTinta != null) healthTinta.TakeDamage(damageAtac);
+            if (healthTinta != null)
+            {
+                healthTinta.TakeDamage(damageAtac);
+            }
+            else
+            {
+                Zid zidTinta = tinta.GetComponent<Zid>();
+                if (zidTinta != null)
+                {
+                    zidTinta.PrimesteDamage(damageAtac);
+                }
+            }
         }
     }
     

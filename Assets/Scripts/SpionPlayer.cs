@@ -28,8 +28,8 @@ public class SpionPlayer : MeleePlayer
             var health = GetComponent<Health>();
             if (health != null)
             {
-                health.maxHealth.Value = 70;
-                health.currentHealth.Value = 70;
+                health.maxHealth.Value = 370;
+                health.currentHealth.Value = 370;
             }
         }
 

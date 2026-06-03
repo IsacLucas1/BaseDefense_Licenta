@@ -5503,7 +5503,7 @@ MonoBehaviour:
   distantaLovitura: 1.4
   razaLovitura: 1.3
   pivotArma: {fileID: 0}
-  tauntRadius: 10
+  tauntRadius: 20
   tauntDuration: 5
   tauntCooldown: 10
   tauntParticles: {fileID: 6570538931598934313}

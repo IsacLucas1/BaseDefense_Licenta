@@ -580,7 +580,7 @@ public class BasePlayer : NetworkBehaviour
             if (UIManager.Instance != null && UIManager.Instance.esteInMagazin)
             {
                 UIManager.Instance.ArataMagazin(false);
-                Debug.Log("Jucătorul a murit, magazinul a fost închis automat.");
+                Debug.Log("Jucatorul a murit, magazinul a fost inchis automat.");
             }
         }
         
@@ -694,7 +694,7 @@ public class BasePlayer : NetworkBehaviour
         
         if (bani.Value < cost)
         {
-            AfiseazaEroareMagazinClientRpc("Nu ai suficienți bani!");
+            AfiseazaEroareMagazinClientRpc("Nu ai suficienti bani!");
             return; 
         }
         
@@ -703,7 +703,7 @@ public class BasePlayer : NetworkBehaviour
             Health h = GetComponent<Health>();
             if (h != null && h.currentHealth.Value >= h.maxHealth.Value)
             {
-                AfiseazaEroareMagazinClientRpc("Ai deja viața la maximum!"); 
+                AfiseazaEroareMagazinClientRpc("Ai deja viata la maximum!"); 
                 return; 
             }
         }
@@ -711,7 +711,7 @@ public class BasePlayer : NetworkBehaviour
         {
             if (timpRamasViteza > 0f)
             {
-                AfiseazaEroareMagazinClientRpc("Ai deja un bonus de viteză activ!"); 
+                AfiseazaEroareMagazinClientRpc("Ai deja un bonus de viteza activ!"); 
                 return;
             }
         }
@@ -790,13 +790,13 @@ public class BasePlayer : NetworkBehaviour
         
         if (upgradeClasaCumparat)
         {
-            AfiseazaEroareMagazinClientRpc("Ai cumpărat deja Upgrade-ul de Clasă!");
+            AfiseazaEroareMagazinClientRpc("Ai cumparat deja Upgrade-ul de Clasa!");
             return;
         }
         
         if (bani.Value < cost)
         {
-            AfiseazaEroareMagazinClientRpc("Nu ai suficienți bani pentru Upgrade-ul de Clasă!");
+            AfiseazaEroareMagazinClientRpc("Nu ai suficienti bani pentru Upgrade-ul de Clasa!");
             return;
         }
 
@@ -805,7 +805,7 @@ public class BasePlayer : NetworkBehaviour
         AplicaUpgradeClasa(); 
         ConfirmaUpgradeCumparatClientRpc(); 
         
-        Debug.Log("Upgrade de clasă achiziționat!");
+        Debug.Log("Upgrade de clasa achizitionat!");
     }
 
     [ClientRpc]

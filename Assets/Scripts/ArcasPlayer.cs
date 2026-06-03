@@ -53,7 +53,7 @@ public class ArcasPlayer: BasePlayer
         if (Input.GetKeyDown(KeyCode.T))
         {
             isBurstMode = !isBurstMode;
-            Debug.Log("Arcașul a schimbat modul pe: " + (isBurstMode ? "BURST" : "NORMAL"));
+            Debug.Log("Arcasul a schimbat modul pe: " + (isBurstMode ? "BURST" : "NORMAL"));
         }
 
         if (Input.GetMouseButtonDown(0) && Time.time >= nextAttackTime && !isShootingBurst)
@@ -144,6 +144,6 @@ public class ArcasPlayer: BasePlayer
     {
         sagetiPerBurst = 4; 
         
-        Debug.Log("Arcașul a primit Burst Suprem: 4 săgeți!");
+        Debug.Log("Arcasul a primit Burst Suprem: 4 sageti!");
     }
 }

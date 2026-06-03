@@ -16,8 +16,7 @@ public class InamiciCamp : InamiciAI
     
     private Coroutine corutinaUI;
     private Camera cam;
-    public float inaltimeCanvas = 2f;
-    
+    public float inaltimeCanvas = 1.7f;
     
 
     public override void OnNetworkSpawn()

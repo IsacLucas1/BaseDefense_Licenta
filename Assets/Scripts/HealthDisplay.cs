@@ -56,11 +56,26 @@ public class HealthDisplay : NetworkBehaviour
     
     void SetMaxHealth(int oldMax, int newMax)
     {
-        healthBar.maxValue = newMax;
+        if (healthBar != null)
+        {
+            healthBar.maxValue = newMax;
+            
+            if (health != null && healthBar.value < health.currentHealth.Value)
+            {
+                healthBar.value = health.currentHealth.Value;
+            }
+        }
     }
     void UpdateHealthBar(int oldHealth, int newHealth)
     {
-        healthBar.value = newHealth;
+        if (healthBar != null)
+        {
+            if (newHealth > healthBar.maxValue)
+            {
+                healthBar.maxValue = newHealth;
+            }
+            healthBar.value = newHealth;
+        }
     }
 
     void LateUpdate()

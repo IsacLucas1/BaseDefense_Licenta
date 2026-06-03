@@ -5,7 +5,7 @@ using System.Collections;
 public class TankPlayer : MeleePlayer
 {
     [Header("Setari Tanc")] 
-    public float tauntRadius = 10f;
+    public float tauntRadius = 20f;
     public float tauntDuration = 5f;
     public float tauntCooldown = 10f;
     private float nextTauntTime = 0f;

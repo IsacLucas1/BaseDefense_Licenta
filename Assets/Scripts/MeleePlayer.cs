@@ -78,6 +78,17 @@ public abstract class MeleePlayer : BasePlayer
 
         if (target.CompareTag("Enemy"))
         {
+            Vector3 startPos = transform.position + Vector3.up * 1f;
+            Vector3 targetPos = target.bounds.center; 
+            
+            if (Physics.Linecast(startPos, targetPos, out RaycastHit hit, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+            {
+                if (hit.collider != target && !hit.collider.CompareTag("Player"))
+                {
+                    return; 
+                }
+            }
+            
             Health enemyHealth = target.GetComponent<Health>();
 
             if (enemyHealth != null && enemyHealth.currentHealth.Value > 0)

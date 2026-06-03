@@ -7,26 +7,22 @@ public class InamicAmbuscada : InamiciAI
     private Transform cristalBaza;
     private bool esteLaCristal = false;
 
+    private SiegePathfinder siegePathfinder;
+
     public NetworkVariable<float> vitezaSincronizata = new NetworkVariable<float>(5f);
     public NetworkVariable<int> damageSincronizat = new NetworkVariable<int>(10);
 
     public override void OnNetworkSpawn()
     {
+        base.OnNetworkSpawn();
+        
         GameObject objCristal = GameObject.Find("Cristal");
-
         if (objCristal != null)
         {
             cristalBaza = objCristal.transform;
         }
-
-        if (!IsServer)
-        {
-            if (agent != null)
-            {
-                agent.enabled = false;
-            }
-        }
-
+        
+        siegePathfinder = GetComponent<SiegePathfinder>();
         Collider[] colidereInamic = GetComponentsInChildren<Collider>();
         UsaCasa[] usi = FindObjectsByType<UsaCasa>(FindObjectsSortMode.None);
 
@@ -41,9 +37,6 @@ public class InamicAmbuscada : InamiciAI
                 }
             }
         }
-        
-        isDead.OnValueChanged += OnDeathStateChanged;
-        ToggleVisuals(!isDead.Value);
     }
 
     public void SeteazaSpion(Transform spion)
@@ -99,6 +92,11 @@ public class InamicAmbuscada : InamiciAI
     
     protected override void GasesteJucator()
     {
+        if (cristalBaza == null)
+        {
+            return;
+        }
+        
         if (esteLaCristal)
         {
             tinta = cristalBaza;
@@ -115,27 +113,73 @@ public class InamicAmbuscada : InamiciAI
             }
         }
         
+        if (siegePathfinder != null && siegePathfinder.AsediazaZidCurent && siegePathfinder.ZidDeSpart != null)
+        {
+            float distantaPanaLaZid = Vector3.Distance(transform.position, siegePathfinder.ZidDeSpart.position);
+            
+            if (distantaPanaLaZid <= razaAtac + 1.5f)
+            {
+                tinta = siegePathfinder.ZidDeSpart;
+                return; 
+            }
+        }
+
+        tauntTarget = null;
+        tauntEndTime = 0f;
+        
         base.GasesteJucator(); 
     }
 
     protected override void ComportamentFaraTinta()
     {
-        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh && cristalBaza != null)
+        if (cristalBaza == null)
         {
-            agent.isStopped = false;
-            agent.SetDestination(cristalBaza.position);
+            return;
         }
-    }
-    
-    protected override void Ataca()
-    {
-        if (IsServer && tinta != null)
+
+        if (esteLaCristal)
         {
-            Health healthTinta = tinta.GetComponent<Health>();
-            if (healthTinta != null)
+            agent.isStopped = true;
+            Vector3 directie = new Vector3(cristalBaza.position.x, transform.position.y, cristalBaza.position.z);
+            transform.LookAt(directie);
+            
+            if (Time.time >= nextAttackTime)
             {
-                healthTinta.TakeDamage(damageSincronizat.Value);
+                tinta = cristalBaza; 
+                Ataca();            
+                nextAttackTime = Time.time + cooldownAtac;
             }
+            return;
+        }
+
+        siegePathfinder.CalculeazaSiNavigheaza(cristalBaza.position);
+        
+        if (siegePathfinder.AsediazaZidCurent && siegePathfinder.ZidDeSpart != null)
+        {
+            Transform zid = siegePathfinder.ZidDeSpart;
+            float distantaPanaLaZid = Vector3.Distance(transform.position, zid.position);
+
+            if (distantaPanaLaZid <= razaAtac + 1.5f)
+            {
+                agent.isStopped = true;
+                Vector3 directieZid = new Vector3(zid.position.x, transform.position.y, zid.position.z);
+                transform.LookAt(directieZid);
+                
+                if (Time.time >= nextAttackTime)
+                {
+                    tinta = zid; 
+                    Ataca();     
+                    nextAttackTime = Time.time + cooldownAtac;
+                }
+            }
+            else
+            {
+                agent.isStopped = false; 
+            }
+        }
+        else
+        {
+            agent.isStopped = false; 
         }
     }
 }
