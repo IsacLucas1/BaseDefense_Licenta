@@ -5,8 +5,8 @@ using System.Collections;
 public abstract class MeleePlayer : BasePlayer
 {
     [Header("Setari Atac")] 
-    public int damageArma = 10;
-    public float atacCooldown = 0.7f;
+    public NetworkVariable<int> damageArma = new NetworkVariable<int>(10);
+    public NetworkVariable<float> atacCooldown = new NetworkVariable<float>(0.7f);
     public float durataAnimatie = 0.3f;
     
     [Header("Setari Hitbox (Sfera de Lovire)")]
@@ -28,7 +28,7 @@ public abstract class MeleePlayer : BasePlayer
     protected override void Update()
     {
         base.Update();
-        if (!IsOwner || isDead)
+        if (!IsOwner || isDead.Value)
         {
             return;
         }
@@ -51,7 +51,7 @@ public abstract class MeleePlayer : BasePlayer
     
     public override int ObtineDamageTotal()
     {
-        return damageArma + extraDamage.Value;
+        return damageArma.Value + extraDamage.Value;
     }
     
     private void DetecteazaLovitura()
@@ -97,7 +97,7 @@ public abstract class MeleePlayer : BasePlayer
                 NetworkObject netObj = target.GetComponent<NetworkObject>();
                 if (netObj != null && netObj.IsSpawned)
                 {
-                    DamageServerRpc(netObj.NetworkObjectId, damageArma + extraDamage.Value, OwnerClientId);
+                    DamageServerRpc(netObj.NetworkObjectId);
                 }
             }
         }
@@ -105,7 +105,7 @@ public abstract class MeleePlayer : BasePlayer
     
     protected void IncearcaSaAtaci()
     {
-        nextAttackTime = Time.time + atacCooldown;
+        nextAttackTime = Time.time + atacCooldown.Value;
         if (netAnimator != null)
         {
             netAnimator.ResetTrigger("Attack");
@@ -125,7 +125,7 @@ public abstract class MeleePlayer : BasePlayer
         {
             return;
         }
-        nextAttackTimeServer = Time.time + atacCooldown;
+        nextAttackTimeServer = Time.time + atacCooldown.Value;
         PlayAttackAnimationClientRpc();
     }
 
@@ -143,7 +143,7 @@ public abstract class MeleePlayer : BasePlayer
 
     public void ExecutaLovituraDinAnimatie()
     {
-        if (!IsOwner || isDead)
+        if (!IsOwner || isDead.Value)
         {
             return;
         }

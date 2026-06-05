@@ -15,15 +15,39 @@ public class DayNightManager : NetworkBehaviour
     private NetworkVariable<bool> startTime = new NetworkVariable<bool>(false);
     public bool EsteZi => (timpCurent.Value / ziDurata) < 0.5f;
     public bool EsteNoapte => !EsteZi;
+    
+    private float urmatorulCheckJucatori = 0f;
+    public float intervalCheckJucatori = 1f;
 
+    private bool SuntDestuiJucatoriSpawnati()
+    {
+        if (NetworkManager.Singleton == null)
+        {
+            return false;
+        }
+
+        int jucatoriSpawnati = 0;
+
+        foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
+        {
+            if (client.PlayerObject != null && client.PlayerObject.GetComponent<BasePlayer>() != null)
+            {
+                jucatoriSpawnati++;
+            }
+        }
+
+        return jucatoriSpawnati >= nrMinJucatori;
+    }
+    
     private void Update()
     {
         if (IsServer)
         {
-            if (!startTime.Value)
+            if (!startTime.Value && Time.time >= urmatorulCheckJucatori)
             {
-                BasePlayer[] jucatoriSpawnati = FindObjectsByType<BasePlayer>(FindObjectsSortMode.None);
-                if (jucatoriSpawnati.Length >= nrMinJucatori)
+                urmatorulCheckJucatori = Time.time + intervalCheckJucatori;
+
+                if (SuntDestuiJucatoriSpawnati())
                 {
                     startTime.Value = true;
                 }

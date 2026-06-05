@@ -7,14 +7,14 @@ using UnityEngine.Rendering.Universal;
 public class MedicPlayer : BasePlayer
 {
     [Header("Arma Heal")]
-    public float healCooldown = 1.0f;
-    int healAmount = 10;
-    public float healRange = 10f;
+    public NetworkVariable<float> healCooldown = new NetworkVariable<float>(1.0f);
+    public NetworkVariable<int> healAmount = new NetworkVariable<int>(10);
+    public NetworkVariable<float> healRange = new NetworkVariable<float>(10f);
 
     [Header("Arma Damage")]   
-    public float damageCooldown = 1.0f;
-    int damageAmount = 10;
-    public float damageRange = 10f;
+    public NetworkVariable<float> damageCooldown = new NetworkVariable<float>(1.0f);
+    public NetworkVariable<int> damageAmount = new NetworkVariable<int>(10);
+    public NetworkVariable<float> damageRange = new NetworkVariable<float>(10f);
     
     [Header("Efecte Vizuale")]
     public LineRenderer healBeam;
@@ -61,7 +61,7 @@ public class MedicPlayer : BasePlayer
     {
         base.Update();
         
-        if (!IsOwner || isDead)
+        if (!IsOwner || isDead.Value)
         {
             return;
         }
@@ -74,21 +74,21 @@ public class MedicPlayer : BasePlayer
         {
             AnuleazaRecall();
             TryToHeal();
-            nextHealTime = Time.time + healCooldown;
+            nextHealTime = Time.time + healCooldown.Value;
         }
         
         if(Input.GetMouseButtonDown(0) && Time.time >= nextDamageTime)
         {
             AnuleazaRecall();
             TryToDamage();
-            nextDamageTime = Time.time + damageCooldown;
+            nextDamageTime = Time.time + damageCooldown.Value;
         }
         
     }
     
     public override int ObtineDamageTotal()
     {
-        return damageAmount + extraDamage.Value;
+        return damageAmount.Value + extraDamage.Value;
     }
     
     private void TryToHeal()
@@ -101,8 +101,8 @@ public class MedicPlayer : BasePlayer
         Vector3 startPoint = healBeamSpawnPoint.position; 
         Ray ray = new Ray(startPoint, cameraCap.forward);
         
-        Vector3 endPoint = ray.origin + ray.direction * healRange;
-        if (Physics.Raycast(ray, out RaycastHit hit, healRange))
+        Vector3 endPoint = ray.origin + ray.direction * healRange.Value;
+        if (Physics.Raycast(ray, out RaycastHit hit, healRange.Value))
         {
             endPoint = hit.point;
             
@@ -110,7 +110,7 @@ public class MedicPlayer : BasePlayer
             if (targetHealth != null && targetHealth.gameObject != this.gameObject)
             {
                 ulong targetID = targetHealth.GetComponent<NetworkObject>().NetworkObjectId;
-                HealServerRpc(targetID, healAmount);
+                HealServerRpc(targetID);
             }
         }
         
@@ -118,14 +118,14 @@ public class MedicPlayer : BasePlayer
     }
 
     [ServerRpc]
-    private void HealServerRpc(ulong targetID, int amount)
+    private void HealServerRpc(ulong targetID)
     {
         if(NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(targetID, out NetworkObject targetObj))
         {
             Health targetHealth = targetObj.GetComponent<Health>();
             if (targetHealth != null && targetHealth.currentHealth.Value > 0)
             {
-                targetHealth.Heal(amount);
+                targetHealth.Heal(healAmount.Value);
             }
         }
     }
@@ -152,8 +152,8 @@ public class MedicPlayer : BasePlayer
         Vector3 startPoint = damageBeamSpawnPoint.position; 
         Ray ray = new Ray(startPoint, cameraCap.forward);
         
-        Vector3 endPoint = ray.origin + ray.direction * damageRange;
-        if (Physics.Raycast(ray, out RaycastHit hit, damageRange))
+        Vector3 endPoint = ray.origin + ray.direction * damageRange.Value;
+        if (Physics.Raycast(ray, out RaycastHit hit, damageRange.Value))
         {
             endPoint = hit.point;
             
@@ -165,7 +165,7 @@ public class MedicPlayer : BasePlayer
                 if(netObj != null && netObj.IsSpawned)
                 { 
                     ulong targetID = targetHealth.GetComponent<NetworkObject>().NetworkObjectId;
-                    DamageServerRpc(targetID, damageAmount + extraDamage.Value, OwnerClientId);
+                    DamageServerRpc(targetID);
                 }
             }
         }
@@ -199,9 +199,9 @@ public class MedicPlayer : BasePlayer
     
     protected override void AplicaUpgradeClasa()
     {
-        healAmount = 30; 
-        healRange = 20f;
-        healCooldown = 0.4f; 
+        healAmount.Value = 30; 
+        healRange.Value = 20f;
+        healCooldown.Value = 0.4f; 
 
         Debug.Log("Medicul a primit Upgrade-ul Suprem: Hyper-Heal activat!");
     }

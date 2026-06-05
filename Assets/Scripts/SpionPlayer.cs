@@ -5,24 +5,24 @@ using UnityEngine;
 public class SpionPlayer : MeleePlayer
 {
     [Header("Setari Backstab")]
-    public int multiplicatorDamageBackstab = 2;
+    public NetworkVariable<int> multiplicatorDamageBackstab = new NetworkVariable<int>(2);
     public float tolerantaUnghiBackstab = 0.6f;
     
     public ParticleSystem backstabParticles;
 
     [Header("Setari Invizibilitate")]
-    public float durataInvizibilitate = 5f;
-    public float cooldownInvizibilitate = 15f;
+    public NetworkVariable<float> durataInvizibilitate = new NetworkVariable<float>(5f);
+    public NetworkVariable<float> cooldownInvizibilitate = new NetworkVariable<float>(15f);
     private float nextInvizibilitateTime = 0f;
+    private Coroutine corutinaInvizibilitateActiva;
     
     public override void OnNetworkSpawn()
     {
-        damageArma = 15;
-        atacCooldown = 0.5f;
-        durataAnimatie = 0.2f;
-
         if (IsServer)
         {
+            damageArma.Value = 15;
+            atacCooldown.Value = 0.5f;
+            
             speed.Value = 7f;
 
             var health = GetComponent<Health>();
@@ -47,7 +47,7 @@ public class SpionPlayer : MeleePlayer
                 }
             }
         }
-        
+        durataAnimatie = 0.2f;
         base.OnNetworkSpawn();
 
         transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
@@ -71,7 +71,7 @@ public class SpionPlayer : MeleePlayer
     {
         base.Update();
         
-        if (!IsOwner || isDead)
+        if (!IsOwner || isDead.Value)
         {
             return;
         }
@@ -87,7 +87,7 @@ public class SpionPlayer : MeleePlayer
             if (Time.time < nextInvizibilitateTime)
             {
                 float timpRamas = nextInvizibilitateTime- Time.time; 
-                procentaj = 1f - (timpRamas / cooldownInvizibilitate);
+                procentaj = 1f - (timpRamas / cooldownInvizibilitate.Value);
             }
             
             UIManager.Instance.ActualizeazaCooldownInvizibilitate(procentaj);
@@ -97,7 +97,7 @@ public class SpionPlayer : MeleePlayer
         {
             AnuleazaRecall(); 
             ActiveazaInvizibilitateServerRpc();
-            nextInvizibilitateTime = Time.time + cooldownInvizibilitate;
+            nextInvizibilitateTime = Time.time + cooldownInvizibilitate.Value;
         }
         
         if (Input.GetKeyDown(KeyCode.E))
@@ -110,7 +110,19 @@ public class SpionPlayer : MeleePlayer
     [ServerRpc]
     private void ActiveazaInvizibilitateServerRpc()
     {
-        StartCoroutine(RutinaInvizibilitate());
+        if (Time.time < nextInvizibilitateTime)
+        {
+            return;
+        }
+
+        nextInvizibilitateTime = Time.time + cooldownInvizibilitate.Value;
+
+        if (corutinaInvizibilitateActiva != null)
+        {
+            StopCoroutine(corutinaInvizibilitateActiva);
+        }
+
+        corutinaInvizibilitateActiva = StartCoroutine(RutinaInvizibilitate());
     }
     
     private IEnumerator RutinaInvizibilitate()
@@ -118,10 +130,12 @@ public class SpionPlayer : MeleePlayer
         isInvisible.Value = true;
         UpdateVizualInvizibilitateClientRpc(true);
         
-        yield return new WaitForSeconds(durataInvizibilitate);
+        yield return new WaitForSeconds(durataInvizibilitate.Value);
         
         isInvisible.Value = false;
         UpdateVizualInvizibilitateClientRpc(false);
+        
+        corutinaInvizibilitateActiva = null;
     }
 
     [ClientRpc]
@@ -188,46 +202,45 @@ public class SpionPlayer : MeleePlayer
             return;
         }
 
-        if (target.CompareTag("Enemy"))
+        if (!target.CompareTag("Enemy"))
         {
-            Health enemyHealth = target.GetComponent<Health>();
-            if (enemyHealth != null && enemyHealth.currentHealth.Value > 0)
-            {
-                enemyHit = true;
-                NetworkObject netObj = target.GetComponent<NetworkObject>();
-
-                if (netObj != null && netObj.IsSpawned)
-                {
-                    int damageFinal = damageArma;
-                    
-                    Vector3 directiePrivireSpion = new Vector3(transform.forward.x, 0, transform.forward.z).normalized;
-                    Vector3 directiePrivireInamic = new Vector3(target.transform.forward.x, 0, target.transform.forward.z).normalized;
-                    
-                    float unghi = Vector3.Dot(directiePrivireSpion, directiePrivireInamic);
-
-                    if (unghi > tolerantaUnghiBackstab)
-                    {
-                        damageFinal = damageArma * multiplicatorDamageBackstab;
-                        Debug.Log("Critical Hit!! " + damageFinal);
-                        PlayBackstabEffectsServerRpc();
-                    }
-                    else
-                    {
-                        Debug.Log("Normal hit " + damageFinal);
-                    }
-                    
-                    DamageServerRpc(netObj.NetworkObjectId, damageFinal + extraDamage.Value, OwnerClientId);
-                }
-            }
+            return;
         }
-    }
 
-    [ServerRpc]
-    private void PlayBackstabEffectsServerRpc()
+        Health enemyHealth = target.GetComponent<Health>();
+        if (enemyHealth == null || enemyHealth.currentHealth.Value <= 0)
+        {
+            return;
+        }
+
+        NetworkObject netObj = target.GetComponent<NetworkObject>();
+        if (netObj == null || !netObj.IsSpawned)
+        {
+            return;
+        }
+
+        enemyHit = true;
+        DamageServerRpc(netObj.NetworkObjectId);
+    }
+    
+    protected override int CalculeazaDamageServer(NetworkObject targetObj)
     {
-        PlayBackstabEffectsClientRpc();
-    }
+        int damageFinal = damageArma.Value;
 
+        Vector3 directiePrivireSpion = new Vector3(transform.forward.x, 0, transform.forward.z).normalized;
+        Vector3 directiePrivireInamic = new Vector3(targetObj.transform.forward.x, 0, targetObj.transform.forward.z).normalized;
+
+        float unghi = Vector3.Dot(directiePrivireSpion, directiePrivireInamic);
+
+        if (unghi > tolerantaUnghiBackstab)
+        {
+            damageFinal = damageArma.Value * multiplicatorDamageBackstab.Value;
+            PlayBackstabEffectsClientRpc();
+        }
+
+        return damageFinal + extraDamage.Value;
+    }
+    
     [ClientRpc]
     private void PlayBackstabEffectsClientRpc()
     {
@@ -250,15 +263,15 @@ public class SpionPlayer : MeleePlayer
             LeverCasa maneta = hit.collider.GetComponent<LeverCasa>();
             if (maneta != null)
             {
-                maneta.IncearcaTragere(OwnerClientId);
+                maneta.IncearcaTragere();
             }
         }
     }
     
     protected override void AplicaUpgradeClasa()
     {
-        durataInvizibilitate += 3f; 
-        cooldownInvizibilitate -= 2f; 
-        multiplicatorDamageBackstab += 1; 
+        durataInvizibilitate.Value += 3f; 
+        cooldownInvizibilitate.Value -= 2f; 
+        multiplicatorDamageBackstab.Value += 1; 
     }
 }

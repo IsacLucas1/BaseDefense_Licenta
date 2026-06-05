@@ -14,7 +14,7 @@ public class ArcasPlayer: BasePlayer
     private float nextAttackTime = 0f;
     private bool isBurstMode = false;
     private bool isShootingBurst = false;
-    public int sagetiPerBurst = 3;
+    public NetworkVariable<int> sagetiPerBurst = new NetworkVariable<int>(3);
     
     public override void OnNetworkSpawn()
     {
@@ -41,7 +41,7 @@ public class ArcasPlayer: BasePlayer
     protected override void Update()
     {
         base.Update();
-        if (!IsOwner || isDead)
+        if (!IsOwner || isDead.Value)
         {
             return;
         }
@@ -117,7 +117,7 @@ public class ArcasPlayer: BasePlayer
             animator.SetTrigger("Attack");
         }
         yield return new WaitForSeconds(0.2f);
-        for (int i = 0; i < sagetiPerBurst; i++)
+        for (int i = 0; i < sagetiPerBurst.Value; i++)
         {
             ShootServerRpc(cameraCap.rotation);
             yield return new WaitForSeconds(0.08f);
@@ -142,7 +142,7 @@ public class ArcasPlayer: BasePlayer
     
     protected override void AplicaUpgradeClasa()
     {
-        sagetiPerBurst = 4; 
+        sagetiPerBurst.Value = 4; 
         
         Debug.Log("Arcasul a primit Burst Suprem: 4 sageti!");
     }

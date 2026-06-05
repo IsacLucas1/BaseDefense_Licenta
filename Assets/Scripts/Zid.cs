@@ -141,9 +141,12 @@ public class Zid : NetworkBehaviour
         }
     }
     
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void ConstruiesteSauReparaServerRpc(int viataAdaugata)
+    public void ConstruiesteSauRepara(int viataAdaugata)
     {
+        if (!IsServer)
+        {
+            return;
+        }
         viata.Value = Mathf.Min(viata.Value + viataAdaugata, viataMax.Value);
     }
     

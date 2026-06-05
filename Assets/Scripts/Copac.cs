@@ -15,18 +15,31 @@ public class Copac : NetworkBehaviour
     }
     
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void LovesteCopaculServerRPC(ulong jucatorID)
+    public void LovesteCopaculServerRPC(RpcParams rpcParams = default)
     {
         if (viataCopac.Value == 0)
         {
             return;
         }
-        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(jucatorID, out NetworkObject jucatorObj))
+        
+        ulong senderId = rpcParams.Receive.SenderClientId;
+        
+        if (NetworkManager.Singleton.ConnectedClients.TryGetValue(senderId, out var client))
         {
-            BasePlayer jucator = jucatorObj.GetComponent<BasePlayer>();
-            if (jucator != null)
+            if (client.PlayerObject != null)
             {
-                jucator.AdaugaLemn(lemnPerLovitura);
+                // Validare server-side de distanta (maxim 5 metri)
+                float distanta = Vector3.Distance(transform.position, client.PlayerObject.transform.position);
+                if (distanta > 5f)
+                {
+                    Debug.LogWarning("Jucatorul e prea departe pentru a lovi copacul!");
+                    return; 
+                }
+                BasePlayer jucator = client.PlayerObject.GetComponent<BasePlayer>();
+                if (jucator != null)
+                {
+                    jucator.AdaugaLemn(lemnPerLovitura);
+                }
             }
         }
 

@@ -7,21 +7,22 @@ public class ConstructorPlayer : MeleePlayer
 { 
     [Header("Setari Constructor")]
     public int multiplicatorLemn = 2;
-    public int costConstructie = 10;
+    public NetworkVariable<int> costConstructie = new NetworkVariable<int>(10);
     
     [Header("Setari Constructie")]
-    public float constructieCooldown = 0.1f;
+    public float constructieCooldown = 0.8f;
     private float nextConstructieTime = 0f;
     
     
     public override void OnNetworkSpawn()
     {
-        damageArma = 10;
-        atacCooldown = 0.7f;
-        durataAnimatie = 0.3f;
         if (IsServer)
         {
-            speed.Value = 10f;
+            damageArma.Value = 10;
+            atacCooldown.Value = 0.7f;
+            durataAnimatie = 0.3f;
+            
+            speed.Value = 20f;
         
             var health = GetComponent<Health>();
             if (health != null)
@@ -56,7 +57,7 @@ public class ConstructorPlayer : MeleePlayer
     {
         base.Update();
         
-        if (!IsOwner || isDead)
+        if (!IsOwner || isDead.Value)
         {
             return;
         }
@@ -89,15 +90,15 @@ public class ConstructorPlayer : MeleePlayer
             {
                 if (zid.viata.Value < zid.viataMax.Value)
                 {
-                    if(lemn.Value >= costConstructie)
+                    if(lemn.Value >= costConstructie.Value)
                     {
-                        Debug.Log("Construiesc cu costul: " + costConstructie);
-                        ConstruiesteZidServerRpc(zid.NetworkObjectId, costConstructie);
+                        Debug.Log("Construiesc cu costul: " + costConstructie.Value);
+                        ConstruiesteZidServerRpc(zid.NetworkObjectId);
                         nextConstructieTime = Time.time + constructieCooldown;
                     }
                     else
                     {
-                        Debug.Log("Nu ai destul lemn! Ai " + lemn.Value + " dar iti trebuie " + costConstructie);
+                        Debug.Log("Nu ai destul lemn! Ai " + lemn.Value + " dar iti trebuie " + costConstructie.Value);
                     }
                 }
                 else
@@ -109,19 +110,22 @@ public class ConstructorPlayer : MeleePlayer
     }
 
     [ServerRpc]
-    private void ConstruiesteZidServerRpc(ulong zidId, int cost)
+    private void ConstruiesteZidServerRpc(ulong zidId)
     {
-        if (lemn.Value >= cost)
+        int cost = costConstructie.Value;
+        if (lemn.Value < cost)
         {
-            if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(zidId, out var obj))
+            return;
+        }
+
+        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(zidId, out var obj))
+        {
+            Zid zid = obj.GetComponent<Zid>();
+            if (zid != null && zid.viata.Value < zid.viataMax.Value)
             {
-                Zid zid = obj.GetComponent<Zid>();
-                if (zid != null && zid.viata.Value < zid.viataMax.Value)
-                {
-                    lemn.Value -= cost;
-                    zid.ConstruiesteSauReparaServerRpc(20);
-                    Debug.Log("Zidul are: " + zid.viata.Value + " / " + zid.viataMax);
-                }
+                lemn.Value -= cost;
+                zid.ConstruiesteSauRepara(20);
+                Debug.Log("Zidul are: " + zid.viata.Value + " / " + zid.viataMax);
             }
         }
     }
@@ -135,9 +139,7 @@ public class ConstructorPlayer : MeleePlayer
 
             if (zid != null && zid.viata.Value > 0)
             {
-                int damageDistrugere = 12;
-                Debug.Log($"Am lovit zidul! I-am dat {damageDistrugere} damage.");
-                DamageZidServerRpc(zid.NetworkObjectId, damageDistrugere);
+                DamageZidServerRpc(zid.NetworkObjectId);
             }
             else if(zid != null && zid.viata.Value <= 0)
             {
@@ -151,21 +153,22 @@ public class ConstructorPlayer : MeleePlayer
     }
 
     [ServerRpc]
-    private void DamageZidServerRpc(ulong zidId, int damage)
+    private void DamageZidServerRpc(ulong zidId)
     {
+        int damageDistrugere = 10;
         if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(zidId, out var obj))
         {
             Zid zid = obj.GetComponent<Zid>();
             if (zid != null)
             {
-                zid.PrimesteDamage(damage);
+                zid.PrimesteDamage(damageDistrugere);
             }
         }
     }
     
     protected override void AplicaUpgradeClasa()
     {
-        costConstructie = 5; 
+        costConstructie.Value = 5; 
         Debug.Log("Constructorul a primit Upgrade-ul Suprem: Ziduri la jumatate de pret!");
     }
 }

@@ -7,9 +7,8 @@ public class NightSpawner : NetworkBehaviour
 {
     [Header("Setari Spawner")]
     public GameObject inamicPrefab; 
-    [Tooltip("Trage aici cele 3 puncte de spawn (Empty GameObjects)")]
     public Transform[] puncteSpawn; 
-    public int inamiciPerNoapte = 10;
+    public int inamiciPerNoapte = 100;
     public float timpIntreSpawns = 1.5f;
     
     [Header("Referinte")]
@@ -54,7 +53,6 @@ public class NightSpawner : NetworkBehaviour
             {
                 netObj.Spawn();
             }
-            
             
             InamiciDeNoapte scriptDeNoapte = inamicInstantiat.GetComponent<InamiciDeNoapte>();
             if (scriptDeNoapte != null)

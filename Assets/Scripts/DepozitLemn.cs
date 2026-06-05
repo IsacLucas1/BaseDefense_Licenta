@@ -47,36 +47,43 @@ public class DepozitLemn : NetworkBehaviour
     
     public void IncearcaDepozitareLemn(BasePlayer jucator)
     {
-        ProceseazaLemnServerRpc(jucator.NetworkObjectId);
+        ProceseazaLemnServerRpc();
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    private void ProceseazaLemnServerRpc(ulong idJucator, RpcParams rpcParams = default)
+    private void ProceseazaLemnServerRpc(RpcParams rpcParams = default)
     {
-        if(NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(idJucator, out NetworkObject playerObject))
+        ulong senderId = rpcParams.Receive.SenderClientId;
+        if (NetworkManager.Singleton.ConnectedClients.TryGetValue(senderId, out var client))
         {
-            BasePlayer jucator = playerObject.GetComponent<BasePlayer>();
-            if (jucator == null)
+            if (client.PlayerObject != null)
             {
-                return;
-            }
-            
-            ConstructorPlayer constructorPlayer = jucator.GetComponent<ConstructorPlayer>();
-
-            if (constructorPlayer != null)
-            {
-                if (lemnStocat.Value > 0)
+                // Validare server-side de distanta
+                float distanta = Vector3.Distance(transform.position, client.PlayerObject.transform.position);
+                if (distanta > 5f)
                 {
-                    jucator.lemn.Value += lemnStocat.Value;
-                    lemnStocat.Value = 0;
+                    Debug.LogWarning("Jucatorul e prea departe de depozit!");
+                    return; 
                 }
-            }
-            else
-            {
-                if (jucator.lemn.Value > 0)
+                BasePlayer jucator = client.PlayerObject.GetComponent<BasePlayer>();
+                if (jucator == null) return;
+                
+                ConstructorPlayer constructorPlayer = jucator.GetComponent<ConstructorPlayer>();
+                if (constructorPlayer != null)
                 {
-                    lemnStocat.Value += jucator.lemn.Value;
-                    jucator.lemn.Value = 0;
+                    if (lemnStocat.Value > 0)
+                    {
+                        jucator.lemn.Value += lemnStocat.Value;
+                        lemnStocat.Value = 0;
+                    }
+                }
+                else
+                {
+                    if (jucator.lemn.Value > 0)
+                    {
+                        lemnStocat.Value += jucator.lemn.Value;
+                        jucator.lemn.Value = 0;
+                    }
                 }
             }
         }

@@ -125,7 +125,13 @@ public class InamiciDeNoapte : InamiciAI
             return;
         }
 
-        siegePathfinder.CalculeazaSiNavigheaza(tintaBaza.position);
+        // Gaseste cel mai apropiat punct VALID pe NavMesh langa cristal
+        Vector3 destinatie = tintaBaza.position;
+        if (NavMesh.SamplePosition(tintaBaza.position, out NavMeshHit navHit, 5f, NavMesh.AllAreas))
+        {
+            destinatie = navHit.position;
+        }
+        siegePathfinder.CalculeazaSiNavigheaza(destinatie);
 
         if (siegePathfinder.AsediazaZidCurent && siegePathfinder.ZidDeSpart != null)
         {

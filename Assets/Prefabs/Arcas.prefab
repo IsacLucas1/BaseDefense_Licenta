@@ -936,6 +936,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 766115141926368927}
     m_Modifications:
+    - target: {fileID: -9106337904210995862, guid: dab9fbcfaf388894490bfa7fc9f50e68, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: dab9fbcfaf388894490bfa7fc9f50e68, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.3
@@ -1016,9 +1020,25 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 592890220700019360, guid: dab9fbcfaf388894490bfa7fc9f50e68, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: dab9fbcfaf388894490bfa7fc9f50e68, type: 3}
       propertyPath: m_Name
       value: Erika Archer With Bow Arrow
+      objectReference: {fileID: 0}
+    - target: {fileID: 2234995421923447144, guid: dab9fbcfaf388894490bfa7fc9f50e68, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2544741779536303783, guid: dab9fbcfaf388894490bfa7fc9f50e68, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3707983018852226925, guid: dab9fbcfaf388894490bfa7fc9f50e68, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4936884950917866777, guid: dab9fbcfaf388894490bfa7fc9f50e68, type: 3}
       propertyPath: m_IsActive

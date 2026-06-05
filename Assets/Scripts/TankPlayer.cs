@@ -5,21 +5,20 @@ using System.Collections;
 public class TankPlayer : MeleePlayer
 {
     [Header("Setari Tanc")] 
-    public float tauntRadius = 20f;
+    public NetworkVariable<float> tauntRadius = new NetworkVariable<float>(20f);
     public float tauntDuration = 5f;
-    public float tauntCooldown = 10f;
+    public NetworkVariable<float> tauntCooldown = new NetworkVariable<float>(10f);
     private float nextTauntTime = 0f;
     
     public ParticleSystem tauntParticles;
     
     public override void OnNetworkSpawn()
     {
-        damageArma = 20;
-        atacCooldown = 2f;
-        durataAnimatie = 0.8f;
-        
         if (IsServer)
         {
+            damageArma.Value = 20;
+            atacCooldown.Value = 2f;
+            
             speed.Value = 4f;
         
             var health = GetComponent<Health>();
@@ -29,7 +28,7 @@ public class TankPlayer : MeleePlayer
                 health.currentHealth.Value = 200;
             }
         }
-        
+        durataAnimatie = 0.8f;
         base.OnNetworkSpawn();
     }
 
@@ -45,7 +44,7 @@ public class TankPlayer : MeleePlayer
     protected override void Update()
     {
         base.Update();
-        if (!IsOwner || isDead)
+        if (!IsOwner || isDead.Value)
         {
             return;
         }
@@ -61,7 +60,7 @@ public class TankPlayer : MeleePlayer
             if (Time.time < nextTauntTime)
             {
                 float timpRamas = nextTauntTime- Time.time; 
-                procentaj = 1f - (timpRamas / tauntCooldown);
+                procentaj = 1f - (timpRamas / tauntCooldown.Value);
             }
             
             UIManager.Instance.ActualizeazaCooldownTaunt(procentaj);
@@ -78,14 +77,14 @@ public class TankPlayer : MeleePlayer
     
     private void ActiveazaTaunt()
     {
-        nextTauntTime = Time.time + tauntCooldown;
+        nextTauntTime = Time.time + tauntCooldown.Value;
         TauntServerRpc();
     }
 
     [ServerRpc]
     private void TauntServerRpc()
     {
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, tauntRadius);
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, tauntRadius.Value);
         foreach (var hitCollider in hitColliders)
         {
             if (hitCollider.CompareTag("Enemy"))
@@ -112,8 +111,8 @@ public class TankPlayer : MeleePlayer
     
     protected override void AplicaUpgradeClasa()
     {
-        tauntRadius += 10f; 
-        tauntCooldown -= 3f; 
+        tauntRadius.Value += 10f; 
+        tauntCooldown.Value -= 3f; 
         Debug.Log("Tancul a primit Super-Taunt!");
     }
 }

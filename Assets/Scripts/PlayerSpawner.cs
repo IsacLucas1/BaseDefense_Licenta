@@ -10,13 +10,15 @@ public class PlayerSpawner : NetworkBehaviour
     {
         if (IsOwner)
         {
-            SpawnCharacterServerRPC(indexClasa, OwnerClientId, spawnPosition, rotation);
+            SpawnCharacterServerRPC(indexClasa, spawnPosition, rotation);
         }
     }
 
     [ServerRpc]
-    private void SpawnCharacterServerRPC(int index, ulong clientId, Vector3 spawnPosition, Quaternion rotation)
+    private void SpawnCharacterServerRPC(int index, Vector3 spawnPosition, Quaternion rotation, ServerRpcParams rpcParams = default)
     {
+        ulong clientId = rpcParams.Receive.SenderClientId;
+        
         if(index >= 0 && index < playerPrefabs.Length)
         {
             GameObject playerInstance = Instantiate(playerPrefabs[index], spawnPosition, rotation);

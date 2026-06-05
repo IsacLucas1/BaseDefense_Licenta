@@ -22,26 +22,24 @@ public class LeverCasa : NetworkBehaviour
     }
 
     // Functia apelata de Raycast-ul Spionului
-    public void IncearcaTragere(ulong spionId)
+    public void IncearcaTragere()
     {
         if (!aFostTras.Value)
         {
-            TrageManetaServerRpc(spionId);
-        }
-        else
-        {
-            if (UIManager.Instance != null) 
-            {
-                UIManager.Instance.ArataEroareMagazin("Aceasta maneta a fost deja trasa.");
-            }
+            TrageManetaServerRpc();
         }
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    private void TrageManetaServerRpc(ulong spionId)
+    private void TrageManetaServerRpc(RpcParams rpcParams = default)
     {
-        if (aFostTras.Value) return;
+        if (aFostTras.Value)
+        {
+            return;
+        }
 
+        ulong spionId = rpcParams.Receive.SenderClientId;
+        
         aFostTras.Value = true;
         HouseManager.Instance.ProceseazaManeta(tipulCasei, spionId, transform.position); 
     }

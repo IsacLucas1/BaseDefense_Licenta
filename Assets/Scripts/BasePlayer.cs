@@ -19,10 +19,10 @@ public class BasePlayer : NetworkBehaviour
     public NetworkVariable<int> extraDamage = new NetworkVariable<int>(0);
     public float distantaAdunare = 3f;
     
-    public float taiereCooldown = 1f;
+    public NetworkVariable<float> taiereCooldown = new NetworkVariable<float>(1f);
     private float nextTaiereTime = 0f;
     private bool inZonaMagazin = false;
-    public bool upgradeClasaCumparat = false;
+    public NetworkVariable<bool> upgradeClasaCumparat = new NetworkVariable<bool>(false);
     
     [Header("Efecte Vizuale")]
     public NetworkVariable<bool> isInvisible = new NetworkVariable<bool>(false);
@@ -32,7 +32,7 @@ public class BasePlayer : NetworkBehaviour
     protected ClientNetworkAnimator netAnimator;
     
     private Rigidbody rb;
-    public bool isDead { get; protected set; } = false;
+    public NetworkVariable<bool> isDead =new NetworkVariable<bool>(false);
     protected bool isRecalling = false;
     protected Coroutine recallCoroutineActiva;
     
@@ -221,7 +221,7 @@ public class BasePlayer : NetworkBehaviour
     
     protected virtual void Update()
     {
-        if (!IsOwner || isDead)
+        if (!IsOwner || isDead.Value)
         {
             return;
         }
@@ -284,7 +284,7 @@ public class BasePlayer : NetworkBehaviour
             {
                 AnuleazaRecall();
                 IncearcaSaTaieCopac(); 
-                nextTaiereTime = Time.time + taiereCooldown;
+                nextTaiereTime = Time.time + taiereCooldown.Value;
             }
         }
 
@@ -421,16 +421,43 @@ public class BasePlayer : NetworkBehaviour
     }
     
     [ServerRpc]
-    protected void DamageServerRpc(ulong targetID, int amount, ulong attackerId)
+    protected void DamageServerRpc(ulong targetID, ServerRpcParams rpcParams = default)
     {
-        if(NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(targetID, out NetworkObject targetObj))
+        ulong attackerId = rpcParams.Receive.SenderClientId;
+
+        if (attackerId != OwnerClientId)
         {
-            Health targetHealth = targetObj.GetComponent<Health>();
-            if (targetHealth != null && targetHealth.currentHealth.Value > 0)
-            {
-                targetHealth.TakeDamage(amount, attackerId);
-            }
+            return;
         }
+
+        if (!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(targetID, out NetworkObject targetObj))
+        {
+            return;
+        }
+        
+        Health targetHealth = targetObj.GetComponent<Health>();
+        if (targetHealth == null || targetHealth.currentHealth.Value <= 0)
+        {
+            return;
+        }
+
+        if (!PoateDaDamageServer(targetObj))
+        {
+            return;
+        }
+
+        int damage = CalculeazaDamageServer(targetObj);
+        targetHealth.TakeDamage(damage, attackerId);
+    }
+    
+    protected virtual int CalculeazaDamageServer(NetworkObject targetObj)
+    {
+        return ObtineDamageTotal();
+    }
+
+    protected virtual bool PoateDaDamageServer(NetworkObject targetObj)
+    {
+        return targetObj.CompareTag("Enemy");
     }
     
     protected void AnuleazaRecall()
@@ -456,7 +483,7 @@ public class BasePlayer : NetworkBehaviour
         Debug.Log("Recall initiat...");
         while (recallDuration > 0)
         {
-            if (isDead)
+            if (isDead.Value)
             {
                 isRecalling = false;
                 yield break;
@@ -474,11 +501,19 @@ public class BasePlayer : NetworkBehaviour
         }
         Debug.Log("Recall complet. TeleportareBaza");
         transform.position = respawnPosition.Value;
-        if (rb != null)
-        {
-            rb.position = respawnPosition.Value;
-        }
+        RequestRecallServerRpc();
         isRecalling = false;
+    }
+    
+    [ServerRpc]
+    private void RequestRecallServerRpc()
+    {
+        if (isDead.Value)
+        {
+            return;
+        }
+        
+        TeleporteazaInBazaClientRpc(respawnPosition.Value);
     }
 
     private void IncearcaSaTaieCopac()
@@ -490,14 +525,14 @@ public class BasePlayer : NetworkBehaviour
             Copac copac = hit.collider.GetComponent<Copac>();
             if (copac != null)
             {
-                copac.LovesteCopaculServerRPC(NetworkObjectId);
+                copac.LovesteCopaculServerRPC();
             }
         }
     }
     
     private void FixedUpdate()
     {
-        if (!IsOwner || isDead || (UIManager.Instance != null && (UIManager.Instance.jocPauza || UIManager.Instance.esteInMagazin)))
+        if (!IsOwner || isDead.Value || (UIManager.Instance != null && (UIManager.Instance.jocPauza || UIManager.Instance.esteInMagazin)))
         {
             return;
         }
@@ -544,7 +579,7 @@ public class BasePlayer : NetworkBehaviour
 
     public void Moarte()
     {
-        if (!IsServer || isDead)
+        if (!IsServer || isDead.Value)
         {
             return;
         }
@@ -553,7 +588,7 @@ public class BasePlayer : NetworkBehaviour
     
     private IEnumerator RespawnRoutine()
     {
-        isDead = true;
+        isDead.Value = true;
         EliminaJucatorulClientRpc(true);
         yield return new WaitForSeconds(5f);
         TeleporteazaInBazaClientRpc(respawnPosition.Value);
@@ -564,7 +599,7 @@ public class BasePlayer : NetworkBehaviour
             healthComp.ResetHealth();
         }
 
-        isDead = false;
+        isDead.Value = false;
 
         yield return new WaitForSeconds(0.1f);
         EliminaJucatorulClientRpc(false);
@@ -573,8 +608,6 @@ public class BasePlayer : NetworkBehaviour
     [ClientRpc]
     private void EliminaJucatorulClientRpc(bool stareMoarte)
     {
-        isDead = stareMoarte;
-        
         if (IsOwner && stareMoarte)
         {
             if (UIManager.Instance != null && UIManager.Instance.esteInMagazin)
@@ -748,7 +781,7 @@ public class BasePlayer : NetworkBehaviour
                 break;
             case 6: PrimesteRecompensa(TipCamp.Viteza, 1, 30f); break;
             case 7: PrimesteRecompensa(TipCamp.Damage, 10, 30f); break;
-            case 8: UpgradeTaiereLemnClientRpc(); break;
+            case 8: taiereCooldown.Value = Mathf.Max(0.2f, taiereCooldown.Value - 0.2f); break;
             case 9: 
                 Zid[] ziduri = FindObjectsByType<Zid>(FindObjectsSortMode.None);
                 foreach (Zid z in ziduri)
@@ -769,15 +802,6 @@ public class BasePlayer : NetworkBehaviour
         }
     }
     
-    [ClientRpc]
-    private void UpgradeTaiereLemnClientRpc()
-    {
-        if (IsOwner)
-        {
-            taiereCooldown = Mathf.Max(0.2f, taiereCooldown - 0.2f);
-        }
-    }
-    
     [ServerRpc]
     public void CumparaUpgradeClasaServerRpc()
     {
@@ -788,7 +812,7 @@ public class BasePlayer : NetworkBehaviour
         
         int cost = 250; 
         
-        if (upgradeClasaCumparat)
+        if (upgradeClasaCumparat.Value)
         {
             AfiseazaEroareMagazinClientRpc("Ai cumparat deja Upgrade-ul de Clasa!");
             return;
@@ -801,21 +825,11 @@ public class BasePlayer : NetworkBehaviour
         }
 
         bani.Value -= cost;
+        upgradeClasaCumparat.Value = true;
         
-        AplicaUpgradeClasa(); 
-        ConfirmaUpgradeCumparatClientRpc(); 
+        AplicaUpgradeClasa();
         
         Debug.Log("Upgrade de clasa achizitionat!");
-    }
-
-    [ClientRpc]
-    private void ConfirmaUpgradeCumparatClientRpc()
-    {
-        upgradeClasaCumparat = true;
-        if (IsOwner && !IsServer)
-        {
-            AplicaUpgradeClasa();
-        }
     }
     
     protected virtual void AplicaUpgradeClasa()

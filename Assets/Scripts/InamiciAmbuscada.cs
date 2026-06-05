@@ -106,7 +106,7 @@ public class InamicAmbuscada : InamiciAI
         if (spionTinta != null)
         {
             BasePlayer playerSpion = spionTinta.GetComponent<BasePlayer>();
-            if (playerSpion != null && !playerSpion.isDead)
+            if (playerSpion != null && !playerSpion.isDead.Value)
             {
                 tinta = spionTinta;
                 return; 

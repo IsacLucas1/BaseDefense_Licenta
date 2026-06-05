@@ -105,7 +105,7 @@ public abstract class InamiciAI : NetworkBehaviour
         foreach (Collider col in jucatoriInZona)
         {
             BasePlayer player = col.GetComponent<BasePlayer>();
-            if (player != null && !player.isDead && !player.isInvisible.Value)
+            if (player != null && !player.isDead.Value && !player.isInvisible.Value)
             {
                 if (!VerificaLimitaUrmarire(col.transform.position)) continue;
                 if (!PoateUrmariJucator(player)) continue;
@@ -133,10 +133,16 @@ public abstract class InamiciAI : NetworkBehaviour
         }
         tinta = celMaiApropiatJucator;
     }
-    
-    protected virtual bool VerificaLimitaUrmarire(Vector3 pozitieJucator) { return true; }
 
-    protected virtual bool PoateUrmariJucator(BasePlayer player) { return true; }
+    protected virtual bool VerificaLimitaUrmarire(Vector3 pozitieJucator)
+    {
+        return true;
+    }
+
+    protected virtual bool PoateUrmariJucator(BasePlayer player)
+    {
+        return true;
+    }
 
     protected virtual void UrmaresteSiAtacaJucator()
     {
