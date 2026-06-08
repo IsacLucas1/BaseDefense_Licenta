@@ -25,6 +25,19 @@ public abstract class MeleePlayer : BasePlayer
     protected bool canDealdamage = false;
     protected bool enemyHit = false;
     
+    protected override void SetupLocalPlayer()
+    {
+        base.SetupLocalPlayer();
+        
+        damageArma.OnValueChanged += (oldVal, newVal) => 
+        {
+            if (IsOwner && UIManager.Instance != null)
+            {
+                UIManager.Instance.ActualizeazaDamage(ObtineDamageTotal());
+            }
+        };
+    }
+    
     protected override void Update()
     {
         base.Update();

@@ -5,27 +5,47 @@ using System.Collections.Generic;
 
 public class NightSpawner : NetworkBehaviour
 {
-    [Header("Setari Spawner")]
-    public GameObject inamicPrefab; 
+    [Header("Setari Spawner Obisnuit")]
+    public GameObject inamicDeNoaptePrefab; 
     public Transform[] puncteSpawn; 
-    public int inamiciPerNoapte = 100;
-    public float timpIntreSpawns = 1.5f;
+    public int inamiciDeNoaptePerNoapte = 1;
+    public float timpIntreSpawns = 1f;
+    
+    [Header("Setari Spawner Asediu")]
+    public GameObject inamicAsediuPrefab; 
+    public Transform punctSpawnAsediu;
+    public Poarta poarta;
+    public Transform checkpointAsediu;
+    public int inamiciAsediuPerNoapte = 3;
+    public float timpIntreSpawnsAsediu = 1f;
+
     
     [Header("Referinte")]
     public DayNightManager dayNightManager;
-    public Transform obiectivBaza; 
+    public Transform obiectivBaza;
+    
 
     private bool aSpawnatNoapteaAsta = false;
     public List<Health> inamiciInViata = new List<Health>();
     
     private void Update()
     {
-        if (!IsServer || dayNightManager == null) return;
+        if (!IsServer || dayNightManager == null)
+        {
+            return;
+        }
 
         if (dayNightManager.EsteNoapte && !aSpawnatNoapteaAsta)
         {
             aSpawnatNoapteaAsta = true;
-            StartCoroutine(SpawnInamiciRoutine());
+            inamiciInViata.Clear();
+            
+            StartCoroutine(SpawnInamiciDeNoapteRoutine());
+            
+            if (inamicAsediuPrefab != null && punctSpawnAsediu != null)
+            {
+                StartCoroutine(SpawnInamiciAsediuRoutine());
+            }
         }
         else if (dayNightManager.EsteZi && aSpawnatNoapteaAsta)
         {
@@ -33,11 +53,9 @@ public class NightSpawner : NetworkBehaviour
         }
     }
     
-    private IEnumerator SpawnInamiciRoutine()
+    private IEnumerator SpawnInamiciDeNoapteRoutine()
     {
-        inamiciInViata.Clear();
-        
-        for (int i = 0; i < inamiciPerNoapte; i++)
+        for (int i = 0; i < inamiciDeNoaptePerNoapte; i++)
         {
             if (puncteSpawn.Length == 0)
             {
@@ -45,7 +63,7 @@ public class NightSpawner : NetworkBehaviour
             }
             
             Transform punctSpawnAles = puncteSpawn[Random.Range(0, puncteSpawn.Length)];
-            GameObject inamicInstantiat = Instantiate(inamicPrefab, punctSpawnAles.position, punctSpawnAles.rotation);
+            GameObject inamicInstantiat = Instantiate(inamicDeNoaptePrefab, punctSpawnAles.position, punctSpawnAles.rotation);
             
             
             NetworkObject netObj = inamicInstantiat.GetComponent<NetworkObject>();
@@ -70,6 +88,36 @@ public class NightSpawner : NetworkBehaviour
         }
     }
 
+    private IEnumerator SpawnInamiciAsediuRoutine()
+    {
+        for (int i = 0; i < inamiciAsediuPerNoapte; i++)
+        {
+            GameObject inamicInstantiat = Instantiate(inamicAsediuPrefab, punctSpawnAsediu.position, punctSpawnAsediu.rotation);
+            
+            NetworkObject netObj = inamicInstantiat.GetComponent<NetworkObject>();
+            if (netObj != null)
+            {
+                netObj.Spawn();
+            }
+            
+            InamiciAsediu scriptAsediu = inamicInstantiat.GetComponent<InamiciAsediu>();
+            if (scriptAsediu != null)
+            {
+                scriptAsediu.tintaCristal = obiectivBaza;
+                scriptAsediu.checkpoint = checkpointAsediu;
+                scriptAsediu.poarta = poarta;
+            }
+            
+            Health healthInamic = inamicInstantiat.GetComponent<Health>();
+            if (healthInamic != null)
+            {
+                inamiciInViata.Add(healthInamic);
+            }
+            
+            yield return new WaitForSeconds(timpIntreSpawnsAsediu);
+        }
+    }
+    
     public bool SuntInamiciInViata()
     {
         inamiciInViata.RemoveAll(inamic => inamic == null);
@@ -97,7 +145,7 @@ public class NightSpawner : NetworkBehaviour
     {
         inamiciInViata.RemoveAll(inamic => inamic == null);
 
-        for (int i = 0; i < inamiciPerNoapte; i++)
+        for (int i = 0; i < inamiciDeNoaptePerNoapte; i++)
         {
             if (puncteSpawn.Length == 0)
             {
@@ -105,7 +153,7 @@ public class NightSpawner : NetworkBehaviour
             }
 
             Transform punctSpawnAles = puncteSpawn[Random.Range(0, puncteSpawn.Length)];
-            GameObject inamicInstantiat = Instantiate(inamicPrefab, punctSpawnAles.position, punctSpawnAles.rotation);
+            GameObject inamicInstantiat = Instantiate(inamicDeNoaptePrefab, punctSpawnAles.position, punctSpawnAles.rotation);
             
             NetworkObject netObj = inamicInstantiat.GetComponent<NetworkObject>();
             if (netObj != null)

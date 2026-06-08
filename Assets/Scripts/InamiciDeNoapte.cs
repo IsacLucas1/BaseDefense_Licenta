@@ -66,7 +66,7 @@ public class InamiciDeNoapte : InamiciAI
             if (scriptZid != null && scriptZid.viata.Value > 0)
             {
                 //Distanta pana la suprafata zidului
-                Collider zidCol = siegePathfinder.ZidDeSpart.GetComponent<Collider>();
+                Collider zidCol = siegePathfinder.ZidDeSpart.GetComponentInChildren<Collider>();
                 Vector3 punctSuprafata = zidCol.ClosestPoint(transform.position);
                 float distantaLaSuprafata = Vector3.Distance(transform.position, punctSuprafata);
 
@@ -138,7 +138,7 @@ public class InamiciDeNoapte : InamiciAI
             Zid scriptZid = siegePathfinder.ZidDeSpart.GetComponent<Zid>();
             if (scriptZid != null && scriptZid.viata.Value > 0)
             {
-                Collider zidCol = siegePathfinder.ZidDeSpart.GetComponent<Collider>();
+                Collider zidCol = siegePathfinder.ZidDeSpart.GetComponentInChildren<Collider>();
                 Vector3 punctSuprafata = zidCol.ClosestPoint(transform.position);
                 float distantaPanaLaZid = Vector3.Distance(transform.position, punctSuprafata);
 

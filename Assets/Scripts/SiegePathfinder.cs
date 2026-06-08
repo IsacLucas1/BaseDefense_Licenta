@@ -100,7 +100,7 @@ public class SiegePathfinder : NetworkBehaviour
                 continue;
             }
 
-            Collider zidCol = zid.GetComponent<Collider>();
+            Collider zidCol = zid.GetComponentInChildren<Collider>();
             if (zidCol == null)
             {
                 continue;
@@ -158,7 +158,7 @@ public class SiegePathfinder : NetworkBehaviour
 
     private void NavigheazaLaZid(Zid zid)
     {
-        Collider zidCol = zid.GetComponent<Collider>();
+        Collider zidCol = zid.GetComponentInChildren<Collider>();
         if (zidCol == null)
         {
             return;

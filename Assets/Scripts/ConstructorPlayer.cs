@@ -22,7 +22,7 @@ public class ConstructorPlayer : MeleePlayer
             atacCooldown.Value = 0.7f;
             durataAnimatie = 0.3f;
             
-            speed.Value = 20f;
+            speed.Value = 5f;
         
             var health = GetComponent<Health>();
             if (health != null)
@@ -72,6 +72,12 @@ public class ConstructorPlayer : MeleePlayer
             IncearcaSaConstruiascaSauRepare();
         }
         
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            AnuleazaRecall();
+            IncearcaActionarePoarta();
+        }
+        
         if (Input.GetKeyDown(KeyCode.X))
         {
             AnuleazaRecall();
@@ -84,7 +90,7 @@ public class ConstructorPlayer : MeleePlayer
         Ray ray = new Ray(cameraCap.transform.position, cameraCap.transform.forward);
         if (Physics.Raycast(ray, out RaycastHit hit, distantaAdunare, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide))
         {
-            Zid zid = hit.collider.GetComponent<Zid>();
+            Zid zid = hit.collider.GetComponentInParent<Zid>();
 
             if (zid != null)
             {
@@ -135,7 +141,7 @@ public class ConstructorPlayer : MeleePlayer
         Ray ray = new Ray(cameraCap.transform.position, cameraCap.transform.forward);
         if (Physics.Raycast(ray, out RaycastHit hit, distantaAdunare))
         {
-            Zid zid = hit.collider.GetComponent<Zid>();
+            Zid zid = hit.collider.GetComponentInParent<Zid>();
 
             if (zid != null && zid.viata.Value > 0)
             {
@@ -162,6 +168,19 @@ public class ConstructorPlayer : MeleePlayer
             if (zid != null)
             {
                 zid.PrimesteDamage(damageDistrugere);
+            }
+        }
+    }
+    
+    private void IncearcaActionarePoarta()
+    {
+        Ray ray = new Ray(cameraCap.transform.position, cameraCap.transform.forward);
+        if (Physics.Raycast(ray, out RaycastHit hit, distantaAdunare))
+        {
+            ButonPoarta buton = hit.collider.GetComponent<ButonPoarta>();
+            if (buton != null)
+            {
+                buton.IncearcaActionare(this);
             }
         }
     }

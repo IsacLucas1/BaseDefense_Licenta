@@ -170,10 +170,14 @@ public class BasePlayer : NetworkBehaviour
     
     private void ActualizeazaViata(int valoareVeche, int valoareNoua)
     {
+        if (valoareNoua < valoareVeche)
+        {
+            AnuleazaRecall();
+        }
+        
         if (IsOwner && UIManager.Instance != null)
         {
-            Health healthComp = GetComponent<Health>();
-            if (healthComp != null)
+            if (TryGetComponent<Health>(out var healthComp))
             {
                 UIManager.Instance.ActualizeazaViata(healthComp.currentHealth.Value, healthComp.maxHealth.Value);
             }
@@ -561,8 +565,9 @@ public class BasePlayer : NetworkBehaviour
         
         Vector3 movement = transform.right * x + transform.forward * z;
         
-        Vector3 targetPosition = rb.position + movement.normalized * speed.Value * Time.deltaTime;
-        rb.MovePosition(targetPosition);
+        Vector3 targetVelocity = movement.normalized * speed.Value;
+        targetVelocity.y = rb.linearVelocity.y;
+        rb.linearVelocity = targetVelocity; 
     }
     
     private void HandleMouseLook()
@@ -591,6 +596,10 @@ public class BasePlayer : NetworkBehaviour
         isDead.Value = true;
         EliminaJucatorulClientRpc(true);
         yield return new WaitForSeconds(5f);
+        
+        transform.position = respawnPosition.Value; 
+        if (rb != null) rb.position = respawnPosition.Value;
+        
         TeleporteazaInBazaClientRpc(respawnPosition.Value);
         transform.rotation = respawnRotation;
         
@@ -599,10 +608,10 @@ public class BasePlayer : NetworkBehaviour
             healthComp.ResetHealth();
         }
 
-        isDead.Value = false;
-
-        yield return new WaitForSeconds(0.1f);
         EliminaJucatorulClientRpc(false);
+        yield return new WaitForSeconds(0.1f);
+        
+        isDead.Value = false;
     }
 
     [ClientRpc]

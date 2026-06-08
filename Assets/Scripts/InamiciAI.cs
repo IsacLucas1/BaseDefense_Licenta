@@ -146,7 +146,9 @@ public abstract class InamiciAI : NetworkBehaviour
 
     protected virtual void UrmaresteSiAtacaJucator()
     {
-        float distantaJucator = Vector3.Distance(transform.position, tinta.position);
+        Collider tintaCol = tinta.GetComponentInChildren<Collider>();
+        Vector3 punctTinta = tintaCol != null ? tintaCol.ClosestPoint(transform.position) : tinta.position;
+        float distantaJucator = Vector3.Distance(transform.position, punctTinta);
 
         if (distantaJucator <= razaAtac)
         {
@@ -169,13 +171,13 @@ public abstract class InamiciAI : NetworkBehaviour
             {
                 Vector3 directieSpreTinta = (tinta.position - transform.position).normalized;
                 
-                if (Physics.Raycast(transform.position + Vector3.up, directieSpreTinta, out RaycastHit hit, distantaJucator))
+                if (Physics.Raycast(transform.position + Vector3.up, directieSpreTinta, out RaycastHit hit, Vector3.Distance(transform.position, tinta.position)))
                 {
-                    Zid zid = hit.collider.GetComponent<Zid>();
+                    Zid zid = hit.collider.GetComponentInParent<Zid>();
                     
                     if (zid != null && zid.viata.Value > 0)
                     {
-                        Collider zidCol = zid.GetComponent<Collider>();
+                        Collider zidCol = hit.collider; 
                         Vector3 punctSuprafata = zidCol.ClosestPoint(transform.position);
                         float distantaPanaLaZid = Vector3.Distance(transform.position, punctSuprafata);
 
@@ -213,7 +215,7 @@ public abstract class InamiciAI : NetworkBehaviour
             }
             else
             {
-                Zid zidTinta = tinta.GetComponent<Zid>();
+                Zid zidTinta = tinta.GetComponentInParent<Zid>();
                 if (zidTinta != null)
                 {
                     zidTinta.PrimesteDamage(damageAtac);

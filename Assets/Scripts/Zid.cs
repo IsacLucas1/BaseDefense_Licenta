@@ -12,16 +12,17 @@ public class Zid : NetworkBehaviour
     public NetworkVariable<int> viataMax = new NetworkVariable<int>(100);
     public NetworkVariable<int> viata = new NetworkVariable<int>(0);
     
-    private Collider zidCollider;
-    private Renderer wallRenderer;
-    private Color culoareOriginala;
-    private NavMeshObstacle navMeshObstacle;
+    protected Collider zidCollider;
+    protected Renderer wallRenderer;
+    protected Color culoareOriginala;
+    protected NavMeshObstacle navMeshObstacle;
     
     private void Awake()
     {
         zidCollider = GetComponent<Collider>();
         wallRenderer = GetComponentInChildren<Renderer>();
         navMeshObstacle = GetComponent<NavMeshObstacle>();
+        
         if (wallRenderer != null)
         {
             if (wallRenderer.materials[0].HasProperty("_BaseColor"))
@@ -59,7 +60,7 @@ public class Zid : NetworkBehaviour
         ActualizeazaZid(newValue);
     }
     
-    private void ActualizeazaZid(int viataCurenta)
+    protected virtual void ActualizeazaZid(int viataCurenta)
     {
         if (viataCurenta <= 0)
         {
@@ -110,7 +111,7 @@ public class Zid : NetworkBehaviour
         }
     }
     
-    private void SeteazaOpacitate(float alpha, bool devineOpac)
+    protected virtual void SeteazaOpacitate(float alpha, bool devineOpac)
     {
         if (wallRenderer != null)
         {
