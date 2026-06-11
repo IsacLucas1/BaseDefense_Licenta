@@ -8,8 +8,8 @@ public class WarRoomManager : NetworkBehaviour
 {
     public static WarRoomManager Instance;
 
-    [Header("Setari Vot")] public float durataVot = 30f;
-    public int voturiNecesare = 3;
+    [Header("Setari Vot")] 
+    public float durataVot = 30f;
 
     public NetworkVariable<bool> votInCurs = new NetworkVariable<bool>(false);
     public NetworkVariable<bool> butonActiv = new NetworkVariable<bool>(false);
@@ -129,9 +129,14 @@ public class WarRoomManager : NetworkBehaviour
         
         ActualizeazaScorVotClientRpc(voturiDa, voturiNu);
         
-        if(voturiDa >= voturiNecesare || voturiDa + voturiNu >= 5)
+        if (GameSessionManager.Instance != null)
         {
-            EvalueazaRezultatVot();
+            int maxJucatori = GameSessionManager.Instance.nrMaxJucatori.Value;
+            
+            if(voturiDa >= (maxJucatori + 1) / 2 || (voturiDa + voturiNu) >= maxJucatori)
+            {
+                EvalueazaRezultatVot();
+            }
         }
     }
     
@@ -139,6 +144,12 @@ public class WarRoomManager : NetworkBehaviour
     {
         votInCurs.Value = false;
         InchideMeniuVotClientRpc();
+        
+        int voturiNecesare = 5; // Default de siguranță
+        if (GameSessionManager.Instance != null)
+        {
+            voturiNecesare = (GameSessionManager.Instance.nrMaxJucatori.Value + 1) / 2;
+        }
         
         if (voturiDa >= voturiNecesare)
         {

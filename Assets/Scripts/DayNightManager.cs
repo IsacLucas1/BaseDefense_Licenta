@@ -10,7 +10,6 @@ public class DayNightManager : NetworkBehaviour
     [Header("Referinte Night Spawner")]
     public NightSpawner nightSpawner;
     
-    private float nrMinJucatori = 2f;
     private NetworkVariable<float> timpCurent = new NetworkVariable<float>(0f);
     private NetworkVariable<bool> startTime = new NetworkVariable<bool>(false);
     public bool EsteZi => (timpCurent.Value / ziDurata) < 0.5f;
@@ -36,7 +35,9 @@ public class DayNightManager : NetworkBehaviour
             }
         }
 
-        return jucatoriSpawnati >= nrMinJucatori;
+        int minJucatori = GameSessionManager.Instance != null ? GameSessionManager.Instance.nrMaxJucatori.Value : 2;
+        
+        return jucatoriSpawnati >= minJucatori;
     }
     
     private void Update()

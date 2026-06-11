@@ -3,12 +3,15 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using TMPro;
 
 public class CharacterSelector : NetworkBehaviour
 {
-    [Header("Referinte UI")] public GameObject characterSelectionUI;
+    [Header("Referinte UI")]
+    public GameObject characterSelectionUI;
     public GameObject StartPanel;
     public GameObject ClasePanel;
+    public GameObject AsteptarePanel;
     public Button btnTank;
     public Button btnSpion;
     public Button btnConstructor;
@@ -20,10 +23,15 @@ public class CharacterSelector : NetworkBehaviour
     public Button btnStartHost;
     public Button btnStartClient;
     
+    [Header("Texte Asteptare")]
+    public TMP_Text textJucatoriConectati;
+    
     [Header("LocatiiSpawn")]
     public Transform[] spawnPoints;
 
     private bool aDatClick = false;
+    public bool numaratoareInversaPornita = false;
+    
     private void Start()
     {
         if (lobbyCamera != null)
@@ -35,11 +43,17 @@ public class CharacterSelector : NetworkBehaviour
         {
             StartPanel.SetActive(true);
         }
-
+        
+        if (AsteptarePanel != null)
+        {
+            AsteptarePanel.SetActive(false);
+        }
+        
         if (ClasePanel != null)
         {
             ClasePanel.SetActive(false);
         }
+        
 
         btnTank.onClick.AddListener(() => ComandaSpawn(0));
         btnSpion.onClick.AddListener(() => ComandaSpawn(1));
@@ -49,26 +63,80 @@ public class CharacterSelector : NetworkBehaviour
 
         btnStartHost.onClick.AddListener(() =>
         {
-            NetworkManager.Singleton.StartHost();
-            SchimbaMeniuClase();
+            if (RelayManager.Instance != null)
+            {
+                RelayManager.Instance.CreateGame();
+                SchimbaPanelAsteptare();
+            }
         });
         btnStartClient.onClick.AddListener(() =>
         {
-            NetworkManager.Singleton.StartClient();
-            SchimbaMeniuClase();
+            if (RelayManager.Instance != null)
+            {
+                RelayManager.Instance.JoinGame();
+                SchimbaPanelAsteptare();
+            }
         });
     }
 
-    void SchimbaMeniuClase()
+    void SchimbaPanelAsteptare()
     {
         if (StartPanel != null)
         {
             StartPanel.SetActive(false);
         }
-
+        if (AsteptarePanel != null)
+        {
+            AsteptarePanel.SetActive(true);
+        }
+    }
+    
+    public void ActiveazaMeniuClase()
+    {
+        if (AsteptarePanel != null)
+        {
+            AsteptarePanel.SetActive(false);
+        }
+        
         if (ClasePanel != null)
         {
             ClasePanel.SetActive(true);
+        }
+    }
+
+    private void Update()
+    {
+        if(AsteptarePanel != null && AsteptarePanel.activeSelf && GameSessionManager.Instance != null && NetworkManager.Singleton != null)
+        {
+            
+            if (!NetworkManager.Singleton.IsServer && !NetworkManager.Singleton.IsConnectedClient)
+            {
+                if (textJucatoriConectati != null)
+                {
+                    textJucatoriConectati.text = "Se conectează la server...";
+                }
+                return; // Oprim codul aici până ne conectăm
+            }
+            
+            // Citim de la Server în timp real numerele
+            if (!numaratoareInversaPornita)
+            {
+                int jucatoriCurenti = GameSessionManager.Instance.jucatoriConectati.Value;
+                int jucatoriMaxim = GameSessionManager.Instance.nrMaxJucatori.Value;
+                if (textJucatoriConectati != null)
+                {
+                    textJucatoriConectati.text = "Jucatori conectati: " + jucatoriCurenti + " / " + jucatoriMaxim;
+                }
+            }
+        }
+        
+        if (ClasePanel != null && ClasePanel.activeSelf && GameSessionManager.Instance != null)
+        {
+            btnTank.interactable = !GameSessionManager.Instance.tankOcupat.Value && !aDatClick;
+            btnSpion.interactable = !GameSessionManager.Instance.spionOcupat.Value && !aDatClick;
+            btnConstructor.interactable = !GameSessionManager.Instance.constructorOcupat.Value && !aDatClick;
+            btnMedic.interactable = !GameSessionManager.Instance.medicOcupat.Value && !aDatClick;
+            btnArcas.interactable = !GameSessionManager.Instance.arcasOcupat.Value && !aDatClick;
         }
     }
 
@@ -78,40 +146,8 @@ public class CharacterSelector : NetworkBehaviour
         {
             return;
         }
-        if (NetworkManager.Singleton.LocalClient != null && NetworkManager.Singleton.LocalClient.PlayerObject != null)
-        {
-            
-            var spawner = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<PlayerSpawner>();
 
-            if (spawner != null)
-            {
-                Vector3 pozitie = Vector3.zero + Vector3.up *2;
-                Quaternion rotatie = Quaternion.identity;
-                aDatClick = true;
-                
-                if (spawnPoints != null && index < spawnPoints.Length && spawnPoints[index] != null)
-                {
-                    pozitie = spawnPoints[index].position;
-                    rotatie = spawnPoints[index].rotation;
-                }
-                spawner.SpawneazaJucator(index, pozitie, rotatie);
-                StartCoroutine(AscundeTot());
-            }
-        }
-    }
-
-    IEnumerator AscundeTot()
-    {
-        yield return new WaitForSeconds(0.1f);
-
-        if (characterSelectionUI != null)
-        {
-            characterSelectionUI.SetActive(false);
-        }
-
-        if (lobbyCamera != null)
-        {
-            lobbyCamera.gameObject.SetActive(false);
-        }
+        aDatClick = true;
+        GameSessionManager.Instance.AlegeClasaServerRpc(index);
     }
 }

@@ -6,28 +6,35 @@ public class PlayerSpawner : NetworkBehaviour
     [Header("ListaPersonaje")]
     public GameObject[] playerPrefabs;
     
-    public void SpawneazaJucator(int indexClasa, Vector3 spawnPosition, Quaternion rotation)
+    public void SpawnDinServer(int index, ulong clientId)
     {
-        if (IsOwner)
+        if (!IsServer)
         {
-            SpawnCharacterServerRPC(indexClasa, spawnPosition, rotation);
+            return;
         }
-    }
-
-    [ServerRpc]
-    private void SpawnCharacterServerRPC(int index, Vector3 spawnPosition, Quaternion rotation, ServerRpcParams rpcParams = default)
-    {
-        ulong clientId = rpcParams.Receive.SenderClientId;
         
-        if(index >= 0 && index < playerPrefabs.Length)
+        if (index >= 0 && index < playerPrefabs.Length)
         {
-            GameObject playerInstance = Instantiate(playerPrefabs[index], spawnPosition, rotation);
+            // Folosim spawnPoints din CharacterSelector
+            Vector3 pozitie = Vector3.zero + Vector3.up * 2;
+            Quaternion rotatie = Quaternion.identity;
+            CharacterSelector cs = FindFirstObjectByType<CharacterSelector>();
+            
+            if (cs != null && cs.spawnPoints != null && index < cs.spawnPoints.Length && cs.spawnPoints[index] != null)
+            {
+                pozitie = cs.spawnPoints[index].position;
+                rotatie = cs.spawnPoints[index].rotation;
+            }
+            
+            GameObject playerInstance = Instantiate(playerPrefabs[index], pozitie, rotatie);
             playerInstance.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId, true);
             BasePlayer basePlayer = playerInstance.GetComponent<BasePlayer>();
+            
             if (basePlayer != null)
             {
-                basePlayer.SetSpawnPoint(spawnPosition, rotation);
+                basePlayer.SetSpawnPoint(pozitie, rotatie);
             }
+            
             GetComponent<NetworkObject>().Despawn();
         }
     }
