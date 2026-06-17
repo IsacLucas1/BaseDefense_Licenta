@@ -28,13 +28,13 @@ public class WarRoomManager : NetworkBehaviour
 
     private void Awake()
     {
-        if (Instance == null)
+        if (Instance != null && Instance != this)
         {
-            Instance = this;
+            Destroy(gameObject);
         }
         else
         {
-            Destroy(gameObject);
+            Instance = this;
         }
     }
 
@@ -154,7 +154,11 @@ public class WarRoomManager : NetworkBehaviour
         if (voturiDa >= voturiNecesare)
         {
             Debug.Log("Vot aprobat!");
-            //Apel ulterior catre DayNightManager
+            
+            if (FinalAttackManager.Instance != null)
+            {
+                FinalAttackManager.Instance.DeclanseazaFazaFinala();
+            }
         }
         else
         {

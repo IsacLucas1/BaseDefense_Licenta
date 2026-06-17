@@ -7,6 +7,10 @@ public class BasePlayer : NetworkBehaviour
     [Header("Setari Miscare")]
     public NetworkVariable<float> speed = new NetworkVariable<float>(5f);
     protected float speedReference = 5f;
+    
+    [Header("Atac final")]
+    public NetworkVariable<bool> miscareBlocata = new NetworkVariable<bool>(false);
+
 
     [Header("Setari Camera")]
     public Transform cameraCap;
@@ -554,6 +558,18 @@ public class BasePlayer : NetworkBehaviour
 
     private void HandleMovement()
     {
+        if (miscareBlocata.Value)
+        {
+            rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0); 
+            
+            if (animator != null && animator.isActiveAndEnabled) 
+            {
+                animator.SetFloat("MoveX", 0);
+                animator.SetFloat("MoveY", 0);
+            }
+            return; 
+        }
+        
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
 
@@ -595,6 +611,13 @@ public class BasePlayer : NetworkBehaviour
     {
         isDead.Value = true;
         EliminaJucatorulClientRpc(true);
+        
+        if (FinalAttackManager.Instance != null && FinalAttackManager.Instance.aInceputAtacul.Value)
+        {
+            Debug.Log("Jucătorul a murit în timpul asediului. Moartea este permanentă.");
+            yield break; 
+        }
+        
         yield return new WaitForSeconds(5f);
         
         transform.position = respawnPosition.Value; 
@@ -844,6 +867,18 @@ public class BasePlayer : NetworkBehaviour
     protected virtual void AplicaUpgradeClasa()
     {
         
+    }
+    
+    public void OpresteMiscarea()
+    {
+        AnuleazaRecall(); 
+        OpresteMiscareaServerRpc();
+    }
+    
+    [ServerRpc]
+    private void OpresteMiscareaServerRpc()
+    {
+        miscareBlocata.Value = true;
     }
     
 }

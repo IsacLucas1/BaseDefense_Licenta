@@ -2,6 +2,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using System.Collections;
+using Unity.Netcode;
 
 public class UIManager : MonoBehaviour
 {
@@ -47,6 +48,10 @@ public class UIManager : MonoBehaviour
     public Button[] butoaneMagazin;
     private Coroutine corutinaEroareShop;
     public bool esteInMagazin = false;
+
+    [Header("Ready check pentru atacul final")]
+    public GameObject ReadyCheckPanel;
+    public GameObject butonReady; 
     
     public bool jocPauza = false;
 
@@ -445,5 +450,28 @@ public class UIManager : MonoBehaviour
             imagineBuffDamageShop.fillAmount = procentaj;
         }
     }
-    
+
+    public void ArataPanouReadyCheck(bool arata)
+    {
+        ReadyCheckPanel.SetActive(arata);
+    }
+
+    public void ButonReadyApasat()
+    {
+        ArataPanouReadyCheck(false);
+
+        if (NetworkManager.Singleton.LocalClient.PlayerObject != null)
+        {
+            BasePlayer player = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<BasePlayer>();
+            if (player != null)
+            {
+                player.OpresteMiscarea();
+            }
+        }
+        
+        if (FinalAttackManager.Instance != null)
+        {
+            FinalAttackManager.Instance.TrimiteReadySpreServer();
+        }
+    }
 }

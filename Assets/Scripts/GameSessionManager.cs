@@ -42,7 +42,14 @@ public class GameSessionManager : NetworkBehaviour
     
     private void Awake()
     {
-        Instance = this;
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+        }
+        else
+        {
+            Instance = this;
+        }
     }
     
     public override void OnNetworkSpawn()

@@ -17,6 +17,8 @@ public class DayNightManager : NetworkBehaviour
     
     private float urmatorulCheckJucatori = 0f;
     public float intervalCheckJucatori = 1f;
+    
+    public NetworkVariable<bool> timpOpritPentruAsediu = new NetworkVariable<bool>(false);
 
     private bool SuntDestuiJucatoriSpawnati()
     {
@@ -66,7 +68,7 @@ public class DayNightManager : NetworkBehaviour
                     }
                 }
 
-                if (!opresteTimpulPentruInamici)
+                if (!opresteTimpulPentruInamici && !timpOpritPentruAsediu.Value)
                 {
                     timpCurent.Value += Time.deltaTime;
                     if (timpCurent.Value >= ziDurata)
@@ -91,5 +93,18 @@ public class DayNightManager : NetworkBehaviour
         float unghiRotatieSoare = (procentZi * 360f);
         
         lumina.transform.rotation = Quaternion.Euler(unghiRotatieSoare, 170f, 0f);
+    }
+    
+    [ServerRpc]
+    public void OpresteTimpulPentruAsediuServerRpc()
+    {
+        timpOpritPentruAsediu.Value = true;
+    }
+
+    [ServerRpc]
+    public void SeteazaTimpAtacFinalServerRpc()
+    {
+        timpCurent.Value = ziDurata * 0.25f; 
+        timpOpritPentruAsediu.Value = true;
     }
 }
