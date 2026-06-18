@@ -190,4 +190,44 @@ public class ConstructorPlayer : MeleePlayer
         costConstructie.Value = 5; 
         Debug.Log("Constructorul a primit Upgrade-ul Suprem: Ziduri la jumatate de pret!");
     }
+    
+    protected override string ObtinePromptInteractiune(Collider col)
+    {
+        Zid zid = col.GetComponentInParent<Zid>();
+        if (zid != null)
+        {
+            if (zid.viata.Value <= 0)
+            {
+                return "Press [F] pentru a construi zidul";
+            }
+            if (zid.viata.Value < zid.viataMax.Value)
+            {
+                return "Press [F] pentru a repara zidul";
+            }
+            if (zid.viata.Value >= zid.viataMax.Value)
+            {
+                return "Zidul are viata maxima!";
+            }
+        }
+
+        ButonPoarta buton = col.GetComponent<ButonPoarta>();
+        if (buton != null && buton.poarta != null && buton.poarta.viata.Value > 0)
+        {
+            return buton.poarta.isOpen.Value
+                ? "Press [G] pentru a inchide poarta"
+                : "Press [G] pentru a deschide poarta";
+        }
+
+        DepozitLemn depozit = col.GetComponent<DepozitLemn>();
+        if (depozit != null)
+        {
+            if (depozit.lemnStocat.Value <= 0)
+            {
+                return "Nu ai ce colecta";
+            }
+            return "Press [Z] pentru a lua lemn din depozit";
+        }
+
+        return base.ObtinePromptInteractiune(col);
+    }
 }

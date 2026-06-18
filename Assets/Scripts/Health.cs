@@ -10,6 +10,9 @@ public class Health : NetworkBehaviour
     private BasePlayer basePlayer;
     private InamiciAI inamiciAI;
     
+    [Tooltip("Bifat doar pe poarta inamica: invulnerabil pana incepe atacul final")]
+    public bool invulnerabilPanaLaAtaculFinal = false;
+    
     private void Awake()
     {
         basePlayer = GetComponent<BasePlayer>();
@@ -30,6 +33,16 @@ public class Health : NetworkBehaviour
     {
         if (IsServer)
         {
+            if (inamiciAI != null && inamiciAI.EsteAdormit)
+            {
+                return;
+            }
+            
+            if (invulnerabilPanaLaAtaculFinal && (FinalAttackManager.Instance == null || !FinalAttackManager.Instance.aInceputAtacul.Value))
+            {
+                return;
+            }
+            
             currentHealth.Value -= damage;
             if (currentHealth.Value <= 0)
             {

@@ -25,6 +25,8 @@ public class WarRoomManager : NetworkBehaviour
 
     private float timpRamasVot;
     private int ultimulTimpTrimis;
+    
+    public NetworkVariable<bool> votTrecut = new NetworkVariable<bool>(false);
 
     private void Awake()
     {
@@ -80,7 +82,7 @@ public class WarRoomManager : NetworkBehaviour
 
     public void IncepeVotul()
     {
-        if (!butonActiv.Value || votInCurs.Value)
+        if (!butonActiv.Value || votInCurs.Value || votTrecut.Value)
         {
             return;
         }
@@ -91,7 +93,7 @@ public class WarRoomManager : NetworkBehaviour
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     private void IncepeVotServerRpc()
     {
-        if(votInCurs.Value)
+        if(votInCurs.Value || votTrecut.Value)
         {
             return;
         }
@@ -154,6 +156,8 @@ public class WarRoomManager : NetworkBehaviour
         if (voturiDa >= voturiNecesare)
         {
             Debug.Log("Vot aprobat!");
+            
+            votTrecut.Value = true;
             
             if (FinalAttackManager.Instance != null)
             {

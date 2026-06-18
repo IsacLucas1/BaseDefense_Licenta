@@ -17,6 +17,11 @@ public abstract class MeleePlayer : BasePlayer
     
     protected float nextAttackTime = 0f;
     protected float nextAttackTimeServer = 0f;
+    
+    [Tooltip("Durata reala a clipului de atac, in secunde")]
+    public float lungimeClipAtac = 2.1f;
+    [Tooltip("Cat sa dureze animatia de atac pe ecran fata de cat dureaza cooldown-ul real (pune sub 1)")]
+    public float durataAtacVizibila = 0.6f;
 
     [Header("Referinte Vizuale")] 
     public Transform pivotArma;
@@ -38,6 +43,30 @@ public abstract class MeleePlayer : BasePlayer
         };
     }
     
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn(); 
+        atacCooldown.OnValueChanged += (vechi, nou) => ActualizeazaVitezaAtac();
+        isDead.OnValueChanged += (vechi, nou) =>
+        {
+            if (nou)
+            {
+                isAttacking = false;
+                canDealdamage = false;
+                enemyHit = false;
+            }
+        };
+        ActualizeazaVitezaAtac();
+    }
+
+    protected void ActualizeazaVitezaAtac()
+    {
+        if (animator != null && atacCooldown.Value > 0f && durataAtacVizibila > 0f)
+        {
+            animator.SetFloat("AttackSpeed", lungimeClipAtac / atacCooldown.Value / durataAtacVizibila);
+        }
+    }
+    
     protected override void Update()
     {
         base.Update();
@@ -55,7 +84,7 @@ public abstract class MeleePlayer : BasePlayer
             DetecteazaLovitura();
         }
         
-        if (Input.GetMouseButtonDown(0) && Time.time >= nextAttackTime)
+        if (Input.GetMouseButtonDown(0) && Time.time >= nextAttackTime && !isAttacking)
         {
             AnuleazaRecall();
             IncearcaSaAtaci();
@@ -118,11 +147,13 @@ public abstract class MeleePlayer : BasePlayer
     
     protected void IncearcaSaAtaci()
     {
+        isAttacking = true;
         nextAttackTime = Time.time + atacCooldown.Value;
         if (netAnimator != null)
         {
             netAnimator.ResetTrigger("Attack");
             netAnimator.SetTrigger("Attack");
+            StartCoroutine(ResetAtac());
         }
         else
         {
@@ -131,6 +162,12 @@ public abstract class MeleePlayer : BasePlayer
         PerformAttackServerRpc();
     }
 
+    private IEnumerator ResetAtac()
+    {
+        yield return new WaitForSeconds(atacCooldown.Value);
+        isAttacking = false;
+    }
+    
     [ServerRpc]
     protected void PerformAttackServerRpc(ServerRpcParams rpcParams = default)
     {

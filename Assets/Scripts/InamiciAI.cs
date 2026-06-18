@@ -22,7 +22,11 @@ public abstract class InamiciAI : NetworkBehaviour
     protected Transform tinta;
     protected Health health;
     
+    protected bool adormit = false;
+    public bool EsteAdormit => adormit;
+    
     protected NetworkVariable<bool> isDead = new NetworkVariable<bool>(false);
+    public bool EsteMort => isDead.Value;
     
     protected virtual void Awake()
     {
@@ -54,8 +58,20 @@ public abstract class InamiciAI : NetworkBehaviour
 
     protected virtual void Update()
     {
-        if (!IsServer || isDead.Value) return;
+        if (!IsServer || isDead.Value)
+        {
+            return;
+        }
 
+        if (adormit)
+        {
+            if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh && !agent.isStopped)
+            {
+                agent.isStopped = true;
+            }
+            return;
+        }
+        
         GasesteJucator();
 
         if (tinta != null)
@@ -262,6 +278,33 @@ public abstract class InamiciAI : NetworkBehaviour
                 continue;
             }
             c.enabled = active;
+        }
+    }
+    
+    public void SeteazaAdormit(bool stare)
+    {
+        if (!IsServer)
+        {
+            return;
+        }
+        adormit = stare;
+        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = stare;
+        }
+    }
+
+    public virtual void Trezeste()
+    {
+        if (!IsServer)
+        {
+            return;
+        }
+        adormit = false;
+        Debug.Log($"[Trezeste] {name}: agentActiv={(agent != null && agent.isActiveAndEnabled)}, peNavMesh={(agent != null && agent.isOnNavMesh)}");
+        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = false;
         }
     }
     

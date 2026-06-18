@@ -51,7 +51,16 @@ public class UIManager : MonoBehaviour
 
     [Header("Ready check pentru atacul final")]
     public GameObject ReadyCheckPanel;
-    public GameObject butonReady; 
+    public GameObject butonReady;
+    public TMP_Text textContorReady;
+    
+    [Header("Ecran Final")]
+    public GameObject EcranFinalPanel;
+    public TMP_Text textEcranFinal;
+    
+    [Header("Prompt Interactiune")]
+    public GameObject panouPrompt;
+    public TMP_Text textPrompt;
     
     public bool jocPauza = false;
 
@@ -82,11 +91,43 @@ public class UIManager : MonoBehaviour
         }
     }
     
+    private void Update()
+    {
+        if (textContorReady != null && textContorReady.gameObject.activeSelf)
+        {
+            bool aInceput = FinalAttackManager.Instance != null && FinalAttackManager.Instance.aInceputAtacul.Value;
+            if (!aInceput)
+            {
+                ActualizeazaContorReady();
+            }
+        }
+    }
+    
     public void ActiveazaInterfataJucator()
     {
         if (InterfataJucator != null)
         {
             InterfataJucator.SetActive(true);
+        }
+    }
+    
+    public void ArataPrompt(string mesaj)
+    {
+        if (panouPrompt != null && !panouPrompt.activeSelf)
+        {
+            panouPrompt.SetActive(true);
+        }
+        if (textPrompt != null)
+        {
+            textPrompt.text = mesaj;
+        }
+    }
+
+    public void AscundePrompt()
+    {
+        if (panouPrompt != null && panouPrompt.activeSelf)
+        {
+            panouPrompt.SetActive(false);
         }
     }
     
@@ -170,6 +211,8 @@ public class UIManager : MonoBehaviour
 
             if (activeaza)
             {
+                AscundePrompt();
+                OpresteVitezaJucatorLocal();
                 jocPauza = true;
                 SeteazaStareButoaneShop(false);
                 
@@ -272,6 +315,8 @@ public class UIManager : MonoBehaviour
 
             if (activeaza)
             {
+                AscundePrompt();
+                OpresteVitezaJucatorLocal();
                 esteInMagazin = true;
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
@@ -279,9 +324,9 @@ public class UIManager : MonoBehaviour
                 bool votActiv = WarRoomManager.Instance != null && WarRoomManager.Instance.votInCurs.Value;
                 SeteazaStareButoaneShop(!votActiv);
                 
-                if (Unity.Netcode.NetworkManager.Singleton.LocalClient?.PlayerObject != null)
+                if (NetworkManager.Singleton.LocalClient?.PlayerObject != null)
                 {
-                    var player = Unity.Netcode.NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<BasePlayer>();
+                    var player = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<BasePlayer>();
                     if (player != null)
                     {
                         ActualizeazaBani(player.bani.Value);
@@ -325,7 +370,7 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    private System.Collections.IEnumerator DeblocheazaJocDupaMagazin()
+    private IEnumerator DeblocheazaJocDupaMagazin()
     {
         yield return new WaitForSeconds(0.1f);
         esteInMagazin = false;
@@ -346,7 +391,7 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    private System.Collections.IEnumerator AscundeEroareRoutine()
+    private IEnumerator AscundeEroareRoutine()
     {
         yield return new WaitForSeconds(3f); 
         if (textEroareShop != null)
@@ -450,28 +495,120 @@ public class UIManager : MonoBehaviour
             imagineBuffDamageShop.fillAmount = procentaj;
         }
     }
-
+    
     public void ArataPanouReadyCheck(bool arata)
     {
+        if (ReadyCheckPanel == null)
+        {
+            return;
+        }
         ReadyCheckPanel.SetActive(arata);
+
+        if (arata)
+        {
+            // Eliberam cursorul ca sa poata apasa butonul
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+
+            if (butonReady != null)
+            {
+                butonReady.SetActive(true);
+            }
+        }
     }
 
     public void ButonReadyApasat()
     {
         ArataPanouReadyCheck(false);
+        
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
 
         if (NetworkManager.Singleton.LocalClient.PlayerObject != null)
         {
             BasePlayer player = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<BasePlayer>();
             if (player != null)
             {
-                player.OpresteMiscarea();
+                player.OpresteMiscarea();             
+                player.SeteazaRotireBlocata(false);
             }
         }
         
+        AfiseazaContorReady(true);
+
         if (FinalAttackManager.Instance != null)
         {
             FinalAttackManager.Instance.TrimiteReadySpreServer();
+        }
+    }
+    
+    public void AfiseazaContorReady(bool arata)
+    {
+        if (textContorReady != null)
+        {
+            textContorReady.gameObject.SetActive(arata);
+        }
+        
+        if (arata)
+        {
+            ActualizeazaContorReady();
+        }
+    }
+
+    private void ActualizeazaContorReady()
+    {
+        if (textContorReady == null) return;
+
+        int dat = FinalAttackManager.Instance != null ? FinalAttackManager.Instance.jucatoriReady.Value : 0;
+        int total = GameSessionManager.Instance != null ? GameSessionManager.Instance.jucatoriConectati.Value : 0;
+
+        textContorReady.text = "Ready: " + dat + " / " + total;
+    }
+    
+    public void AfiseazaMesajStartAtac(string mesaj)
+    {
+        if (textContorReady != null)
+        {
+            textContorReady.gameObject.SetActive(true);
+            textContorReady.text = mesaj;
+        }
+    }
+
+    public void AscundeMesajStartAtac()
+    {
+        if (textContorReady != null)
+        {
+            textContorReady.gameObject.SetActive(false);
+        }
+    }
+    
+    public void ArataEcranFinal(bool victorie)
+    {
+        if (EcranFinalPanel != null)
+        {
+            EcranFinalPanel.SetActive(true);
+        }
+        if (textEcranFinal != null)
+        {
+            textEcranFinal.text = victorie ? "VICTORIE!" : "INFRANGERE!";
+        }
+        
+        jocPauza = true;  
+        OpresteVitezaJucatorLocal();
+        
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
+    
+    private void OpresteVitezaJucatorLocal()
+    {
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.LocalClient != null && NetworkManager.Singleton.LocalClient.PlayerObject != null)
+        {
+            BasePlayer player = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<BasePlayer>();
+            if (player != null)
+            {
+                player.OpresteVitezaImediat();
+            }
         }
     }
 }

@@ -66,7 +66,6 @@ public class CharacterSelector : NetworkBehaviour
             if (RelayManager.Instance != null)
             {
                 RelayManager.Instance.CreateGame();
-                SchimbaPanelAsteptare();
             }
         });
         btnStartClient.onClick.AddListener(() =>
@@ -74,12 +73,11 @@ public class CharacterSelector : NetworkBehaviour
             if (RelayManager.Instance != null)
             {
                 RelayManager.Instance.JoinGame();
-                SchimbaPanelAsteptare();
             }
         });
     }
 
-    void SchimbaPanelAsteptare()
+    public void SchimbaPanelAsteptare()
     {
         if (StartPanel != null)
         {
@@ -149,5 +147,17 @@ public class CharacterSelector : NetworkBehaviour
 
         aDatClick = true;
         GameSessionManager.Instance.AlegeClasaServerRpc(index);
+    }
+    
+    public void RevinoLaStart()
+    {
+        if (AsteptarePanel != null)
+        {
+            AsteptarePanel.SetActive(false);
+        }
+        if (StartPanel != null)
+        {
+            StartPanel.SetActive(true);
+        }
     }
 }

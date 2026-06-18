@@ -10,7 +10,7 @@ public class BasePlayer : NetworkBehaviour
     
     [Header("Atac final")]
     public NetworkVariable<bool> miscareBlocata = new NetworkVariable<bool>(false);
-
+    private bool rotireBlocata = false;
 
     [Header("Setari Camera")]
     public Transform cameraCap;
@@ -54,6 +54,8 @@ public class BasePlayer : NetworkBehaviour
     private float timpRamasViteza = 0f;
     private float timpRamasDamage = 0f;
     
+    private bool miscareBlocataLocal = false;
+    
     public override void OnNetworkSpawn()
     {
         rb = GetComponent<Rigidbody>();
@@ -74,6 +76,8 @@ public class BasePlayer : NetworkBehaviour
         {
             DisableRemotePlayer();
         }
+        
+        miscareBlocata.OnValueChanged += OnMiscareBlocataChanged;
     }
     
     public void SetSpawnPoint(Vector3 spawnPosition, Quaternion rotation)
@@ -266,8 +270,13 @@ public class BasePlayer : NetworkBehaviour
             return; 
         }
         
-        HandleMouseLook();
-
+        ActualizeazaPrompt();
+        
+        if (!rotireBlocata)
+        {
+            HandleMouseLook();
+        }
+        
         if (GetComponent<Health>().currentHealth.Value > 0)
         {
             if(Input.GetKeyDown(KeyCode.K))
@@ -306,6 +315,11 @@ public class BasePlayer : NetworkBehaviour
     public void SeteazaInZonaMagazin(bool stare)
     {
         inZonaMagazin = stare;
+    }
+    
+    public void SeteazaRotireBlocata(bool stare)
+    {
+        rotireBlocata = stare;
     }
     
     public virtual void PrimesteRecompensa(TipCamp camp, int valoare, float durata)
@@ -558,7 +572,7 @@ public class BasePlayer : NetworkBehaviour
 
     private void HandleMovement()
     {
-        if (miscareBlocata.Value)
+        if (miscareBlocata.Value || miscareBlocataLocal)
         {
             rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0); 
             
@@ -615,6 +629,7 @@ public class BasePlayer : NetworkBehaviour
         if (FinalAttackManager.Instance != null && FinalAttackManager.Instance.aInceputAtacul.Value)
         {
             Debug.Log("Jucătorul a murit în timpul asediului. Moartea este permanentă.");
+            FinalAttackManager.Instance.VerificaInfrangere();
             yield break; 
         }
         
@@ -871,7 +886,8 @@ public class BasePlayer : NetworkBehaviour
     
     public void OpresteMiscarea()
     {
-        AnuleazaRecall(); 
+        AnuleazaRecall();
+        miscareBlocataLocal = true;
         OpresteMiscareaServerRpc();
     }
     
@@ -879,6 +895,88 @@ public class BasePlayer : NetworkBehaviour
     private void OpresteMiscareaServerRpc()
     {
         miscareBlocata.Value = true;
+        
     }
     
+    public void DeblocheazaMiscarea()
+    {
+        miscareBlocata.Value = false;
+    }
+    
+    public void TeleporteazaInReadyZone(Vector3 pozitie)
+    {
+        transform.position = pozitie;
+        if (rb != null)
+        {
+            rb.position = pozitie;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+    }
+    
+    private void OnMiscareBlocataChanged(bool vechi, bool nou)
+    {
+        miscareBlocataLocal = false;
+    }
+    
+    protected virtual string ObtinePromptInteractiune(Collider col)
+    {
+        if (col.GetComponent<Copac>() != null)
+        {
+            return "Press [E] pentru a taia copacul";
+        }
+        if (col.GetComponent<ButonWarRoom>() != null)
+        {
+            bool activ = WarRoomManager.Instance != null
+                         && WarRoomManager.Instance.butonActiv.Value
+                         && !WarRoomManager.Instance.votTrecut.Value
+                         && !WarRoomManager.Instance.votInCurs.Value;
+            
+            return activ ? "Press [Z] pentru a initia votul" : "Butonul de vot nu este activ";
+        }
+        if (col.GetComponent<DepozitLemn>() != null)
+        {
+            if (lemn.Value <= 0)
+            {
+                return "Nu ai ce depozita";
+            }
+            return "Press [Z] pentru a depozita lemn";
+        }
+        return null;
+    }
+    
+    private void ActualizeazaPrompt()
+    {
+        if (UIManager.Instance == null || cameraCap == null)
+        {
+            return;
+        }
+
+        if (inZonaMagazin && !UIManager.Instance.esteInMagazin)
+        {
+            UIManager.Instance.ArataPrompt("Press [E] sa intri in magazin");
+            return;
+        }
+        
+        Ray ray = new Ray(cameraCap.position, cameraCap.forward);
+        if (Physics.Raycast(ray, out RaycastHit hit, distantaAdunare, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide))
+        {
+            string prompt = ObtinePromptInteractiune(hit.collider);
+            if (!string.IsNullOrEmpty(prompt))
+            {
+                UIManager.Instance.ArataPrompt(prompt);
+                return;
+            }
+        }
+        UIManager.Instance.AscundePrompt();
+    }
+    
+    public void OpresteVitezaImediat()
+    {
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+    }
 }
