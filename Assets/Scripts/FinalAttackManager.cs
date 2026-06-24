@@ -21,6 +21,7 @@ public class FinalAttackManager : NetworkBehaviour
     
     public NetworkVariable<int> jucatoriReady = new NetworkVariable<int>(0);
     private List<ulong> jucatoriCareAuDatReady = new List<ulong>();
+    public NetworkVariable<int> jucatoriDeAsteptat = new NetworkVariable<int>(0);
     
     private bool jocTerminat = false;
     
@@ -79,6 +80,12 @@ public class FinalAttackManager : NetworkBehaviour
         dayNightManager.timpOpritPentruAsediu.Value = true;
         PornesteDeathStormClientRpc();
         ActiveazaZoneReadyClientRpc();
+        
+        if (DeathZoneManager.Instance != null)
+        {
+            DeathZoneManager.Instance.PornesteFurtuna();
+        }
+        RecalculeazaReady();
     }
     
     [ClientRpc]
@@ -143,14 +150,62 @@ public class FinalAttackManager : NetworkBehaviour
             return;
         }
         jucatoriCareAuDatReady.Add(clientId);
-        jucatoriReady.Value = jucatoriCareAuDatReady.Count;
-        
-        int nrJucatoriConectati = GameSessionManager.Instance.jucatoriConectati.Value;
-        
-        if (jucatoriReady.Value >= nrJucatoriConectati)
+        RecalculeazaReady();
+        VerificaConditieStartAsediuFinal();
+    }
+    
+    private void RecalculeazaReady()
+    {
+        if (!IsServer)
+        {
+            return;
+        }
+
+        int vii = 0;
+        int viiReady = 0;
+        foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
+        {
+            if (client.PlayerObject == null)
+            {
+                continue;
+            }
+            BasePlayer bp = client.PlayerObject.GetComponent<BasePlayer>();
+            if (bp == null || bp.isDead.Value)
+            {
+                continue;
+            }
+
+            vii++;
+            if (jucatoriCareAuDatReady.Contains(client.ClientId))
+            {
+                viiReady++;
+            }
+        }
+
+        jucatoriDeAsteptat.Value = vii;
+        jucatoriReady.Value = viiReady;
+    }
+    
+    private void VerificaConditieStartAsediuFinal()
+    {
+        if (!IsServer || aInceputAtacul.Value)
+        {
+            return;
+        }
+
+        if (jucatoriDeAsteptat.Value > 0 && jucatoriReady.Value >= jucatoriDeAsteptat.Value)
         {
             IncepeAsediulEfectiv();
         }
+    }
+    
+    public void JucatorAMurit()
+    {
+        if (!IsServer) return;
+
+        RecalculeazaReady();
+        VerificaInfrangere();    
+        VerificaConditieStartAsediuFinal();   
     }
     
     public void TrimiteReadySpreServer()
@@ -167,7 +222,6 @@ public class FinalAttackManager : NetworkBehaviour
 
         aInceputAtacul.Value = true;
         Debug.Log("Toti jucatorii sunt gata! Incepe asediul final!");
-        DeclanseazaCinematicClientRpc();
         AscundeZoneReadyClientRpc();
 
         StartCoroutine(RutinaStartAtacFinal());
@@ -220,13 +274,6 @@ public class FinalAttackManager : NetworkBehaviour
         {
             UIManager.Instance.AscundeMesajStartAtac();
         }
-    }
-    
-    [ClientRpc]
-    private void DeclanseazaCinematicClientRpc()
-    {
-        // Aici vom declansa animatia sau un script de Camera Shake pe fiecare client
-        Debug.Log("CINEMATIC: CAMERA SHAKE SI RIDICARE ZID");
     }
     
     [ClientRpc]

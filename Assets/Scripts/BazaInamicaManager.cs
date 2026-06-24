@@ -189,4 +189,27 @@ public class BazaInamicaManager : NetworkBehaviour
         
         FinalAttackManager.Instance.Victorie();
     }
+    
+    public int NumarInamiciInBaza()
+    {
+        int count = 0;
+
+        foreach (var inamic in inamiciInterior)
+        {
+            if (inamic != null && !inamic.EsteMort)
+            {
+                count++;
+            }
+        }
+
+        foreach (var inamic in inamiciExterior)
+        {
+            if (inamic != null && !inamic.EsteMort)
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
 }

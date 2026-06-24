@@ -50,9 +50,9 @@ public class InamiciDeNoapte : InamiciAI
         {
             return;
         }
-        Collider cristalCol = tintaBaza.GetComponent<Collider>();
-        Vector3 punctSuprafataCristal = cristalCol != null ? cristalCol.ClosestPoint(transform.position) : tintaBaza.position;
-        float distantaPanaLaBaza = Vector3.Distance(transform.position, punctSuprafataCristal);
+        Collider titanlCol = tintaBaza.GetComponent<Collider>();
+        Vector3 punctSuprafataTitan = titanlCol != null ? titanlCol.ClosestPoint(transform.position) : tintaBaza.position;
+        float distantaPanaLaBaza = Vector3.Distance(transform.position, punctSuprafataTitan);
         
         if (distantaPanaLaBaza <= razaAtac + 0.5f)
         {

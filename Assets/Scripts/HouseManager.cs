@@ -158,17 +158,12 @@ public class HouseManager : NetworkBehaviour
                 break;
 
             case TipCasa.NumarInamici:
-                InamiciAI[] inamici = FindObjectsByType<InamiciAI>(FindObjectsSortMode.None);
                 int numarInamici = 0;
-                foreach (var inamic in inamici)
+                if (BazaInamicaManager.Instance != null)
                 {
-                    Health h = inamic.GetComponent<Health>();
-                    if (h != null && h.currentHealth.Value > 0)
-                    {
-                        numarInamici++;
-                    }
+                    numarInamici = BazaInamicaManager.Instance.NumarInamiciInBaza();
                 }
-                TrimiteMesajPrivatClientRpc($"Informație: Momentan sunt {numarInamici} inamici în viață pe hartă.", spionId);
+                TrimiteMesajPrivatClientRpc($"Informatie: In baza adversa sunt {numarInamici} inamici.", spionId);
                 break;
 
             case TipCasa.Nimic:

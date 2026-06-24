@@ -626,10 +626,10 @@ public class BasePlayer : NetworkBehaviour
         isDead.Value = true;
         EliminaJucatorulClientRpc(true);
         
-        if (FinalAttackManager.Instance != null && FinalAttackManager.Instance.aInceputAtacul.Value)
+        if (FinalAttackManager.Instance != null && FinalAttackManager.Instance.atacFinalDeclansat.Value)
         {
             Debug.Log("Jucătorul a murit în timpul asediului. Moartea este permanentă.");
-            FinalAttackManager.Instance.VerificaInfrangere();
+            FinalAttackManager.Instance.JucatorAMurit();
             yield break; 
         }
         
@@ -973,10 +973,16 @@ public class BasePlayer : NetworkBehaviour
     
     public void OpresteVitezaImediat()
     {
-        if (rb != null)
+        if (rb != null && !rb.isKinematic)
         {
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
+        }
+        
+        if (animator != null && animator.isActiveAndEnabled)
+        {
+            animator.SetFloat("MoveX", 0);
+            animator.SetFloat("MoveY", 0);
         }
     }
 }

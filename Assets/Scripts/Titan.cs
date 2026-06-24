@@ -2,7 +2,7 @@ using Unity.Netcode;
 using UnityEngine;
 
 [RequireComponent(typeof(Health))]
-public class Cristal : NetworkBehaviour
+public class Titan : NetworkBehaviour
 {
     private Health health;
 

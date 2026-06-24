@@ -5,7 +5,7 @@ public class InamiciAsediu : InamiciAI
 {
     [Header("Setari Asediu")] 
     public Transform checkpoint;
-    public Transform tintaCristal;
+    public Transform tintaTitan;
     public Poarta poarta;
     
     private bool aAjunsLaCheckpoint = false;
@@ -35,7 +35,7 @@ public class InamiciAsediu : InamiciAI
         }
         else
         {
-            tinta = tintaCristal;
+            tinta = tintaTitan;
         }
     }
 
@@ -55,12 +55,12 @@ public class InamiciAsediu : InamiciAI
             }
         }
         
-        if (!aTrecutDePoarta && poarta != null && tintaCristal != null)
+        if (!aTrecutDePoarta && poarta != null && tintaTitan != null)
         {
-            float distantaInamicLaCristal = Vector3.Distance(transform.position, tintaCristal.position);
-            float distantaPoartaLaCristal = Vector3.Distance(poarta.transform.position, tintaCristal.position);
+            float distantaInamicLatitan = Vector3.Distance(transform.position, tintaTitan.position);
+            float distantaPoartaLatitan = Vector3.Distance(poarta.transform.position, tintaTitan.position);
             
-            if (distantaInamicLaCristal < distantaPoartaLaCristal)
+            if (distantaInamicLatitan < distantaPoartaLatitan)
             {
                 aTrecutDePoarta = true; 
             }

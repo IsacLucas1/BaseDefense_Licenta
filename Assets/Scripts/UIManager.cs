@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine.UI;
 using System.Collections;
 using Unity.Netcode;
+using UnityEngine.SceneManagement;
 
 public class UIManager : MonoBehaviour
 {
@@ -18,7 +19,10 @@ public class UIManager : MonoBehaviour
     public TMP_Text textDamage;
     public Slider sliderViata;
     public TMP_Text textViata;
-    public TMP_Text textNotificareSpion; 
+    public TMP_Text textNotificareSpion;
+    public GameObject butonExit1;
+    public GameObject butonExit2;
+    public GameObject butonMainMenu;
     
     [Header("Sistem Vot War Room")]
     public GameObject WarRoomVotingPanel;
@@ -53,6 +57,7 @@ public class UIManager : MonoBehaviour
     public GameObject ReadyCheckPanel;
     public GameObject butonReady;
     public TMP_Text textContorReady;
+    private bool mesajStartActiv = false;
     
     [Header("Ecran Final")]
     public GameObject EcranFinalPanel;
@@ -61,6 +66,9 @@ public class UIManager : MonoBehaviour
     [Header("Prompt Interactiune")]
     public GameObject panouPrompt;
     public TMP_Text textPrompt;
+    
+    [Header("Furtuna")]
+    public GameObject furtunaOverlay;
     
     public bool jocPauza = false;
 
@@ -89,14 +97,18 @@ public class UIManager : MonoBehaviour
         {
             sliderViataShop.interactable = false;
         }
+        
+        if (furtunaOverlay != null)
+        {
+            furtunaOverlay.SetActive(false);
+        }
     }
     
     private void Update()
     {
         if (textContorReady != null && textContorReady.gameObject.activeSelf)
         {
-            bool aInceput = FinalAttackManager.Instance != null && FinalAttackManager.Instance.aInceputAtacul.Value;
-            if (!aInceput)
+            if (!mesajStartActiv)
             {
                 ActualizeazaContorReady();
             }
@@ -557,16 +569,20 @@ public class UIManager : MonoBehaviour
 
     private void ActualizeazaContorReady()
     {
-        if (textContorReady == null) return;
+        if (textContorReady == null)
+        {
+            return;
+        }
 
         int dat = FinalAttackManager.Instance != null ? FinalAttackManager.Instance.jucatoriReady.Value : 0;
-        int total = GameSessionManager.Instance != null ? GameSessionManager.Instance.jucatoriConectati.Value : 0;
+        int total = GameSessionManager.Instance != null ? FinalAttackManager.Instance.jucatoriDeAsteptat.Value : 0;
 
         textContorReady.text = "Ready: " + dat + " / " + total;
     }
     
     public void AfiseazaMesajStartAtac(string mesaj)
     {
+        mesajStartActiv = true;
         if (textContorReady != null)
         {
             textContorReady.gameObject.SetActive(true);
@@ -576,6 +592,7 @@ public class UIManager : MonoBehaviour
 
     public void AscundeMesajStartAtac()
     {
+        mesajStartActiv = false;
         if (textContorReady != null)
         {
             textContorReady.gameObject.SetActive(false);
@@ -592,7 +609,8 @@ public class UIManager : MonoBehaviour
         {
             textEcranFinal.text = victorie ? "VICTORIE!" : "INFRANGERE!";
         }
-        
+
+        Time.timeScale = 0f;
         jocPauza = true;  
         OpresteVitezaJucatorLocal();
         
@@ -609,6 +627,36 @@ public class UIManager : MonoBehaviour
             {
                 player.OpresteVitezaImediat();
             }
+        }
+    }
+    
+    public void ButonMainMenu()
+    {
+        if (NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.Shutdown();
+        }
+
+        Time.timeScale = 1f;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    public void ButonExit()
+    {
+        Application.Quit();
+        #if UNITY_EDITOR
+                UnityEditor.EditorApplication.isPlaying = false;
+        #endif
+    }
+    
+    public void ArataFurtunaOverlay(bool arata)
+    {
+        if (furtunaOverlay != null && furtunaOverlay.activeSelf != arata)
+        {
+            furtunaOverlay.SetActive(arata);
         }
     }
 }

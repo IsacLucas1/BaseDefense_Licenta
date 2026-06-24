@@ -103,7 +103,7 @@ public class NightSpawner : NetworkBehaviour
             InamiciAsediu scriptAsediu = inamicInstantiat.GetComponent<InamiciAsediu>();
             if (scriptAsediu != null)
             {
-                scriptAsediu.tintaCristal = obiectivBaza;
+                scriptAsediu.tintaTitan = obiectivBaza;
                 scriptAsediu.checkpoint = checkpointAsediu;
                 scriptAsediu.poarta = poarta;
             }

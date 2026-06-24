@@ -4,8 +4,8 @@ using Unity.Netcode;
 public class InamicAmbuscada : InamiciAI
 {
     private Transform spionTinta;
-    private Transform cristalBaza;
-    private bool esteLaCristal = false;
+    private Transform titanBaza;
+    private bool esteLatitan = false;
 
     private SiegePathfinder siegePathfinder;
 
@@ -16,10 +16,10 @@ public class InamicAmbuscada : InamiciAI
     {
         base.OnNetworkSpawn();
         
-        GameObject objCristal = GameObject.Find("Cristal");
-        if (objCristal != null)
+        GameObject objtitan = GameObject.Find("Titan");
+        if (objtitan != null)
         {
-            cristalBaza = objCristal.transform;
+            titanBaza = objtitan.transform;
         }
         
         siegePathfinder = GetComponent<SiegePathfinder>();
@@ -74,13 +74,15 @@ public class InamicAmbuscada : InamiciAI
             return;
         }
         
-        if (!esteLaCristal && cristalBaza != null)
+        if (!esteLatitan && titanBaza != null)
         {
-            float distantaPanaLaBaza = Vector3.Distance(transform.position, cristalBaza.position);
+            Collider titanCol = titanBaza.GetComponent<Collider>();
+            Vector3 punctTitan = titanCol != null ? titanCol.ClosestPoint(transform.position) : titanBaza.position;
+            float distantaPanaLaBaza = Vector3.Distance(transform.position, punctTitan);
             if (distantaPanaLaBaza < razaAtac + 2f)
             {
-                esteLaCristal = true;
-                tinta = cristalBaza;
+                esteLatitan = true;
+                tinta = titanBaza;
             }
         }
         if (agent != null && agent.isActiveAndEnabled)
@@ -92,14 +94,14 @@ public class InamicAmbuscada : InamiciAI
     
     protected override void GasesteJucator()
     {
-        if (cristalBaza == null)
+        if (titanBaza == null)
         {
             return;
         }
         
-        if (esteLaCristal)
+        if (esteLatitan)
         {
-            tinta = cristalBaza;
+            tinta = titanBaza;
             return;
         }
         
@@ -132,27 +134,27 @@ public class InamicAmbuscada : InamiciAI
 
     protected override void ComportamentFaraTinta()
     {
-        if (cristalBaza == null)
+        if (titanBaza == null)
         {
             return;
         }
 
-        if (esteLaCristal)
+        if (esteLatitan)
         {
             agent.isStopped = true;
-            Vector3 directie = new Vector3(cristalBaza.position.x, transform.position.y, cristalBaza.position.z);
+            Vector3 directie = new Vector3(titanBaza.position.x, transform.position.y, titanBaza.position.z);
             transform.LookAt(directie);
             
             if (Time.time >= nextAttackTime)
             {
-                tinta = cristalBaza; 
+                tinta = titanBaza; 
                 Ataca();            
                 nextAttackTime = Time.time + cooldownAtac;
             }
             return;
         }
 
-        siegePathfinder.CalculeazaSiNavigheaza(cristalBaza.position);
+        siegePathfinder.CalculeazaSiNavigheaza(titanBaza.position);
         
         if (siegePathfinder.AsediazaZidCurent && siegePathfinder.ZidDeSpart != null)
         {

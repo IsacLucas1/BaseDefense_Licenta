@@ -204,19 +204,19 @@ public class SpionPlayer : MeleePlayer
     
     protected override int CalculeazaDamageServer(NetworkObject targetObj)
     {
-        int damageFinal = damageArma.Value;
+        int damageTotal = damageArma.Value + extraDamage.Value;
+        int damageFinal = damageTotal;
 
         if (targetObj.GetComponent<InamiciAI>() != null)
         {
             Vector3 directiePrivireSpion = new Vector3(transform.forward.x, 0, transform.forward.z).normalized;
-            Vector3 directiePrivireInamic =
-                new Vector3(targetObj.transform.forward.x, 0, targetObj.transform.forward.z).normalized;
+            Vector3 directiePrivireInamic = new Vector3(targetObj.transform.forward.x, 0, targetObj.transform.forward.z).normalized;
 
             float unghi = Vector3.Dot(directiePrivireSpion, directiePrivireInamic);
 
             if (unghi > tolerantaUnghiBackstab)
             {
-                damageFinal = damageArma.Value * multiplicatorDamageBackstab.Value;
+                damageFinal = damageTotal * multiplicatorDamageBackstab.Value;
                 Vector3 punctAtac = transform.position + transform.forward * distantaLovitura + Vector3.up * 0.1f;
                 Collider colInamic = targetObj.GetComponent<Collider>();
                 Vector3 pozEfect = colInamic != null ? colInamic.ClosestPoint(punctAtac) : punctAtac;
@@ -224,7 +224,7 @@ public class SpionPlayer : MeleePlayer
             }
         }
 
-        return damageFinal + extraDamage.Value;
+        return damageFinal;
     }
     
     [ClientRpc]

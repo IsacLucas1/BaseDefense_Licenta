@@ -182,6 +182,7 @@ public abstract class InamiciAI : NetworkBehaviour
         {
             agent.isStopped = false;
             agent.SetDestination(tinta.position);
+            Debug.Log($"[Path] {name}: status={agent.pathStatus}");
 
             if (!agent.pathPending && agent.pathStatus == NavMeshPathStatus.PathPartial)
             {
