@@ -5150,9 +5150,9 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.5
-  m_Height: 2
+  m_Height: 2.5
   m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0, y: 0.25, z: 0}
 --- !u!114 &1191600068232121701
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5266,12 +5266,10 @@ MonoBehaviour:
     m_InternalValue: 10
   atacCooldown:
     m_InternalValue: 0.7
-  durataAnimatie: 0.3
   distantaLovitura: 1.4
   razaLovitura: 1.2
   lungimeClipAtac: 2.1
   durataAtacVizibila: 0.6
-  pivotArma: {fileID: 4381283961031879704}
   multiplicatorDamageBackstab:
     m_InternalValue: 2
   tolerantaUnghiBackstab: 0.6

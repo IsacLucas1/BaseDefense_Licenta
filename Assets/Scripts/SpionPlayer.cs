@@ -21,7 +21,7 @@ public class SpionPlayer : MeleePlayer
         if (IsServer)
         {
             damageArma.Value = 15;
-            atacCooldown.Value = 0.5f;
+            atacCooldown.Value = 0.7f;
             
             speed.Value = 7f;
 
@@ -47,7 +47,6 @@ public class SpionPlayer : MeleePlayer
                 }
             }
         }
-        durataAnimatie = 0.2f;
         base.OnNetworkSpawn();
     }
     
@@ -103,28 +102,34 @@ public class SpionPlayer : MeleePlayer
     [ServerRpc]
     private void ActiveazaInvizibilitateServerRpc()
     {
+        // Verifica daca a trecut cooldown-ul invizibilitatii
         if (Time.time < nextInvizibilitateTime)
         {
             return;
         }
 
+        // Seteaza timpul pentru urmatoarea invizibilitate
         nextInvizibilitateTime = Time.time + cooldownInvizibilitate.Value;
 
+        // Daca este deja o corutina activa pentru invizibilitate, o opreste
         if (corutinaInvizibilitateActiva != null)
         {
             StopCoroutine(corutinaInvizibilitateActiva);
         }
 
+        // Porneste corutina pentru invizibilitate
         corutinaInvizibilitateActiva = StartCoroutine(RutinaInvizibilitate());
     }
     
     private IEnumerator RutinaInvizibilitate()
     {
+        // Seteaza invizibilitatea
         isInvisible.Value = true;
         UpdateVizualInvizibilitateClientRpc(true);
         
         yield return new WaitForSeconds(durataInvizibilitate.Value);
         
+        // Revine la vizibilitate
         isInvisible.Value = false;
         UpdateVizualInvizibilitateClientRpc(false);
         
@@ -176,7 +181,7 @@ public class SpionPlayer : MeleePlayer
     
     public override void InamicLovit(Collider target)
     {
-        if (!IsOwner || !canDealdamage || enemyHit)
+        if (!IsOwner || !canDealDamage || enemyHit)
         {
             return;
         }
@@ -209,14 +214,18 @@ public class SpionPlayer : MeleePlayer
 
         if (targetObj.GetComponent<InamiciAI>() != null)
         {
+            // Calculeaza unghiul dintre directia privirii spionului si directia privirii inamicului
             Vector3 directiePrivireSpion = new Vector3(transform.forward.x, 0, transform.forward.z).normalized;
             Vector3 directiePrivireInamic = new Vector3(targetObj.transform.forward.x, 0, targetObj.transform.forward.z).normalized;
 
             float unghi = Vector3.Dot(directiePrivireSpion, directiePrivireInamic);
 
+            // Daca unghiul este mai mare decat toleranta, inseamna ca spionul a lovit inamicul din spate
             if (unghi > tolerantaUnghiBackstab)
             {
+                // Aplica multiplicatorul de damage pentru backstab
                 damageFinal = damageTotal * multiplicatorDamageBackstab.Value;
+                // Determinarea punctului de impact pentru efectul vizual
                 Vector3 punctAtac = transform.position + transform.forward * distantaLovitura + Vector3.up * 0.1f;
                 Collider colInamic = targetObj.GetComponent<Collider>();
                 Vector3 pozEfect = colInamic != null ? colInamic.ClosestPoint(punctAtac) : punctAtac;

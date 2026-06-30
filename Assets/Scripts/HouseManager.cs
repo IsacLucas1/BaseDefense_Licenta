@@ -45,6 +45,7 @@ public class HouseManager : NetworkBehaviour
 
     private void AlocaRoluriCase()
     {
+        // Gaseste toate manetele din scena
         LeverCasa[] caseGasite = FindObjectsByType<LeverCasa>(FindObjectsSortMode.None);
         List<LeverCasa> listaCase = new List<LeverCasa>(caseGasite);
 
@@ -53,6 +54,7 @@ public class HouseManager : NetworkBehaviour
             return;
         }
 
+        // Amesteca lista de case pentru a le aloca roluri aleatoriu
         for (int i = 0; i < listaCase.Count; i++)
         {
             LeverCasa temp = listaCase[i];
@@ -61,6 +63,7 @@ public class HouseManager : NetworkBehaviour
             listaCase[randomIndex] = temp;
         }
         
+        // Atribuie cate un rol unic primelor case din lista amestecata
         int index = 0;
         if (index < listaCase.Count)
         {
@@ -123,7 +126,7 @@ public class HouseManager : NetworkBehaviour
                 break;
 
             case TipCasa.CapcanaLocala: 
-                AfiseazaMesajGlobalClientRpc("Spionul a fost prins într-o ambuscada la o casa din padure!");
+                AfiseazaMesajGlobalClientRpc("Spionul a fost prins intr-o ambuscada la o casa din padure!");
                 if (inamicPrefab != null)
                 {
                     Transform spionTransform = null;
@@ -135,12 +138,8 @@ public class HouseManager : NetworkBehaviour
                             spionTransform = client.PlayerObject.transform;
                         }
                     }
-
-                    if (spionTransform == null)
-                    {
-                        Debug.LogError($"[Eroare Netcode] Nu am putut gasi Spionul cu ClientId {spionId} pe server!");
-                    }
                     
+                    // Spawneaza un numar de inamici in jurul manetei, la o distanta de 6 unitati
                     Vector3 offsetAfara = new Vector3(6f, 0f, 6f);
                     for (int i = 0; i < numarInamiciCapcana; i++)
                     {
@@ -148,6 +147,7 @@ public class HouseManager : NetworkBehaviour
                         GameObject inamic = Instantiate(inamicPrefab, spawnPos, Quaternion.identity);
                         inamic.GetComponent<NetworkObject>().Spawn();
                         
+                        // Daca inamicul are un script InamicAmbuscada, seteaza spionul ca tinta
                         InamicAmbuscada scriptAmbuscada = inamic.GetComponent<InamicAmbuscada>();
                         if (scriptAmbuscada != null && spionTransform != null)
                         {
@@ -167,7 +167,7 @@ public class HouseManager : NetworkBehaviour
                 break;
 
             case TipCasa.Nimic:
-                TrimiteMesajPrivatClientRpc("Ai tras maneta... dar nu s-a întâmplat nimic.", spionId);
+                TrimiteMesajPrivatClientRpc("Ai tras maneta... dar nu s-a întamplat nimic.", spionId);
                 break;
         }
     }

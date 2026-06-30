@@ -50,12 +50,13 @@ public class ArcasPlayer: BasePlayer
             return;
         }
         
+        // Schimbare mod de tragere intre normal si burst
         if (Input.GetKeyDown(KeyCode.T))
         {
             isBurstMode = !isBurstMode;
-            Debug.Log("Arcasul a schimbat modul pe: " + (isBurstMode ? "BURST" : "NORMAL"));
         }
-
+        
+        // Tragerea efectiva la click stanga, cu verificarea cooldown-ului si a modului de tragere
         if (Input.GetMouseButtonDown(0) && Time.time >= nextAttackTime && !isShootingBurst)
         {
             AnuleazaRecall();
@@ -69,10 +70,7 @@ public class ArcasPlayer: BasePlayer
                 {
                     netAnimator.SetTrigger("Attack");
                 }
-                else if (animator != null) 
-                {
-                    animator.SetTrigger("Attack");
-                }
+                
                 nextAttackTime = Time.time + attackCooldown;
             }
         }
@@ -104,28 +102,6 @@ public class ArcasPlayer: BasePlayer
         ShootServerRpc(cameraCap.rotation);
     }
     
-    private IEnumerator BurstRoutine()
-    {
-        isShootingBurst = true;
-        nextAttackTime = Time.time + attackCooldownBurst;
-        if (netAnimator != null) 
-        {
-            netAnimator.SetTrigger("Attack");
-        }
-        else if (animator != null)
-        {
-            animator.SetTrigger("Attack");
-        }
-        yield return new WaitForSeconds(0.2f);
-        for (int i = 0; i < sagetiPerBurst.Value; i++)
-        {
-            ShootServerRpc(cameraCap.rotation);
-            yield return new WaitForSeconds(0.08f);
-        }
-        
-        isShootingBurst = false;
-    }
-    
     [ServerRpc]
     private void ShootServerRpc(Quaternion rotatieTragere)
     {
@@ -138,6 +114,25 @@ public class ArcasPlayer: BasePlayer
         }
         
         newSageata.GetComponent<NetworkObject>().Spawn();
+    }
+    
+    private IEnumerator BurstRoutine()
+    {
+        isShootingBurst = true;
+        nextAttackTime = Time.time + attackCooldownBurst;
+        if (netAnimator != null) 
+        {
+            netAnimator.SetTrigger("Attack");
+        }
+        
+        yield return new WaitForSeconds(0.2f);
+        for (int i = 0; i < sagetiPerBurst.Value; i++)
+        {
+            ShootServerRpc(cameraCap.rotation);
+            yield return new WaitForSeconds(0.08f);
+        }
+        
+        isShootingBurst = false;
     }
     
     protected override void AplicaUpgradeClasa()

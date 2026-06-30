@@ -7,50 +7,38 @@ AvatarMask:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: UpperBodyMaskSpion
-  m_Mask: 00000000010000000000000000000000000000000000000001000000000000000100000000000000000000000100000001000000
+  m_Mask: 00000000010000000000000000000000000000000100000001000000010000000100000000000000000000000100000001000000
   m_Elements:
   - m_Path: 
     m_Weight: 1
-  - m_Path: Erika_Archer_Arrow_Mesh
-    m_Weight: 1
-  - m_Path: Erika_Archer_Body_Mesh
-    m_Weight: 1
-  - m_Path: Erika_Archer_Bow_Mesh
-    m_Weight: 1
-  - m_Path: Erika_Archer_Clothes_Mesh
-    m_Weight: 1
-  - m_Path: Erika_Archer_Eyelashes_Mesh
-    m_Weight: 1
-  - m_Path: Erika_Archer_Eyes_Mesh
+  - m_Path: Ch24
     m_Weight: 1
   - m_Path: mixamorig:Hips
-    m_Weight: 0
-  - m_Path: mixamorig:Hips/mixamorig:arrow
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: mixamorig:Hips/mixamorig:LeftUpLeg
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: mixamorig:Hips/mixamorig:LeftUpLeg/mixamorig:LeftLeg
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: mixamorig:Hips/mixamorig:LeftUpLeg/mixamorig:LeftLeg/mixamorig:LeftFoot
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: mixamorig:Hips/mixamorig:LeftUpLeg/mixamorig:LeftLeg/mixamorig:LeftFoot/mixamorig:LeftToeBase
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: mixamorig:Hips/mixamorig:LeftUpLeg/mixamorig:LeftLeg/mixamorig:LeftFoot/mixamorig:LeftToeBase/mixamorig:LeftToe_End
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: mixamorig:Hips/mixamorig:RightUpLeg
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: mixamorig:Hips/mixamorig:RightUpLeg/mixamorig:RightLeg
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: mixamorig:Hips/mixamorig:RightUpLeg/mixamorig:RightLeg/mixamorig:RightFoot
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: mixamorig:Hips/mixamorig:RightUpLeg/mixamorig:RightLeg/mixamorig:RightFoot/mixamorig:RightToeBase
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: mixamorig:Hips/mixamorig:RightUpLeg/mixamorig:RightLeg/mixamorig:RightFoot/mixamorig:RightToeBase/mixamorig:RightToe_End
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: mixamorig:Hips/mixamorig:Spine
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2
     m_Weight: 1
   - m_Path: mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder
@@ -60,10 +48,6 @@ AvatarMask:
   - m_Path: mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm
     m_Weight: 1
   - m_Path: mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand
-    m_Weight: 1
-  - m_Path: mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand/mixamorig:Left_arch1
-    m_Weight: 1
-  - m_Path: mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand/mixamorig:Left_arch1/mixamorig:Left_arch2
     m_Weight: 1
   - m_Path: mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand/mixamorig:LeftHandIndex1
     m_Weight: 1
@@ -110,10 +94,6 @@ AvatarMask:
   - m_Path: mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:Neck/mixamorig:Head
     m_Weight: 1
   - m_Path: mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:Neck/mixamorig:Head/mixamorig:HeadTop_End
-    m_Weight: 1
-  - m_Path: mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:Neck/mixamorig:Head/mixamorig:LeftEye
-    m_Weight: 1
-  - m_Path: mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:Neck/mixamorig:Head/mixamorig:RightEye
     m_Weight: 1
   - m_Path: mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder
     m_Weight: 1

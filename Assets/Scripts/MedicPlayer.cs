@@ -24,6 +24,8 @@ public class MedicPlayer : BasePlayer
     
     private float nextHealTime = 0.0f;
     private float nextDamageTime = 0.0f;
+    private bool urmatoareaEsteDamage = false;
+    
     public override void OnNetworkSpawn()
     {
         if (IsServer)
@@ -73,17 +75,52 @@ public class MedicPlayer : BasePlayer
         if(Input.GetMouseButtonDown(1) && Time.time >= nextHealTime)
         {
             AnuleazaRecall();
-            TryToHeal();
+            urmatoareaEsteDamage = false;
+            if (animator != null)
+            {
+                animator.SetBool("Mirror", true);
+            }
+
+            if (netAnimator != null)
+            {
+                netAnimator.SetTrigger("Attack");
+            }
             nextHealTime = Time.time + healCooldown.Value;
         }
-        
+
         if(Input.GetMouseButtonDown(0) && Time.time >= nextDamageTime)
         {
             AnuleazaRecall();
-            TryToDamage();
+            urmatoareaEsteDamage = true;
+            if (animator != null)
+            {
+                animator.SetBool("Mirror", false);
+            }
+
+            if (netAnimator != null)
+            {
+                netAnimator.SetTrigger("Attack");
+            }
             nextDamageTime = Time.time + damageCooldown.Value;
         }
         
+    }
+    
+    public void ExecutaRazaDinAnimatie()
+    {
+        if (!IsOwner)
+        {
+            return;
+        }
+
+        if (urmatoareaEsteDamage)
+        {
+            TryToDamage();
+        }
+        else
+        {
+            TryToHeal();
+        }
     }
     
     public override int ObtineDamageTotal()
@@ -99,6 +136,7 @@ public class MedicPlayer : BasePlayer
         }
         
         Vector3 startPoint = healBeamSpawnPoint.position; 
+        // Raza porneste din arma cu directia in care priveste camera
         Ray ray = new Ray(startPoint, cameraCap.forward);
         
         Vector3 endPoint = ray.origin + ray.direction * healRange.Value;
@@ -106,9 +144,10 @@ public class MedicPlayer : BasePlayer
         {
             endPoint = hit.point;
             
-            Health targetHealth = hit.collider.GetComponent<Health>();
-            if (targetHealth != null && targetHealth.gameObject != this.gameObject)
+            Health targetHealth = hit.collider.GetComponentInParent<Health>();
+            if (targetHealth != null && targetHealth.GetComponent<BasePlayer>() != null && targetHealth.gameObject != this.gameObject)
             {
+                // Daca tinta este un jucator si nu este jucatorul curent, se trimite comanda de vindecare catre server pentru acel jucator
                 ulong targetID = targetHealth.GetComponent<NetworkObject>().NetworkObjectId;
                 HealServerRpc(targetID);
             }
@@ -123,7 +162,7 @@ public class MedicPlayer : BasePlayer
         if(NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(targetID, out NetworkObject targetObj))
         {
             Health targetHealth = targetObj.GetComponent<Health>();
-            if (targetHealth != null && targetHealth.currentHealth.Value > 0)
+            if (targetObj.GetComponent<BasePlayer>() != null && targetHealth != null && targetHealth.currentHealth.Value > 0)
             {
                 targetHealth.Heal(healAmount.Value);
             }

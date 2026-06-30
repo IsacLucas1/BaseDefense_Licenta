@@ -37,6 +37,8 @@ public class DayNightManager : NetworkBehaviour
             }
         }
 
+        
+        // Daca GameSessionManager nu este null, foloseste nrMaxJucatori din el, altfel foloseste 2 ca valoare implicita
         int minJucatori = GameSessionManager.Instance != null ? GameSessionManager.Instance.nrMaxJucatori.Value : 2;
         
         return jucatoriSpawnati >= minJucatori;
@@ -46,6 +48,7 @@ public class DayNightManager : NetworkBehaviour
     {
         if (IsServer)
         {
+            // Daca timpul nu a inceput, verifica daca sunt destui jucatori spawnati pentru a incepe ziua
             if (!startTime.Value && Time.time >= urmatorulCheckJucatori)
             {
                 urmatorulCheckJucatori = Time.time + intervalCheckJucatori;
@@ -56,10 +59,13 @@ public class DayNightManager : NetworkBehaviour
                 }
             }
 
+            // Cronometrul a pornit
             if (startTime.Value)
             {
                 bool opresteTimpulPentruInamici = false;
 
+                // Daca timpul curent este aproape de sfarsitul zilei, verifica daca mai sunt inamici in
+                // viata si opreste timpul pana la eliminarea tuturor
                 if (timpCurent.Value >= ziDurata - 10f)
                 {
                     if (nightSpawner != null && nightSpawner.SuntInamiciInViata())
@@ -68,6 +74,7 @@ public class DayNightManager : NetworkBehaviour
                     }
                 }
 
+                // Daca timpul nu este oprit pentru inamici si nici pentru atacul final, incrementeaza timpul curent
                 if (!opresteTimpulPentruInamici && !timpOpritPentruAsediu.Value)
                 {
                     timpCurent.Value += Time.deltaTime;
@@ -78,6 +85,8 @@ public class DayNightManager : NetworkBehaviour
                 }
             }
         }
+        
+        // Fiecare client actualizeaza rotatia soarelui local in functie de NetworkVariable
         UpdateLumina();
     }
     
@@ -95,6 +104,7 @@ public class DayNightManager : NetworkBehaviour
         lumina.transform.rotation = Quaternion.Euler(unghiRotatieSoare, 170f, 0f);
     }
     
+    // ServerRpc pentru a opri timpul curent pentru atacul final. Este apelat din alte script-uri
     [ServerRpc]
     public void OpresteTimpulPentruAsediuServerRpc()
     {

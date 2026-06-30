@@ -49,6 +49,7 @@ public class SiegePathfinder : NetworkBehaviour
 
     private void EvalueazaCeaMaiBunaRuta(Vector3 destinatie)
     {
+        // Daca inca asteapta sa se actualizeze NavMesh dupa ce a spart un zid, nu face nimic
         if (Time.time < asteaptaNavMeshPanaLa)
         {
             AsediazaZidCurent = false;
@@ -57,15 +58,18 @@ public class SiegePathfinder : NetworkBehaviour
             return;
         }
 
+        // Daca este deja in mijlocul unui asediu (sparge un zid)
         if (AsediazaZidCurent && ZidDeSpart != null)
         {
             Zid zidCurent = ZidDeSpart.GetComponent<Zid>();
+            // Daca zidul mai are viata, continua sa navigheze catre el
             if (zidCurent != null && zidCurent.viata.Value > 0)
             {
                 NavigheazaLaZid(zidCurent);
                 return;
             }
 
+            // Daca zidul a fost spart, reseteaza starea si asteapta sa se actualizeze NavMesh
             AsediazaZidCurent = false;
             ZidDeSpart = null;
             asteaptaNavMeshPanaLa = Time.time + timpAsteptareDupaZidSpart;
@@ -74,14 +78,17 @@ public class SiegePathfinder : NetworkBehaviour
             return;
         }
 
+        // Reseteaza starea ca fiind default, nu mai asediaza niciun zid
         AsediazaZidCurent = false;
         ZidDeSpart = null;
         agent.stoppingDistance = inamicAI.razaAtac * 0.8f;
 
+        // Calculeaza costul de ocolire a zidurilor
         NavMeshPath pathOcolire = new NavMeshPath();
         bool poateOcoli = agent.CalculatePath(destinatie, pathOcolire) && pathOcolire.status == NavMeshPathStatus.PathComplete;
         float costOcolire = poateOcoli ? CalculCostDeplasare(pathOcolire) : Mathf.Infinity;
 
+        // Daca a spart deja prea multe ziduri, nu mai sparge altele
         if (numarMaximZiduriSparte > 0 && numarZiduriSparte >= numarMaximZiduriSparte)
         {
             agent.SetDestination(destinatie);
@@ -92,6 +99,7 @@ public class SiegePathfinder : NetworkBehaviour
         Vector3 celMaiBunPunctAtac = Vector3.zero;
         float celMaiBunCostPrinZid = Mathf.Infinity;
 
+        // Cauta toate zidurile din scena si evalueaza daca merita sa le sparga
         Zid[] ziduri = FindObjectsByType<Zid>(FindObjectsSortMode.None);
         foreach (Zid zid in ziduri)
         {
@@ -106,7 +114,9 @@ public class SiegePathfinder : NetworkBehaviour
                 continue;
             }
 
+            // Calculeaza punctul de pe suprafata zidului cel mai apropiat de inamic
             Vector3 punctSuprafataZid = zidCol.ClosestPoint(transform.position);
+            // Verifica daca acel punct are sub el o pozitie valida pe NavMesh, pentru a putea naviga catre el
             if (!NavMesh.SamplePosition(punctSuprafataZid, out NavMeshHit navHitInainteZid, razaCautarePunctAtacZid, NavMesh.AllAreas))
             {
                 continue;
@@ -118,17 +128,21 @@ public class SiegePathfinder : NetworkBehaviour
                 continue;
             }
 
+            // Calculeaza timpul necesar pentru a sparge zidul, in functie de damage-ul per lovitura si viata zidului
             int damagePeLovitura = Mathf.Max(1, inamicAI.damageAtac);
             int numarLovituri = Mathf.CeilToInt((float)zid.viata.Value / damagePeLovitura);
             float timpSpargere = numarLovituri * inamicAI.cooldownAtac;
+            // Calculeaza costul de a merge dupa zid catre destinatie
             float costDupaZid = CalculeazaCostDupaZid(punctSuprafataZid, destinatie, !poateOcoli);
             if (float.IsInfinity(costDupaZid))
             {
                 continue;
             }
 
+            // Calculeaza costul total de a merge pana la zid, a-l sparge si a merge dupa el
             float costPrinZid = CalculCostDeplasare(pathPanaLaZid) + timpSpargere + costDupaZid;
 
+            // Daca acest cost este mai mic decat cel mai bun cost gasit pana acum, actualizeaza cel mai bun zid si punct de atac
             if (costPrinZid < celMaiBunCostPrinZid)
             {
                 celMaiBunCostPrinZid = costPrinZid;
@@ -137,6 +151,7 @@ public class SiegePathfinder : NetworkBehaviour
             }
         }
 
+        // Daca cel mai bun zid gasit are un cost total mai mic decat costul de ocolire, incepe sa-l asedieze
         if (celMaiBunZid != null && celMaiBunCostPrinZid + avantajMinimSpargere < costOcolire)
         {
             AsediazaZidCurent = true;
@@ -153,6 +168,7 @@ public class SiegePathfinder : NetworkBehaviour
             return;
         }
 
+        // Daca nu exista ziduri mai bune de spart, navigheaza direct catre destinatie
         agent.SetDestination(destinatie);
     }
 

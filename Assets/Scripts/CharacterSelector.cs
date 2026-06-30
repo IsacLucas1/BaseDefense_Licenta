@@ -54,13 +54,14 @@ public class CharacterSelector : NetworkBehaviour
             ClasePanel.SetActive(false);
         }
         
-
+        // Adauga listeneri pentru butoanele de selectie a clasei
         btnTank.onClick.AddListener(() => ComandaSpawn(0));
         btnSpion.onClick.AddListener(() => ComandaSpawn(1));
         btnConstructor.onClick.AddListener(() => ComandaSpawn(2));
         btnMedic.onClick.AddListener(() => ComandaSpawn(3));
         btnArcas.onClick.AddListener(() => ComandaSpawn(4));
 
+        // Creare joc / conectare la joc prin Unity Relay
         btnStartHost.onClick.AddListener(() =>
         {
             if (RelayManager.Instance != null)
@@ -77,6 +78,7 @@ public class CharacterSelector : NetworkBehaviour
         });
     }
 
+    // Functie pentru a schimba de la panoul de start la cel de asteptare
     public void SchimbaPanelAsteptare()
     {
         if (StartPanel != null)
@@ -89,6 +91,7 @@ public class CharacterSelector : NetworkBehaviour
         }
     }
     
+    // Afiseaza meniul de alegere a clasei si ascunde panoul de asteptare
     public void ActiveazaMeniuClase()
     {
         if (AsteptarePanel != null)
@@ -102,21 +105,23 @@ public class CharacterSelector : NetworkBehaviour
         }
     }
 
+    // Verifica ce clase sunt disponibile si actualizeaza textul care arata cati jucatori sunt conectati
     private void Update()
     {
+        // Daca este in panelul de asteptare, actualizeaza textul cu numarul de jucatori conectati
         if(AsteptarePanel != null && AsteptarePanel.activeSelf && GameSessionManager.Instance != null && NetworkManager.Singleton != null)
         {
-            
+            // Daca nu este nici server si nici client conectat, se afiseaza mesajul de conectare
             if (!NetworkManager.Singleton.IsServer && !NetworkManager.Singleton.IsConnectedClient)
             {
                 if (textJucatoriConectati != null)
                 {
                     textJucatoriConectati.text = "Se conectează la server...";
                 }
-                return; // Oprim codul aici până ne conectăm
+                return;
             }
             
-            // Citim de la Server în timp real numerele
+            // Citeste de la Server in timp real numerele de jucatori conectati si maximul de jucatori
             if (!numaratoareInversaPornita)
             {
                 int jucatoriCurenti = GameSessionManager.Instance.jucatoriConectati.Value;
@@ -128,6 +133,7 @@ public class CharacterSelector : NetworkBehaviour
             }
         }
         
+        // Daca este in panelul de alegere a clasei, actualizeaza starea butoanelor in functie de ce clase sunt deja ocupate
         if (ClasePanel != null && ClasePanel.activeSelf && GameSessionManager.Instance != null)
         {
             btnTank.interactable = !GameSessionManager.Instance.tankOcupat.Value && !aDatClick;
@@ -138,6 +144,7 @@ public class CharacterSelector : NetworkBehaviour
         }
     }
 
+    // Trimite comanda catre server pentru a alege clasa si a spawn-ui jucatorul
     public void ComandaSpawn(int index)
     {
         if (aDatClick)
@@ -149,6 +156,7 @@ public class CharacterSelector : NetworkBehaviour
         GameSessionManager.Instance.AlegeClasaServerRpc(index);
     }
     
+    // Revine la ecranul de start al jocului
     public void RevinoLaStart()
     {
         if (AsteptarePanel != null)

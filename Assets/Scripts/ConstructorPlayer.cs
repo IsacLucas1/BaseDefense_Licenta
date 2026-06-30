@@ -19,8 +19,7 @@ public class ConstructorPlayer : MeleePlayer
         if (IsServer)
         {
             damageArma.Value = 10;
-            atacCooldown.Value = 0.7f;
-            durataAnimatie = 0.3f;
+            atacCooldown.Value = 1f;
             
             speed.Value = 5f;
         
@@ -43,6 +42,7 @@ public class ConstructorPlayer : MeleePlayer
         }
     }
     
+    // Metoda overide pentru a adauga lemn cu un multiplicator specific clasei Constructor
     public override void AdaugaLemn(int cantitate)
     {
         if (IsServer)
@@ -87,7 +87,10 @@ public class ConstructorPlayer : MeleePlayer
     
     private void IncearcaSaConstruiascaSauRepare()
     {
+        // Raza de la camera pentru a detecta zidul in fata jucatorului
         Ray ray = new Ray(cameraCap.transform.position, cameraCap.transform.forward);
+        
+        // Verifica daca raza intersecteaza un zid in raza de distantaAdunare
         if (Physics.Raycast(ray, out RaycastHit hit, distantaAdunare, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide))
         {
             Zid zid = hit.collider.GetComponentInParent<Zid>();
@@ -98,18 +101,9 @@ public class ConstructorPlayer : MeleePlayer
                 {
                     if(lemn.Value >= costConstructie.Value)
                     {
-                        Debug.Log("Construiesc cu costul: " + costConstructie.Value);
                         ConstruiesteZidServerRpc(zid.NetworkObjectId);
                         nextConstructieTime = Time.time + constructieCooldown;
                     }
-                    else
-                    {
-                        Debug.Log("Nu ai destul lemn! Ai " + lemn.Value + " dar iti trebuie " + costConstructie.Value);
-                    }
-                }
-                else
-                {
-                    Debug.Log("Acest zid este deja la 100% viata!");
                 }
             }
         }
@@ -124,6 +118,7 @@ public class ConstructorPlayer : MeleePlayer
             return;
         }
 
+        // Verifica daca zidul exista in SpawnedObjects si aplica construcția sau repararea fix pe acel zid
         if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(zidId, out var obj))
         {
             Zid zid = obj.GetComponent<Zid>();
@@ -131,7 +126,6 @@ public class ConstructorPlayer : MeleePlayer
             {
                 lemn.Value -= cost;
                 zid.ConstruiesteSauRepara(20);
-                Debug.Log("Zidul are: " + zid.viata.Value + " / " + zid.viataMax);
             }
         }
     }
@@ -172,6 +166,7 @@ public class ConstructorPlayer : MeleePlayer
         }
     }
     
+    // Metoda din ConstructorPlayer pentru a incerca actionarea unei porti
     private void IncearcaActionarePoarta()
     {
         Ray ray = new Ray(cameraCap.transform.position, cameraCap.transform.forward);

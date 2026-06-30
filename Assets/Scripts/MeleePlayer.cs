@@ -7,7 +7,6 @@ public abstract class MeleePlayer : BasePlayer
     [Header("Setari Atac")] 
     public NetworkVariable<int> damageArma = new NetworkVariable<int>(10);
     public NetworkVariable<float> atacCooldown = new NetworkVariable<float>(0.7f);
-    public float durataAnimatie = 0.3f;
     
     [Header("Setari Hitbox (Sfera de Lovire)")]
     [Tooltip("Cat de departe in fața jucatorului se aplică lovitura")]
@@ -22,12 +21,9 @@ public abstract class MeleePlayer : BasePlayer
     public float lungimeClipAtac = 2.1f;
     [Tooltip("Cat sa dureze animatia de atac pe ecran fata de cat dureaza cooldown-ul real (pune sub 1)")]
     public float durataAtacVizibila = 0.6f;
-
-    [Header("Referinte Vizuale")] 
-    public Transform pivotArma;
     
     protected bool isAttacking = false;
-    protected bool canDealdamage = false;
+    protected bool canDealDamage = false;
     protected bool enemyHit = false;
     
     protected override void SetupLocalPlayer()
@@ -52,7 +48,7 @@ public abstract class MeleePlayer : BasePlayer
             if (nou)
             {
                 isAttacking = false;
-                canDealdamage = false;
+                canDealDamage = false;
                 enemyHit = false;
             }
         };
@@ -79,7 +75,7 @@ public abstract class MeleePlayer : BasePlayer
             return;
         }
         
-        if (canDealdamage && !enemyHit)
+        if (canDealDamage && !enemyHit)
         {
             DetecteazaLovitura();
         }
@@ -96,6 +92,7 @@ public abstract class MeleePlayer : BasePlayer
         return damageArma.Value + extraDamage.Value;
     }
     
+    //Desfasoara zona sferica (hitbox) in fata jucatorului pentru a gasi toti inamicii
     private void DetecteazaLovitura()
     {
         Vector3 centruLovitura = transform.position + transform.forward * distantaLovitura;
@@ -104,6 +101,7 @@ public abstract class MeleePlayer : BasePlayer
         foreach (Collider hitCollider in hitColliders)
         {
             InamicLovit(hitCollider);
+            // Daca un inamic a fost lovit, nu mai continua verificarea altor coliziuni
             if (enemyHit)
             {
                 break;
@@ -113,17 +111,21 @@ public abstract class MeleePlayer : BasePlayer
     
     public virtual void InamicLovit(Collider target)
     {
-        if (!IsOwner || !canDealdamage || enemyHit)
+        if (!IsOwner || !canDealDamage || enemyHit)
         {
             return;
         }
 
         if (target.CompareTag("Enemy"))
         {
+            // Trage un Linecast de la jucator catre centrul inamicului
+            // Daca se intersecteaza cu un alt collider care nu este inamicul
+            // sau jucatorul, atunci nu se aplica damage
             Vector3 startPos = transform.position + Vector3.up * 1f;
             Vector3 targetPos = target.bounds.center; 
             
-            if (Physics.Linecast(startPos, targetPos, out RaycastHit hit, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+            if (Physics.Linecast(startPos, targetPos, out RaycastHit hit, 
+                    Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
             {
                 if (hit.collider != target && !hit.collider.CompareTag("Player"))
                 {
@@ -132,7 +134,8 @@ public abstract class MeleePlayer : BasePlayer
             }
             
             Health enemyHealth = target.GetComponent<Health>();
-
+            
+            // Aplica damage doar daca inamicul are componenta Health si este inca in viata
             if (enemyHealth != null && enemyHealth.currentHealth.Value > 0)
             {
                 enemyHit = true; 
@@ -149,46 +152,20 @@ public abstract class MeleePlayer : BasePlayer
     {
         isAttacking = true;
         nextAttackTime = Time.time + atacCooldown.Value;
+        
+        // Daca exista un animator de retea, declanseaza animatia de atac
         if (netAnimator != null)
         {
             netAnimator.ResetTrigger("Attack");
             netAnimator.SetTrigger("Attack");
             StartCoroutine(ResetAtac());
         }
-        else
-        {
-            StartCoroutine(AnimatieAtacArma());
-        }
-        PerformAttackServerRpc();
     }
 
     private IEnumerator ResetAtac()
     {
         yield return new WaitForSeconds(atacCooldown.Value);
         isAttacking = false;
-    }
-    
-    [ServerRpc]
-    protected void PerformAttackServerRpc(ServerRpcParams rpcParams = default)
-    {
-        if (Time.time < nextAttackTimeServer)
-        {
-            return;
-        }
-        nextAttackTimeServer = Time.time + atacCooldown.Value;
-        PlayAttackAnimationClientRpc();
-    }
-
-    [ClientRpc]
-    protected void PlayAttackAnimationClientRpc()
-    {
-        if(!IsOwner)
-        {
-            if (netAnimator == null)
-            {
-                StartCoroutine(AnimatieAtacArma());
-            }
-        }
     }
 
     public void ExecutaLovituraDinAnimatie()
@@ -203,58 +180,12 @@ public abstract class MeleePlayer : BasePlayer
     
     private IEnumerator FereastraLovituraRoutine()
     {
-        canDealdamage = true;
+        canDealDamage = true;
         enemyHit = false;
         
         yield return new WaitForSeconds(0.25f);
-        canDealdamage = false;
+        canDealDamage = false;
     }
-    
-    protected virtual IEnumerator AnimatieAtacArma()
-    {
-        if (pivotArma == null)
-        {
-            yield break;
-        }
-
-        isAttacking = true;
-        canDealdamage = false;
-        enemyHit = false;
-
-        Quaternion rotatieInitiala = pivotArma.localRotation;
-        Quaternion rotatieAtac = rotatieInitiala * Quaternion.Euler(90f, 0f, 0f);
-
-        float timpAnimatie = 0f;
-
-        while (timpAnimatie < durataAnimatie)
-        {
-            timpAnimatie += Time.deltaTime;
-            pivotArma.localRotation = Quaternion.Lerp(rotatieInitiala, rotatieAtac, timpAnimatie / durataAnimatie);
-            
-            if (timpAnimatie >= durataAnimatie / 2f) 
-            {
-                canDealdamage = true;
-            }
-            yield return null;
-        }
-
-        canDealdamage = false;
-        yield return new WaitForSeconds(0.1f);
-
-        timpAnimatie = 0f;
-        while (timpAnimatie < durataAnimatie)
-        {
-            timpAnimatie += Time.deltaTime;
-            pivotArma.localRotation = Quaternion.Lerp(rotatieAtac, rotatieInitiala, timpAnimatie / durataAnimatie);
-            yield return null;
-        }
-        
-        pivotArma.localRotation = rotatieInitiala;
-        isAttacking = false;
-        enemyHit = false;
-    }
-    
-   
     
     protected virtual void OnDrawGizmos()
     {

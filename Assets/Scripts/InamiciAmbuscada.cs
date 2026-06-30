@@ -39,6 +39,7 @@ public class InamicAmbuscada : InamiciAI
         }
     }
 
+    // Seteaza referinta catre Spionul care a declansat capcana si ajusteaza atributele inamicului pe baza acestuia
     public void SeteazaSpion(Transform spion)
     {
         if (!IsServer)
@@ -52,12 +53,13 @@ public class InamicAmbuscada : InamiciAI
         BasePlayer scriptSpion = spion.GetComponent<BasePlayer>();
         Health viataSpion = spion.GetComponent<Health>();
 
+        // Copiaza atributele Spionului
         if (scriptSpion != null)
         {
             vitezaSincronizata.Value = scriptSpion.speed.Value - 1f;
             damageSincronizat.Value = scriptSpion.ObtineDamageTotal();
         }
-
+        
         if (viataSpion != null && health != null)
         {
             health.maxHealth.Value = viataSpion.maxHealth.Value;

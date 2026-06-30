@@ -6,6 +6,7 @@ public class ZonaMagazin : MonoBehaviour
     {
         BasePlayer player = other.GetComponent<BasePlayer>();
         
+        // Se asigura ca deschide meniul pentru proprietarul obiectului (jucatorul care a intrat in zona)
         if (player != null && player.IsOwner)
         {
             player.SeteazaInZonaMagazin(true);
@@ -16,6 +17,7 @@ public class ZonaMagazin : MonoBehaviour
     {
         BasePlayer player = other.GetComponent<BasePlayer>();
         
+        // Se asigura ca inchide meniul pentru proprietarul obiectului (jucatorul care a iesit din zona)
         if (player != null && player.IsOwner)
         {
             player.SeteazaInZonaMagazin(false);

@@ -28,7 +28,6 @@ public class TankPlayer : MeleePlayer
                 health.currentHealth.Value = 200;
             }
         }
-        durataAnimatie = 0.8f;
         base.OnNetworkSpawn();
     }
 
@@ -48,11 +47,14 @@ public class TankPlayer : MeleePlayer
         {
             return;
         }
+        
+        // Verifica daca jocul este in pauza sau daca este in magazin
         if (UIManager.Instance != null  && (UIManager.Instance.jocPauza || UIManager.Instance.esteInMagazin))
         {
             return;
         }
         
+        // Actualizeaza UI-ul pentru cooldown-ul Taunt
         if(UIManager.Instance != null)
         {
             float procentaj = 1f;
@@ -75,15 +77,18 @@ public class TankPlayer : MeleePlayer
         
     }
     
+    // Declanseaza taunt-ul si seteaza timpul pentru urmatorul taunt
     private void ActiveazaTaunt()
     {
         nextTauntTime = Time.time + tauntCooldown.Value;
         TauntServerRpc();
     }
 
+    //Detecteaza toti inamicii din raza de taunt si le aplica efectul de taunt
     [ServerRpc]
     private void TauntServerRpc()
     {
+        // Detecteaza toti inamicii din raza de taunt
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, tauntRadius.Value);
         foreach (var hitCollider in hitColliders)
         {
@@ -92,6 +97,7 @@ public class TankPlayer : MeleePlayer
                 InamiciAI inamic = hitCollider.GetComponent<InamiciAI>();
                 if (inamic != null)
                 {
+                    // Schimba tinta inamicului catre Tanc si aplica efectul de taunt
                     inamic.AplicaTaunt(this.transform, tauntDuration);
                 }
             }
@@ -99,6 +105,7 @@ public class TankPlayer : MeleePlayer
         PlayTauntEffectClientRpc();
     }
 
+    // Reda efectul vizual al taunt-ului pe client
     [ClientRpc]
     private void PlayTauntEffectClientRpc()
     {
@@ -106,7 +113,6 @@ public class TankPlayer : MeleePlayer
         {
             tauntParticles.Play();
         }
-        Debug.Log("Tancul a activat Taunt!");
     }
     
     protected override void AplicaUpgradeClasa()

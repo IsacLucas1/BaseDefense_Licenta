@@ -7,8 +7,8 @@ public class DeathZoneManager : NetworkBehaviour
     
     [Header ("Centru si raze")]
     public Transform centruZona;
-    public float razaInitiala = 200f;
-    public float razaFinala = 30f;
+    public float razaInitiala = 600f;
+    public float razaFinala = 140f;
     public float vitezaStrangere = 5f;
     
     [Header("Damage")]
@@ -36,6 +36,7 @@ public class DeathZoneManager : NetworkBehaviour
         }
     }
     
+    // Declansata in FinalAttackManager când atacul final incepe
     public void PornesteFurtuna()
     {
         if (!IsServer)
@@ -85,6 +86,7 @@ public class DeathZoneManager : NetworkBehaviour
             return;
         }
 
+        // Aplica damage jucatorilor care sunt in afara zonei sigure
         foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
         {
             if (client.PlayerObject == null)
@@ -98,6 +100,7 @@ public class DeathZoneManager : NetworkBehaviour
                 continue;
             }
 
+            // Verifica daca jucatorul este in afara zonei sigure comparand distanta fata de centrul zonei cu raza curenta
             if (DistantaOrizontala(player.transform.position) > razaCurenta.Value)
             {
                 Health health = player.GetComponent<Health>();
@@ -122,9 +125,11 @@ public class DeathZoneManager : NetworkBehaviour
         }
 
         vizualFurtuna.transform.position = new Vector3(centruZona.position.x, vizualFurtuna.transform.position.y, centruZona.position.z);
+        // Scaleaza cilindrul ce reprezinta vizualul furtunii in functie de raza curenta
         vizualFurtuna.transform.localScale = new Vector3(razaCurenta.Value * 2f, inaltimeVizual, razaCurenta.Value * 2f);
     }
     
+    // Actualizeaza overlay-ul local pentru a arata daca jucatorul este in furtuna sau nu
     private void ActualizeazaOverlayLocal()
     {
         if (centruZona == null || UIManager.Instance == null)

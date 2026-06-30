@@ -17,6 +17,9 @@ public class Zid : NetworkBehaviour
     protected Color culoareOriginala;
     protected NavMeshObstacle navMeshObstacle;
     
+    // Metoda Awake este apelata atunci cand obiectul este instantiat in scena,
+    // inainte de orice altceva. Aici se initializeaza referintele la componentele
+    // necesare si se salveaza culoarea originala a materialului zidului.
     private void Awake()
     {
         zidCollider = GetComponent<Collider>();
@@ -36,6 +39,7 @@ public class Zid : NetworkBehaviour
         }
     }
 
+    // Asigura legatuira variabilelor de retea 
     public override void OnNetworkSpawn()
     {
         if (IsServer)
@@ -43,8 +47,8 @@ public class Zid : NetworkBehaviour
             viataMax.Value = viataMaxInspector;
         }
         
+        // Evenimente care semnalizeaza la orice modificare pentru a fi updatat vizual zidul
         viata.OnValueChanged += (oldVal, newVal) => ActualizeazaZid(newVal);
-        
         viataMax.OnValueChanged += (oldVal, newVal) => ActualizeazaZid(viata.Value);
 
         ActualizeazaZid(viata.Value);
@@ -64,6 +68,7 @@ public class Zid : NetworkBehaviour
     {
         if (viataCurenta <= 0)
         {
+            // Zidul este distrus, devine invizibil si nu mai blocheaza miscarea
             if (zidCollider != null)
             {
                 zidCollider.isTrigger = true;
@@ -77,6 +82,7 @@ public class Zid : NetworkBehaviour
         }
         else if (viataCurenta >= viataMax.Value)
         {
+            // Zidul este complet reparat, devine vizibil si blocheaza miscarea
             if (zidCollider != null)
             {
                 zidCollider.isTrigger = false;
@@ -89,6 +95,7 @@ public class Zid : NetworkBehaviour
         }
         else
         {
+            // Zidul este partial reparat, devine vizibil si blocheaza miscarea
             if (zidCollider != null)
             {
                 zidCollider.isTrigger = false;
@@ -97,6 +104,7 @@ public class Zid : NetworkBehaviour
             {
                 navMeshObstacle.enabled = true;
             }
+            // Scade opacitatea in functie de viata curenta
             float procent = (float)viataCurenta / viataMax.Value;
             float alpha = Mathf.Lerp(0.3f, 1f, procent);
             SeteazaOpacitate(alpha, false);
@@ -127,12 +135,14 @@ public class Zid : NetworkBehaviour
 
                 if (devineOpac)
                 {
+                    // Seteaza materialul ca opac
                     mat.SetFloat("_Surface", 0f);
                     mat.SetFloat("_ZWrite", 1f);
                     mat.renderQueue = 2000;
                 }
                 else
                 {
+                    // Seteaza materialul ca transparent
                     mat.SetFloat("_Surface", 1f);
                     mat.SetFloat("_ZWrite", 0f);
                     mat.renderQueue = 3000;
@@ -142,6 +152,7 @@ public class Zid : NetworkBehaviour
         }
     }
     
+    // Este apelata de jucator pentru a construi sau repara zidul.
     public void ConstruiesteSauRepara(int viataAdaugata)
     {
         if (!IsServer)
@@ -151,6 +162,7 @@ public class Zid : NetworkBehaviour
         viata.Value = Mathf.Min(viata.Value + viataAdaugata, viataMax.Value);
     }
     
+    // Este apelata cand este lovit de un inamic
     public void PrimesteDamage(int damage)
     {
         if (!IsServer)

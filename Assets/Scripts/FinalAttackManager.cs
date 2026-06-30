@@ -46,6 +46,7 @@ public class FinalAttackManager : NetworkBehaviour
 
         atacFinalDeclansat.Value = true;
         
+        // Activeaza baza inamica si porneste rutina de pregatire pentru atacul final
         if (bazaInamica != null)
         {
             bazaInamica.SetActive(true);
@@ -54,6 +55,7 @@ public class FinalAttackManager : NetworkBehaviour
         
         if (BazaInamicaManager.Instance != null)
         {
+            // Trezește inamicii din baza inamică și îi face să apară în interiorul bazei
             BazaInamicaManager.Instance.AparitieInamiciInBaza();
         }
         
@@ -63,8 +65,6 @@ public class FinalAttackManager : NetworkBehaviour
         {
             StartCoroutine(RutinaPregatireAtacFinal(dayNightManager));
         }
-        
-        Debug.Log("Faza finala a fost declansata!");
     }
     
     private IEnumerator RutinaPregatireAtacFinal(DayNightManager dayNightManager)
@@ -74,10 +74,12 @@ public class FinalAttackManager : NetworkBehaviour
             yield return new WaitForSeconds(1f);
         }
         
+        // Setează timpul de atac final pe server și așteaptă până când timpul este oprit pentru asediu
         dayNightManager.SeteazaTimpAtacFinalServerRpc();
 
         yield return new WaitUntil(() => dayNightManager.timpOpritPentruAsediu.Value);
         dayNightManager.timpOpritPentruAsediu.Value = true;
+        // Porneste furtuna si activeaza zonele ready pentru jucatori
         PornesteDeathStormClientRpc();
         ActiveazaZoneReadyClientRpc();
         
@@ -97,6 +99,7 @@ public class FinalAttackManager : NetworkBehaviour
         }
     }
     
+    // 
     [ClientRpc]
     private void ActiveazaZoneReadyClientRpc()
     {
@@ -140,6 +143,7 @@ public class FinalAttackManager : NetworkBehaviour
         }
     }
 
+    // Primeste notificare de la client ca jucatorul este gata pentru atacul final
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     private void NumaraJucatoriReadyPentruAtacFinalServerRpc(RpcParams rpcParams = default)
     {
@@ -154,6 +158,7 @@ public class FinalAttackManager : NetworkBehaviour
         VerificaConditieStartAsediuFinal();
     }
     
+    // Recalculeaza numarul de jucatori care sunt gata pentru atacul final
     private void RecalculeazaReady()
     {
         if (!IsServer)
@@ -186,6 +191,7 @@ public class FinalAttackManager : NetworkBehaviour
         jucatoriReady.Value = viiReady;
     }
     
+    // Verifica daca toti jucatorii sunt gata pentru atacul final si daca da, declanseaza atacul
     private void VerificaConditieStartAsediuFinal()
     {
         if (!IsServer || aInceputAtacul.Value)
@@ -199,6 +205,7 @@ public class FinalAttackManager : NetworkBehaviour
         }
     }
     
+    // Notifica serverul ca un jucator a murit si recalculaza numarul de jucatori vii si gata pentru atacul final
     public void JucatorAMurit()
     {
         if (!IsServer) return;
@@ -213,6 +220,7 @@ public class FinalAttackManager : NetworkBehaviour
         NumaraJucatoriReadyPentruAtacFinalServerRpc();
     }
     
+    // Se declanseaza cand au dat toti ready
     private void IncepeAsediulEfectiv()
     {
         if (aInceputAtacul.Value)
@@ -221,12 +229,13 @@ public class FinalAttackManager : NetworkBehaviour
         }
 
         aInceputAtacul.Value = true;
-        Debug.Log("Toti jucatorii sunt gata! Incepe asediul final!");
         AscundeZoneReadyClientRpc();
 
         StartCoroutine(RutinaStartAtacFinal());
     }
 
+    // Rutina care se ocupa de inceperea atacului final, trezeste inamicii
+    // exteriori si deblocheaza miscarea jucatorilor dupa un delay
     private IEnumerator RutinaStartAtacFinal()
     {
         if (BazaInamicaManager.Instance != null)
@@ -285,6 +294,7 @@ public class FinalAttackManager : NetworkBehaviour
         }
     }
     
+    // Obtine playerul local, daca exista
     private BasePlayer ObtinePlayerLocal()
     {
         if (NetworkManager.Singleton == null)
@@ -311,20 +321,25 @@ public class FinalAttackManager : NetworkBehaviour
 
     public void Victorie()
     {
-        if (!IsServer || jocTerminat) return;
+        if (!IsServer || jocTerminat)
+        {
+            return;
+        }
         jocTerminat = true;
-        Debug.Log("VICTORIE!");
         AfiseazaFinalClientRpc(true);
     }
 
     public void Infrangere()
     {
-        if (!IsServer || jocTerminat) return;
+        if (!IsServer || jocTerminat)
+        {
+            return;
+        }
         jocTerminat = true;
-        Debug.Log("INFRANGERE!");
         AfiseazaFinalClientRpc(false);
     }
 
+    // Verifica daca toti jucatorii sunt morti si daca da, declanseaza infrangerea
     public void VerificaInfrangere()
     {
         if (!IsServer || jocTerminat)

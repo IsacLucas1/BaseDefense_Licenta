@@ -5453,12 +5453,10 @@ MonoBehaviour:
     m_InternalValue: 10
   atacCooldown:
     m_InternalValue: 0.7
-  durataAnimatie: 0.3
   distantaLovitura: 1.4
   razaLovitura: 1.3
   lungimeClipAtac: 2.1
   durataAtacVizibila: 0.8
-  pivotArma: {fileID: 0}
   tauntRadius:
     m_InternalValue: 20
   tauntDuration: 5

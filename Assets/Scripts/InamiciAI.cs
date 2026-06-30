@@ -1,6 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
+using Unity.Netcode.Components;
 
 public abstract class InamiciAI : NetworkBehaviour
 {
@@ -27,11 +28,16 @@ public abstract class InamiciAI : NetworkBehaviour
     
     protected NetworkVariable<bool> isDead = new NetworkVariable<bool>(false);
     public bool EsteMort => isDead.Value;
+    protected Animator animator;
+    protected NetworkAnimator netAnimator;
     
     protected virtual void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
         health = GetComponent<Health>();
+        
+        animator = GetComponentInChildren<Animator>();
+        netAnimator = GetComponentInChildren<NetworkAnimator>();
     }
     
     public override void OnNetworkSpawn()
@@ -47,6 +53,7 @@ public abstract class InamiciAI : NetworkBehaviour
             health.currentHealth.Value = 50;
         }
         
+        // Inregistreaza evenimentul pentru schimbarea starii de moarte
         isDead.OnValueChanged += OnDeathStateChanged;
         ToggleVisuals(!isDead.Value);
     }
@@ -63,6 +70,11 @@ public abstract class InamiciAI : NetworkBehaviour
             return;
         }
 
+        if (animator != null && animator.runtimeAnimatorController != null && agent != null && agent.isOnNavMesh)
+        {
+            animator.SetFloat("Speed", agent.velocity.magnitude);
+        }
+        
         if (adormit)
         {
             if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh && !agent.isStopped)
@@ -72,6 +84,7 @@ public abstract class InamiciAI : NetworkBehaviour
             return;
         }
         
+        // Gaseste si setaza tinta (jucatorul cel mai apropiat/Zid) pentru urmarire si atac
         GasesteJucator();
 
         if (tinta != null)
@@ -112,6 +125,7 @@ public abstract class InamiciAI : NetworkBehaviour
             tauntTarget = null;
         }
         
+        // Raza de cautare are o margine mai permisiva (1.25x) pentru a evita oscilatiile la limita
         float razaCautare = razaDetectie * 1.25f;
         Collider[] jucatoriInZona = Physics.OverlapSphere(transform.position, razaCautare);
         
@@ -129,6 +143,7 @@ public abstract class InamiciAI : NetworkBehaviour
                 float distantaJucatorInamic = Vector3.Distance(transform.position, col.transform.position);
                 float distantaEvaluata = distantaJucatorInamic;
 
+                // Preferinta pentru tinta curenta, astfel incat sa nu se schimbe tinta prea des
                 if (tinta == col.transform)
                 {
                     distantaEvaluata -= 2f;
@@ -143,6 +158,7 @@ public abstract class InamiciAI : NetworkBehaviour
             }
         }
 
+        // Daca tinta s-a schimbat, reseteaza path-ul agentului pentru a evita urmarirea vechii tinte
         if (tinta != celMaiApropiatJucator)
         {
             if (agent.hasPath) agent.ResetPath();
@@ -163,6 +179,7 @@ public abstract class InamiciAI : NetworkBehaviour
     protected virtual void UrmaresteSiAtacaJucator()
     {
         Collider tintaCol = tinta.GetComponentInChildren<Collider>();
+        // Cel mai apropiat punct al coliderului tintei pentru a evalua distanța de atac corect
         Vector3 punctTinta = tintaCol != null ? tintaCol.ClosestPoint(transform.position) : tinta.position;
         float distantaJucator = Vector3.Distance(transform.position, punctTinta);
 
@@ -182,8 +199,8 @@ public abstract class InamiciAI : NetworkBehaviour
         {
             agent.isStopped = false;
             agent.SetDestination(tinta.position);
-            Debug.Log($"[Path] {name}: status={agent.pathStatus}");
 
+            // Daca agentul nu poate ajunge la tinta, verifica daca exista un zid in calea sa si il ataca daca este in raza de atac
             if (!agent.pathPending && agent.pathStatus == NavMeshPathStatus.PathPartial)
             {
                 Vector3 directieSpreTinta = (tinta.position - transform.position).normalized;
@@ -223,6 +240,11 @@ public abstract class InamiciAI : NetworkBehaviour
     
     protected virtual void Ataca()
     {
+        if (netAnimator != null)
+        {
+            netAnimator.SetTrigger("Attack");
+        }
+        
         if (tinta != null)
         {
             Health healthTinta = tinta.GetComponent<Health>();

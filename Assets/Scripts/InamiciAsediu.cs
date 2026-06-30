@@ -25,10 +25,12 @@ public class InamiciAsediu : InamiciAI
     
     protected override void GasesteJucator()
     {
+        // Daca nu a ajuns la checkpoint, tinta este checkpoint-ul
         if (!aAjunsLaCheckpoint && checkpoint != null)
         {
             tinta = checkpoint;
         }
+        // Daca a trecut de checkpoint, dar nu a trecut de poarta si poarta este inchisa, tinta este poarta
         else if (!aTrecutDePoarta && poarta != null && !poarta.EsteAccesibilFizic() && poarta.viata.Value > 0)
         {
             tinta = poarta.transform;
@@ -46,6 +48,7 @@ public class InamiciAsediu : InamiciAI
             return;
         }
         
+        // Verificare daca a ajuns la checkpoint 
         if (!aAjunsLaCheckpoint && checkpoint != null)
         {
             float distantaLaPunct = Vector3.Distance(transform.position, checkpoint.position);
@@ -55,6 +58,7 @@ public class InamiciAsediu : InamiciAI
             }
         }
         
+        // Verificare daca a trecut de poarta
         if (!aTrecutDePoarta && poarta != null && tintaTitan != null)
         {
             float distantaInamicLatitan = Vector3.Distance(transform.position, tintaTitan.position);
@@ -66,9 +70,11 @@ public class InamiciAsediu : InamiciAI
             }
         }
         
+        // Apeleaza functionalitatea de baza care muta NavMeshAgent-ul catre tinta
         base.UrmaresteSiAtacaJucator();
     }
     
+    // Daca nu are tinta, opreste agentul
     protected override void ComportamentFaraTinta()
     {
         if (agent != null && agent.isActiveAndEnabled)

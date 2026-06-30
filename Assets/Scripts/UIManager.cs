@@ -70,6 +70,10 @@ public class UIManager : MonoBehaviour
     [Header("Furtuna")]
     public GameObject furtunaOverlay;
     
+    [Header("Recall")]
+    public TMP_Text textRecall;
+    private Coroutine corutinaRecall;
+    
     public bool jocPauza = false;
 
     private void Awake()
@@ -451,6 +455,44 @@ public class UIManager : MonoBehaviour
             textNotificareSpion.text = mesaj;
             textNotificareSpion.gameObject.SetActive(true);
             StartCoroutine(AscundeNotificare(3f));
+        }
+    }
+    
+    public void ArataMesajRecall(string mesaj, bool autoAscunde = false)
+    {
+        if (textRecall == null)
+        {
+            return;
+        }
+        textRecall.text = mesaj;
+        textRecall.gameObject.SetActive(true);
+
+        if (corutinaRecall != null)
+        {
+            StopCoroutine(corutinaRecall);
+        }
+        if (autoAscunde) corutinaRecall = StartCoroutine(AscundeRecallRoutine());
+    }
+
+    private IEnumerator AscundeRecallRoutine()
+    {
+        yield return new WaitForSeconds(2f);
+        if (textRecall != null)
+        {
+            textRecall.gameObject.SetActive(false);
+        }
+    }
+
+    public void AscundeMesajRecall()
+    {
+        if (corutinaRecall != null)
+        {
+            StopCoroutine(corutinaRecall);
+        }
+
+        if (textRecall != null)
+        {
+            textRecall.gameObject.SetActive(false);
         }
     }
 

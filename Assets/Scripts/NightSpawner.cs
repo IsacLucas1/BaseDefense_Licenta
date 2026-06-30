@@ -35,18 +35,22 @@ public class NightSpawner : NetworkBehaviour
             return;
         }
 
+        // Verifica daca este noapte si daca inamicii au fost deja spawnati
         if (dayNightManager.EsteNoapte && !aSpawnatNoapteaAsta)
         {
             aSpawnatNoapteaAsta = true;
-            inamiciInViata.Clear();
+            inamiciInViata.Clear(); // Curata lista de inamici morti/vechi
             
+            // Incepe corutina pentru InamiciDeNoapte
             StartCoroutine(SpawnInamiciDeNoapteRoutine());
             
+            // Incepe corutina pentru InamiciAsediu daca sunt setati
             if (inamicAsediuPrefab != null && punctSpawnAsediu != null)
             {
                 StartCoroutine(SpawnInamiciAsediuRoutine());
             }
         }
+        // Reseteaza starea de spawn cand se face zi, pentru a permite spawnarea inamiciilor in noaptea urmatoare
         else if (dayNightManager.EsteZi && aSpawnatNoapteaAsta)
         {
             aSpawnatNoapteaAsta = false;

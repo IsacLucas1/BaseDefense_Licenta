@@ -11,6 +11,7 @@ public class DepozitLemn : NetworkBehaviour
     public NetworkVariable<int> lemnStocat = new NetworkVariable<int>(0);
     private Camera cam;
 
+    // Abonare si dezabonare la evenimentul de schimbare a cantitatii de lemn stocat
     public override void OnNetworkSpawn()
     {
         lemnStocat.OnValueChanged += ActualizeazaText;
@@ -24,6 +25,7 @@ public class DepozitLemn : NetworkBehaviour
         lemnStocat.OnValueChanged -= ActualizeazaText;
     }
     
+    // Actualizeaza textul UI cu cantitatea de lemn stocata
     private void ActualizeazaText(int valoareVeche, int valoareNoua)
     {
         if (textCantitateLemn != null)
@@ -32,6 +34,7 @@ public class DepozitLemn : NetworkBehaviour
         }
     }
     
+    // Asigura ca UI-ul depozitului de lemn se roteste pentru a fi intotdeauna vizibil pentru jucator
     private void LateUpdate()
     {
         if (canvasDepozitLemn != null)
@@ -53,21 +56,26 @@ public class DepozitLemn : NetworkBehaviour
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     private void ProceseazaLemnServerRpc(RpcParams rpcParams = default)
     {
+        // Obtine ID-ul clientului care a trimis RPC-ul
         ulong senderId = rpcParams.Receive.SenderClientId;
         if (NetworkManager.Singleton.ConnectedClients.TryGetValue(senderId, out var client))
         {
             if (client.PlayerObject != null)
             {
-                // Validare server-side de distanta
+                // Validare server-side de distanta pentru a preveni cheat-ul
                 float distanta = Vector3.Distance(transform.position, client.PlayerObject.transform.position);
                 if (distanta > 5f)
                 {
-                    Debug.LogWarning("Jucatorul e prea departe de depozit!");
                     return; 
                 }
-                BasePlayer jucator = client.PlayerObject.GetComponent<BasePlayer>();
-                if (jucator == null) return;
                 
+                BasePlayer jucator = client.PlayerObject.GetComponent<BasePlayer>();
+                if (jucator == null)
+                {
+                    return;
+                }
+                
+                // Verifica daca jucatorul este de tip ConstructorPlayer pentru a decide daca depoziteaza sau ia lemn
                 ConstructorPlayer constructorPlayer = jucator.GetComponent<ConstructorPlayer>();
                 if (constructorPlayer != null)
                 {

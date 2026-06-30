@@ -15,7 +15,7 @@ public class GameSessionManager : NetworkBehaviour
         0, NetworkVariableReadPermission.Everyone, 
         NetworkVariableWritePermission.Server);
     
-    // Clase ocupate (pentru dezactivarea butoanelor)
+    // Flag-uri care arata ce clase au fost deja ocupate (pentru dezactivarea butoanelor)
     public NetworkVariable<bool> tankOcupat = new NetworkVariable<bool>(
         false, 
         NetworkVariableReadPermission.Everyone, 
@@ -37,8 +37,9 @@ public class GameSessionManager : NetworkBehaviour
         NetworkVariableReadPermission.Everyone, 
         NetworkVariableWritePermission.Server);
     
+    // Dictionar care tine evidenta clasei alese de fiecare jucator (clientId -> indexClasa)
     private Dictionary<ulong, int> alegeri = new Dictionary<ulong, int>();
-    private bool aTrecutLaClase = false;
+    private bool aTrecutLaClase = false; // Flag care indica daca s-a trecut la meniul de alegere a claselor
     
     private void Awake()
     {
@@ -52,6 +53,7 @@ public class GameSessionManager : NetworkBehaviour
         }
     }
     
+    // Preia numarul maxim de jucatori setat de host si il seteaza in NetworkVariable folosind informatia din RelayManager
     public override void OnNetworkSpawn()
     {
         if (IsServer)
@@ -67,6 +69,7 @@ public class GameSessionManager : NetworkBehaviour
         }
     }
     
+    // Verifica daca s-au conectat destui jucatori pentru pornirea numaratoarei inverse
     private void Update()
     {
         if (IsServer && IsSpawned)
@@ -80,38 +83,55 @@ public class GameSessionManager : NetworkBehaviour
         }
     }
     
+    // Coroutine care afiseaza un countdown de 3 secunde inainte de a schimba meniul la alegerea claselor
+    private IEnumerator SchimbaMeniuClaseDelay()
+    {
+        ActualizeazaNumaratoareClientRpc("Toti jucatorii s-au conectat!");
+        yield return new WaitForSeconds(1f);
+        ActualizeazaNumaratoareClientRpc("3");
+        yield return new WaitForSeconds(1f);
+        ActualizeazaNumaratoareClientRpc("2");
+        yield return new WaitForSeconds(1f);
+        ActualizeazaNumaratoareClientRpc("1");
+        yield return new WaitForSeconds(1f);
+        SchimbaMeniuClaseClientRpc();
+    }
+    
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     public void AlegeClasaServerRpc(int indexClasa, RpcParams rpcParams = default)
     {
         ulong clientId = rpcParams.Receive.SenderClientId;
-        // Dacă a ales deja, ignorăm
+        // Daca a ales deja, ignoram cererea pentru prevenirea spam-ului sau bug-urile
         if (alegeri.ContainsKey(clientId))
         {
             return;
         }
         
-        // Dacă clasa e luată, ignorăm
+        // Daca clasa e luata, ignoram
         if (indexClasa == 0 && tankOcupat.Value) return;
         if (indexClasa == 1 && spionOcupat.Value) return;
         if (indexClasa == 2 && constructorOcupat.Value) return;
         if (indexClasa == 3 && medicOcupat.Value) return;
         if (indexClasa == 4 && arcasOcupat.Value) return;
         
-        // Marcăm clasa ocupată
+        // Marcheaza clasa ocupata si salveaza alegerea. Dezactiveaza butonul pentru ceilalti
         if (indexClasa == 0) tankOcupat.Value = true;
         if (indexClasa == 1) spionOcupat.Value = true;
         if (indexClasa == 2) constructorOcupat.Value = true;
         if (indexClasa == 3) medicOcupat.Value = true;
         if (indexClasa == 4) arcasOcupat.Value = true;
         
+        // Salveaza alegerea jucatorului in dictionar
         alegeri[clientId] = indexClasa;
-        // Dacă toți au ales, spawnăm toți jucătorii!
+        // Dacă toti au ales, spawneaza toti jucatorii
         if (alegeri.Count >= nrMaxJucatori.Value)
         {
             SpawneazaToti();
         }
     }
     
+    // Itereaza prin toti clientii din dictionar și foloseste scriptul PlayerSpawner pentru a instantia jucatorul
+    // cu clasa aleasa. Apoi trimite un ClientRpc pentru a ascunde meniul de alegere a clasei la toti jucatorii.
     private void SpawneazaToti()
     {
         foreach (var pereche in alegeri)
@@ -134,7 +154,7 @@ public class GameSessionManager : NetworkBehaviour
     [ClientRpc]
     private void AscundeMeniuClientRpc()
     {
-        // Găsim CharacterSelector-ul și ascundem orice meniu activ
+        // Gasim CharacterSelector-ul si ascundem orice meniu activ
         CharacterSelector cs = FindFirstObjectByType<CharacterSelector>();
         if (cs != null)
         {
@@ -148,19 +168,6 @@ public class GameSessionManager : NetworkBehaviour
                 cs.lobbyCamera.gameObject.SetActive(false);
             }
         }
-    }
-    
-    private IEnumerator SchimbaMeniuClaseDelay()
-    {
-        ActualizeazaNumaratoareClientRpc("Toți jucătorii s-au conectat!");
-        yield return new WaitForSeconds(1f);
-        ActualizeazaNumaratoareClientRpc("3");
-        yield return new WaitForSeconds(1f);
-        ActualizeazaNumaratoareClientRpc("2");
-        yield return new WaitForSeconds(1f);
-        ActualizeazaNumaratoareClientRpc("1");
-        yield return new WaitForSeconds(1f);
-        SchimbaMeniuClaseClientRpc();
     }
     
     [ClientRpc]

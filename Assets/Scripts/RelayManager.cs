@@ -10,19 +10,19 @@ using System.Collections;
 
 public class RelayManager : MonoBehaviour
 {
-    public static RelayManager Instance { get; private set; } 
-    public int nrMaxDeJucatoriAlesDeHost { get; private set; } 
+    public static RelayManager Instance { get; private set; } // Singleton pentru a putea fi accesat din alte scripturi
+    public int nrMaxDeJucatoriAlesDeHost { get; private set; } // Numarul de jucatori setat de host (1-5)
 
     [Header("UI Elements")]
-    public TMP_InputField joinInput;
-    public TMP_Text codeDisplayText;
-    public TMP_Dropdown nrMaxJucatoriDropdown;
-    public TMP_Text mesajEroare;
+    public TMP_InputField joinInput; 
+    public TMP_Text codeDisplayText; 
+    public TMP_Dropdown nrMaxJucatoriDropdown; 
+    public TMP_Text mesajEroare; 
 
     private Coroutine corutinaEroare;
     private void Awake()
     {
-        // Păstrăm scriptul activ ca să poată fi citit din Scena de Joc
+        // Singleton pattern pentru a ne asigura ca exista o singura instanta a RelayManager
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -35,11 +35,13 @@ public class RelayManager : MonoBehaviour
 
     async void Start()
     {
+        // Abonare la evenimentul de deconectare a clientului
         if (NetworkManager.Singleton != null)
         {
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnect;
         }
         
+        // Initializare servicii Unity si autentificare anonima
         await UnityServices.InitializeAsync();
         if (!AuthenticationService.Instance.IsSignedIn)
         {
@@ -47,6 +49,7 @@ public class RelayManager : MonoBehaviour
         }
     }
     
+    // Dezabonare de la evenimentul de deconectare a clientului la distrugerea obiectului
     private void OnDestroy()
     {
         if (NetworkManager.Singleton != null)
@@ -55,8 +58,10 @@ public class RelayManager : MonoBehaviour
         }
     }
 
+    // Crearea unei camere de joc. Se creeaza o alocare pe Unity Relay si porneste serverul
     public async void CreateGame()
     {
+        // Preia numarul maxim de jucatori ales de host din dropdown
         if (nrMaxJucatoriDropdown != null)
         {
             nrMaxDeJucatoriAlesDeHost = nrMaxJucatoriDropdown.value + 1;
@@ -74,8 +79,10 @@ public class RelayManager : MonoBehaviour
         
         try
         {
+            // Cere o alocare de la Unity Relay pentru numarul de jucatori ales
             int locuriDeCerut = Mathf.Max(1, nrMaxDeJucatoriAlesDeHost - 1);
             Allocation allocation = await RelayService.Instance.CreateAllocationAsync(locuriDeCerut);
+            // Generarea codului de acces
             string joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
             Debug.Log("Cod generat: " + joinCode);
            
@@ -86,6 +93,7 @@ public class RelayManager : MonoBehaviour
            
             joinInput.text = joinCode;
             
+            // Configurarea conexiunii pentru host 
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetHostRelayData(
                 allocation.RelayServer.IpV4,
                 (ushort)allocation.RelayServer.Port,
@@ -94,17 +102,19 @@ public class RelayManager : MonoBehaviour
                 allocation.ConnectionData
             );
             
+            // Functie de verificare a conxiunii
             NetworkManager.Singleton.ConnectionApprovalCallback = ApprovalCheck;
+            // Porneste host-ul
             NetworkManager.Singleton.StartHost();
         }
         catch (System.Exception e)
         {
-            Debug.LogError("Eroare la Create: " + e);
             AfiseazaEroare("Eroare la crearea camerei. Incearca din nou.");
             RevinoLaStart();
         }
     }
     
+    // Alaturarea la o camera de joc existenta folosind codul de acces
     public async void JoinGame()
     {
         string code = joinInput.text;
@@ -129,8 +139,10 @@ public class RelayManager : MonoBehaviour
         
         try
         {
+            // Cere Unity Relay sa conecteze la meci folosind codul de acces 
             JoinAllocation joinAllocation = await RelayService.Instance.JoinAllocationAsync(code);
             
+            // Configurarea conexiunii pentru client 
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetClientRelayData(
                 joinAllocation.RelayServer.IpV4,
                 (ushort)joinAllocation.RelayServer.Port,
@@ -140,28 +152,28 @@ public class RelayManager : MonoBehaviour
                 joinAllocation.HostConnectionData
             );
             
-            // Ne asiguram ca suntem abonati la deconectare exact acum
+            // Se asigura ca este abonat la deconectare exact acum
             NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnect;
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnect;
-
+            // Porneste clientul
             NetworkManager.Singleton.StartClient();
         }
         catch (System.Exception e)
         {
-            Debug.LogWarning("Cod greșit sau eroare: " + e);
             AfiseazaEroare("Cod gresit! Incearca din nou.");
             RevinoLaStart();
         }
     }
     
+    // Metoda de verificare a conexiunii pentru host.
+    // Se verifica daca numarul de jucatori conectati depaseste limita setata de host
+    // Daca da, respinge conexiunea si trimite un mesaj de eroare 
     private void ApprovalCheck(
         NetworkManager.ConnectionApprovalRequest request,
         NetworkManager.ConnectionApprovalResponse response)
     {
         int conectatiAcum = NetworkManager.Singleton.ConnectedClientsList.Count;
         
-        Debug.Log($"[Approval] ruleaza. conectati={conectatiAcum}, max={nrMaxDeJucatoriAlesDeHost}");
-
         if (conectatiAcum >= nrMaxDeJucatoriAlesDeHost)
         {
             response.Approved = false;
@@ -174,16 +186,17 @@ public class RelayManager : MonoBehaviour
         response.CreatePlayerObject = true;
     }
 
+    // Gestionarea deconectarii clientului.
+    // Daca clientul este respins, afiseaza un mesaj de eroare si revine la ecranul de start
     private void OnClientDisconnect(ulong clientId)
     {
-        // Doar clientul respins isi trateaza propria deconectare
+        // Clientul isi trateaza propria deconectare, nu serverul
         if (NetworkManager.Singleton.IsServer)
         {
             return;
         }
 
         string motiv = NetworkManager.Singleton.DisconnectReason;
-        Debug.Log($"[Disconnect] deconectat. motiv='{motiv}'");
         
         if (string.IsNullOrEmpty(motiv))
         {
@@ -194,6 +207,8 @@ public class RelayManager : MonoBehaviour
         RevinoLaStart();
     }
     
+    
+    // Revine la ecranul de start al jocului
     private void RevinoLaStart()
     {
         CharacterSelector cs = FindFirstObjectByType<CharacterSelector>();
@@ -203,6 +218,7 @@ public class RelayManager : MonoBehaviour
         }
     }
     
+    // Afiseaza un mesaj de eroare pe ecran pentru o perioada scurta de timp
     private void AfiseazaEroare(string mesaj)
     {
         if (mesajEroare == null)
@@ -217,6 +233,7 @@ public class RelayManager : MonoBehaviour
         corutinaEroare = StartCoroutine(EroareRoutine(mesaj));
     }
 
+    // Coroutine care afiseaza mesajul de eroare pentru 5 secunde
     private IEnumerator EroareRoutine(string mesaj)
     {
         mesajEroare.text = mesaj;

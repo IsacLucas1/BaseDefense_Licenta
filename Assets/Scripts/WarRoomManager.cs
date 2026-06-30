@@ -59,6 +59,7 @@ public class WarRoomManager : NetworkBehaviour
         timpRamasVot -= Time.unscaledDeltaTime;
         
         int secundeRamas = Mathf.CeilToInt(timpRamasVot);
+        // Trimitere actualizare doar cand se schimba secunda
         if (secundeRamas != ultimulTimpTrimis && secundeRamas >= 0)
         {
             ultimulTimpTrimis = secundeRamas;
@@ -98,6 +99,7 @@ public class WarRoomManager : NetworkBehaviour
             return;
         }
         
+        // Initializează starea votului
         votInCurs.Value = true;
         jucatoriCareAuVotat.Clear();
         voturiDa = 0;
@@ -111,6 +113,7 @@ public class WarRoomManager : NetworkBehaviour
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     public void InregistreazaVotServerRpc(bool votDa, RpcParams rpcParams = default)
     {
+        // Ia ID-ul clientului care a trimis RPC-ul
         ulong clientId = rpcParams.Receive.SenderClientId;
         
         if (!votInCurs.Value || jucatoriCareAuVotat.Contains(clientId))
@@ -118,6 +121,7 @@ public class WarRoomManager : NetworkBehaviour
             return;
         }
         
+        // Înregistrează votul
         jucatoriCareAuVotat.Add(clientId);
 
         if (votDa)
@@ -131,6 +135,7 @@ public class WarRoomManager : NetworkBehaviour
         
         ActualizeazaScorVotClientRpc(voturiDa, voturiNu);
         
+        // Verifică dacă s-a atins pragul de voturi necesar sau dacă toți jucătorii au votat
         if (GameSessionManager.Instance != null)
         {
             int maxJucatori = GameSessionManager.Instance.nrMaxJucatori.Value;
@@ -155,18 +160,12 @@ public class WarRoomManager : NetworkBehaviour
         
         if (voturiDa >= voturiNecesare)
         {
-            Debug.Log("Vot aprobat!");
-            
             votTrecut.Value = true;
             
             if (FinalAttackManager.Instance != null)
             {
                 FinalAttackManager.Instance.DeclanseazaFazaFinala();
             }
-        }
-        else
-        {
-            Debug.Log("Vot respins!");
         }
     }
 
